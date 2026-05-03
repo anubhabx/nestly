@@ -143,4 +143,18 @@ vite.config.ts.timestamp-*
 .vite/
 
 .raw/
-examples/
+
+# Examples — track source, ignore artifacts
+examples/**/node_modules/
+examples/**/dist/
+examples/**/*.tsbuildinfo
+
+# Monorepo build output
+packages/**/dist/
+packages/**/*.tsbuildinfo
+
+# pnpm
+pnpm-lock.yaml
+
+# Turborepo
+.turbo/
