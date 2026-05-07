@@ -12,12 +12,12 @@
     "inspect": "node packages/cli/bin/specord.js inspect"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
+    "@types/node": "^20.10.6",
     "turbo": "^2.0.0",
-    "vitest": "^3.0.0",
-    "@types/node": "^20.10.6"
+    "typescript": "^5.3.3",
+    "vitest": "^3.0.0"
   },
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@10.33.4",
   "engines": {
     "node": ">=18"
   }
