@@ -23,6 +23,7 @@ import {
   DEFAULT_CONTROLLER_SUFFIXES,
   DEFAULT_DTO_SUFFIXES,
 } from "./config/defaults.js";
+import { applyConfigOverrides } from "./config/apply-overrides.js";
 
 /**
  * Run the full extraction pipeline and produce an InspectionModel.
@@ -142,7 +143,7 @@ export function inspect(config: ResolvedConfig): InspectionModel {
     }
   }
 
-  return {
+  const model: InspectionModel = {
     source: {
       project,
       root,
@@ -153,6 +154,8 @@ export function inspect(config: ResolvedConfig): InspectionModel {
     schemas,
     diagnostics: globalDiagnostics,
   };
+
+  return applyConfigOverrides(model, userConfig);
 }
 
 /**
