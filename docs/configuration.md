@@ -28,19 +28,19 @@ export type SpecordConfigV1 = {
     globalPrefix?: string;
     versioning?: { strategy: "uri" | "header" | "media-type"; value?: string };
   };
-  securitySchemes?: Record<string, unknown>;
+  securitySchemes?: Record<string, OpenApiSecuritySchemeObject>;
   operations?: Record<
     string,
     {
       summary?: string;
       description?: string;
       tags?: string[];
-      security?: Array<Record<string, string[]>>;
-      responses?: Record<string, unknown>;
+      security?: OpenApiSecurityRequirementObject[];
+      responses?: OpenApiResponsesObject;
       exclude?: boolean;
     }
   >;
-  schemas?: Record<string, unknown>;
+  schemas?: Record<string, OpenApiSchemaObject>;
   ci?: {
     failOnInvalid?: boolean;
     failOnUnresolved?: boolean;

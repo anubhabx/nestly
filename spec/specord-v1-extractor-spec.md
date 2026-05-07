@@ -48,6 +48,7 @@ type InspectionModel = {
   };
   operations: OperationModel[];
   schemas: Record<string, SchemaModel>;
+  securitySchemes?: Record<string, OpenApiSecuritySchemeObject>;
   diagnostics: Diagnostic[];
 };
 
@@ -58,11 +59,21 @@ type OperationModel = {
   method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head";
   path: string; // OpenAPI template form, e.g. /users/{id}
   source?: SourceLocation;
+  summary?: string;
+  description?: string;
+  tags?: string[];
   params: ParameterModel[];
   requestBody?: BodyModel;
   responses: ResponseModel[];
   security: InferenceState;
   diagnostics: Diagnostic[];
+  openapi?: {
+    summary?: string;
+    description?: string;
+    tags?: string[];
+    security?: OpenApiSecurityRequirementObject[];
+    responses?: OpenApiResponsesObject;
+  };
 };
 
 type InferenceState =
@@ -198,25 +209,52 @@ type SpecordConfigV1 = {
     globalPrefix?: string;
     versioning?: { strategy: "uri" | "header" | "media-type"; value?: string };
   };
-  securitySchemes?: Record<string, unknown>;
+  securitySchemes?: Record<string, OpenApiSecuritySchemeObject>;
   operations?: Record<
     string,
     {
       summary?: string;
       description?: string;
       tags?: string[];
-      security?: Array<Record<string, string[]>>;
-      responses?: Record<string, unknown>;
+      security?: OpenApiSecurityRequirementObject[];
+      responses?: OpenApiResponsesObject;
       exclude?: boolean;
     }
   >;
-  schemas?: Record<string, unknown>;
+  schemas?: Record<string, OpenApiSchemaObject>;
   ci?: {
     failOnInvalid?: boolean;
     failOnUnresolved?: boolean;
     failOnWarning?: boolean;
   };
 };
+```
+
+Phase 1B tightens the broad override fragments above to OpenAPI-shaped carrier types:
+
+```ts
+type OpenApiSecuritySchemeObject = Record<string, unknown> & {
+  type: "apiKey" | "http" | "mutualTLS" | "oauth2" | "openIdConnect";
+  description?: string;
+  name?: string;
+  in?: "query" | "header" | "cookie";
+  scheme?: string;
+  bearerFormat?: string;
+  flows?: Record<string, unknown>;
+  openIdConnectUrl?: string;
+};
+
+type OpenApiSecurityRequirementObject = Record<string, string[]>;
+type OpenApiResponsesObject = Record<string, OpenApiResponseObject>;
+type OpenApiResponseObject = OpenApiReferenceObject | {
+  description: string;
+  headers?: Record<string, unknown>;
+  content?: Record<string, OpenApiMediaTypeObject>;
+  links?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+type OpenApiSchemaObject = OpenApiReferenceObject | Record<string, unknown>;
+type OpenApiReferenceObject = { $ref: string; summary?: string; description?: string };
 ```
 
 ### Precedence rules (MUST)
