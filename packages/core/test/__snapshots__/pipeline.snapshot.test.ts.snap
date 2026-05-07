@@ -40,7 +40,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<{ access_token: string; user: { id: any; email: any; firstName: any; lastName: any; }; }>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -52,7 +52,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<{ access_token: string; user: { id: any; email: any; firstName: any; lastName: any; }; }>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "auth/auth.controller.ts",
             "line": 13
@@ -104,7 +104,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<{ access_token: string; }>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -116,7 +116,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<{ access_token: string; }>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "auth/auth.controller.ts",
             "line": 24
@@ -168,7 +168,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -179,7 +179,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "auth/auth.controller.ts",
             "line": 19
@@ -206,7 +206,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<HealthCheckResult<HealthIndicatorResult<string, HealthIndicatorStatus, Record<string, any>> & HealthIndicatorResult<\\"API\\">, Partial<...>, Partial<...>>>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\"API\\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -217,7 +217,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<HealthCheckResult<HealthIndicatorResult<string, HealthIndicatorStatus, Record<string, any>> & HealthIndicatorResult<\\"API\\">, Partial<...>, Partial<...>>>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\"API\\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "health/health.controller.ts",
             "line": 11
@@ -272,7 +272,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"{ data: { id: number; name: string; price: number; category: string; stock: number; }[]; pagination: { page: number; limit: number; total: number; totalPages: number; }; }\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -284,7 +284,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"{ data: { id: number; name: string; price: number; category: string; stock: number; }[]; pagination: { page: number; limit: number; total: number; totalPages: number; }; }\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "products/products.controller.ts",
             "line": 29
@@ -336,7 +336,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"{ name: string; price: number; category: Category; stock: number; id: number; }\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -348,7 +348,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"{ name: string; price: number; category: Category; stock: number; id: number; }\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "products/products.controller.ts",
             "line": 68
@@ -403,7 +403,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"{ message: string; }\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -415,7 +415,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"{ message: string; }\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "products/products.controller.ts",
             "line": 91
@@ -470,7 +470,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -482,7 +482,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "products/products.controller.ts",
             "line": 59
@@ -551,7 +551,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -563,7 +563,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "products/products.controller.ts",
             "line": 78
@@ -658,7 +658,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -669,7 +669,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "users/users.controller.ts",
             "line": 21
@@ -771,7 +771,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -783,7 +783,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "users/users.controller.ts",
             "line": 38
@@ -852,7 +852,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -864,7 +864,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "users/users.controller.ts",
             "line": 44
@@ -902,7 +902,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
           }
         }
       ],
@@ -914,7 +914,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a reducible exported shape",
           "source": {
             "file": "users/users.controller.ts",
             "line": 32
