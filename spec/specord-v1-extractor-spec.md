@@ -241,6 +241,29 @@ type SpecordConfigV1 = {
 12. Validate structural and semantic correctness.
 13. Build renderer only after extractor and emitter trust is established.
 
+## Phase 1B override application
+
+Config overrides use OpenAPI 3.1-shaped fragments. This keeps the V1 config shape close to the future OpenAPI emitter while allowing `specord inspect` to remain the functional command.
+
+Supported override fields:
+
+- `securitySchemes`: OpenAPI Security Scheme Object fragments.
+- `operations.<id>.responses`: OpenAPI Responses Object fragments keyed by status code or `default`.
+- `operations.<id>.security`: OpenAPI Security Requirement Object array.
+- `operations.<id>.summary`, `description`, `tags`, and `exclude`.
+- `schemas.<name>`: OpenAPI Schema Object or Reference Object fragments.
+
+Override application MUST preserve extracted source facts. It MAY add carrier fields for raw OpenAPI fragments so Phase 2 can emit them without losing detail.
+
+When an override resolves a known uncertainty, the affected inference state MUST become `overridden` and only the directly resolved diagnostic MUST be removed:
+
+- response overrides remove `EXTRACTOR_UNRESOLVED_RESPONSE` on the same operation.
+- security overrides remove `EXTRACTOR_UNRESOLVED_SECURITY` on the same operation.
+- schema overrides remove matching schema diagnostics such as `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE`.
+- excluded operations are removed from `operations` and their operation-scoped diagnostics are removed.
+
+Override keys MUST be validated conservatively. Unknown operation ids, unknown schema names, and malformed response status keys are configuration errors.
+
 ## Spike completion criteria
 
 The first spike is complete when:

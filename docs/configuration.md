@@ -54,3 +54,65 @@ export type SpecordConfigV1 = {
 - Use operation-level overrides for known unresolved response/security cases.
 - Keep config explicit and minimal for V1.
 - Any new config shape should be reflected in the extractor spec before implementation.
+
+## Phase 1B override fragments
+
+Config overrides use OpenAPI 3.1-shaped fragments. `specord inspect` preserves these fragments on the inspection model; `specord generate` remains a later phase.
+
+```ts
+export default defineConfig({
+  securitySchemes: {
+    bearerAuth: {
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
+    },
+  },
+  operations: {
+    "AuthController.login": {
+      summary: "Log in",
+      description: "Returns access and refresh tokens.",
+      tags: ["Auth"],
+      security: [{ bearerAuth: [] }],
+      responses: {
+        "200": {
+          description: "Authenticated.",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  accessToken: { type: "string" },
+                  refreshToken: { type: "string" },
+                },
+                required: ["accessToken", "refreshToken"],
+              },
+            },
+          },
+        },
+      },
+    },
+    "HealthController.check": {
+      exclude: true,
+    },
+  },
+  schemas: {
+    UpdateUserDto: {
+      type: "object",
+      properties: {
+        firstName: { type: "string" },
+      },
+    },
+  },
+});
+```
+
+Supported fields:
+
+- `securitySchemes`: OpenAPI Security Scheme Object fragments.
+- `operations[id].responses`: OpenAPI Responses Object fragments keyed by status code or `default`.
+- `operations[id].security`: OpenAPI Security Requirement Object array.
+- `operations[id].summary`, `description`, `tags`, and `exclude`.
+- `schemas[name]`: OpenAPI Schema Object or Reference Object fragments.
+
+When an override resolves extractor uncertainty, the affected inference state is marked as `overridden` and the matching unresolved diagnostic is removed. Unknown operation ids, unknown schema names, and invalid response status keys are treated as config errors.
