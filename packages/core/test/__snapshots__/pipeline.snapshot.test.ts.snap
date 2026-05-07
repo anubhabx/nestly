@@ -1,0 +1,1366 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`inspect pipeline snapshot > produces a stable normalized inspection model 1`] = `
+"{
+  "source": {
+    "project": "<fixture-tsconfig>",
+    "root": "<fixture-root>",
+    "inspectedAt": "<inspected-at>",
+    "version": "v1"
+  },
+  "operations": [
+    {
+      "id": "AuthController.login",
+      "controller": "AuthController",
+      "handler": "login",
+      "method": "post",
+      "path": "/auth/login",
+      "source": {
+        "file": "auth/auth.controller.ts",
+        "line": 13
+      },
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "LoginUserDto"
+        },
+        "required": true,
+        "source": {
+          "file": "auth/auth.controller.ts",
+          "line": 15
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<{ access_token: string; user: { id: any; email: any; firstName: any; lastName: any; }; }>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<{ access_token: string; user: { id: any; email: any; firstName: any; lastName: any; }; }>\\" is not a reducible exported shape",
+          "source": {
+            "file": "auth/auth.controller.ts",
+            "line": 13
+          },
+          "subject": "AuthController.login",
+          "suggestedOverridePath": "operations.AuthController.login.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on AuthController.login but not mapped to a security scheme",
+          "source": {
+            "file": "auth/auth.controller.ts",
+            "line": 13
+          },
+          "subject": "AuthController.login",
+          "suggestedOverridePath": "operations.AuthController.login.security"
+        }
+      ]
+    },
+    {
+      "id": "AuthController.refreshToken",
+      "controller": "AuthController",
+      "handler": "refreshToken",
+      "method": "post",
+      "path": "/auth/refresh",
+      "source": {
+        "file": "auth/auth.controller.ts",
+        "line": 24
+      },
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "RefreshTokenDto"
+        },
+        "required": true,
+        "source": {
+          "file": "auth/auth.controller.ts",
+          "line": 26
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<{ access_token: string; }>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<{ access_token: string; }>\\" is not a reducible exported shape",
+          "source": {
+            "file": "auth/auth.controller.ts",
+            "line": 24
+          },
+          "subject": "AuthController.refreshToken",
+          "suggestedOverridePath": "operations.AuthController.refreshToken.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on AuthController.refreshToken but not mapped to a security scheme",
+          "source": {
+            "file": "auth/auth.controller.ts",
+            "line": 24
+          },
+          "subject": "AuthController.refreshToken",
+          "suggestedOverridePath": "operations.AuthController.refreshToken.security"
+        }
+      ]
+    },
+    {
+      "id": "AuthController.register",
+      "controller": "AuthController",
+      "handler": "register",
+      "method": "post",
+      "path": "/auth/register",
+      "source": {
+        "file": "auth/auth.controller.ts",
+        "line": 19
+      },
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "CreateUserDto"
+        },
+        "required": true,
+        "source": {
+          "file": "auth/auth.controller.ts",
+          "line": 20
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "inferred"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "source": {
+            "file": "auth/auth.controller.ts",
+            "line": 19
+          },
+          "subject": "AuthController.register",
+          "suggestedOverridePath": "operations.AuthController.register.responses"
+        }
+      ]
+    },
+    {
+      "id": "HealthController.check",
+      "controller": "HealthController",
+      "handler": "check",
+      "method": "get",
+      "path": "/health",
+      "source": {
+        "file": "health/health.controller.ts",
+        "line": 11
+      },
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<HealthCheckResult<HealthIndicatorResult<string, HealthIndicatorStatus, Record<string, any>> & HealthIndicatorResult<\\"API\\">, Partial<...>, Partial<...>>>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "inferred"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<HealthCheckResult<HealthIndicatorResult<string, HealthIndicatorStatus, Record<string, any>> & HealthIndicatorResult<\\"API\\">, Partial<...>, Partial<...>>>\\" is not a reducible exported shape",
+          "source": {
+            "file": "health/health.controller.ts",
+            "line": 11
+          },
+          "subject": "HealthController.check",
+          "suggestedOverridePath": "operations.HealthController.check.responses"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @HealthCheck() on HealthController.check is not in the supported allowlist",
+          "source": {
+            "file": "health/health.controller.ts",
+            "line": 11
+          },
+          "subject": "HealthController.check",
+          "suggestedOverridePath": "operations.HealthController.check"
+        }
+      ]
+    },
+    {
+      "id": "ProductsController.findAll",
+      "controller": "ProductsController",
+      "handler": "findAll",
+      "method": "get",
+      "path": "/products",
+      "source": {
+        "file": "products/products.controller.ts",
+        "line": 29
+      },
+      "params": [
+        {
+          "name": "PaginationDto",
+          "in": "query",
+          "type": {
+            "kind": "ref",
+            "name": "PaginationDto"
+          },
+          "required": true,
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 30
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"{ data: { id: number; name: string; price: number; category: string; stock: number; }[]; pagination: { page: number; limit: number; total: number; totalPages: number; }; }\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"{ data: { id: number; name: string; price: number; category: string; stock: number; }[]; pagination: { page: number; limit: number; total: number; totalPages: number; }; }\\" is not a reducible exported shape",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 29
+          },
+          "subject": "ProductsController.findAll",
+          "suggestedOverridePath": "operations.ProductsController.findAll.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on ProductsController.findAll but not mapped to a security scheme",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 29
+          },
+          "subject": "ProductsController.findAll",
+          "suggestedOverridePath": "operations.ProductsController.findAll.security"
+        }
+      ]
+    },
+    {
+      "id": "ProductsController.create",
+      "controller": "ProductsController",
+      "handler": "create",
+      "method": "post",
+      "path": "/products",
+      "source": {
+        "file": "products/products.controller.ts",
+        "line": 68
+      },
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "CreateProductDto"
+        },
+        "required": true,
+        "source": {
+          "file": "products/products.controller.ts",
+          "line": 69
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"{ name: string; price: number; category: Category; stock: number; id: number; }\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"{ name: string; price: number; category: Category; stock: number; id: number; }\\" is not a reducible exported shape",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 68
+          },
+          "subject": "ProductsController.create",
+          "suggestedOverridePath": "operations.ProductsController.create.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on ProductsController.create but not mapped to a security scheme",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 68
+          },
+          "subject": "ProductsController.create",
+          "suggestedOverridePath": "operations.ProductsController.create.security"
+        }
+      ]
+    },
+    {
+      "id": "ProductsController.remove",
+      "controller": "ProductsController",
+      "handler": "remove",
+      "method": "delete",
+      "path": "/products/{id}",
+      "source": {
+        "file": "products/products.controller.ts",
+        "line": 91
+      },
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "integer"
+          },
+          "required": true,
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 92
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"{ message: string; }\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"{ message: string; }\\" is not a reducible exported shape",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 91
+          },
+          "subject": "ProductsController.remove",
+          "suggestedOverridePath": "operations.ProductsController.remove.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on ProductsController.remove but not mapped to a security scheme",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 91
+          },
+          "subject": "ProductsController.remove",
+          "suggestedOverridePath": "operations.ProductsController.remove.security"
+        }
+      ]
+    },
+    {
+      "id": "ProductsController.findOne",
+      "controller": "ProductsController",
+      "handler": "findOne",
+      "method": "get",
+      "path": "/products/{id}",
+      "source": {
+        "file": "products/products.controller.ts",
+        "line": 59
+      },
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "integer"
+          },
+          "required": true,
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 60
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 59
+          },
+          "subject": "ProductsController.findOne",
+          "suggestedOverridePath": "operations.ProductsController.findOne.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on ProductsController.findOne but not mapped to a security scheme",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 59
+          },
+          "subject": "ProductsController.findOne",
+          "suggestedOverridePath": "operations.ProductsController.findOne.security"
+        }
+      ]
+    },
+    {
+      "id": "ProductsController.update",
+      "controller": "ProductsController",
+      "handler": "update",
+      "method": "patch",
+      "path": "/products/{id}",
+      "source": {
+        "file": "products/products.controller.ts",
+        "line": 78
+      },
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "integer"
+          },
+          "required": true,
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 80
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "UpdateProductDto"
+        },
+        "required": true,
+        "source": {
+          "file": "products/products.controller.ts",
+          "line": 81
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"{ id: number; name: string; price: number; category: string; stock: number; }\\" is not a reducible exported shape",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 78
+          },
+          "subject": "ProductsController.update",
+          "suggestedOverridePath": "operations.ProductsController.update.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on ProductsController.update but not mapped to a security scheme",
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 78
+          },
+          "subject": "ProductsController.update",
+          "suggestedOverridePath": "operations.ProductsController.update.security"
+        }
+      ]
+    },
+    {
+      "id": "UsersController.findAll",
+      "controller": "UsersController",
+      "handler": "findAll",
+      "method": "get",
+      "path": "/users",
+      "source": {
+        "file": "users/users.controller.ts",
+        "line": 26
+      },
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "unknown"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on UsersController.findAll but not mapped to a security scheme",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 26
+          },
+          "subject": "UsersController.findAll",
+          "suggestedOverridePath": "operations.UsersController.findAll.security"
+        }
+      ]
+    },
+    {
+      "id": "UsersController.create",
+      "controller": "UsersController",
+      "handler": "create",
+      "method": "post",
+      "path": "/users",
+      "source": {
+        "file": "users/users.controller.ts",
+        "line": 21
+      },
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "CreateUserDto"
+        },
+        "required": true,
+        "source": {
+          "file": "users/users.controller.ts",
+          "line": 22
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "inferred"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 21
+          },
+          "subject": "UsersController.create",
+          "suggestedOverridePath": "operations.UsersController.create.responses"
+        }
+      ]
+    },
+    {
+      "id": "UsersController.remove",
+      "controller": "UsersController",
+      "handler": "remove",
+      "method": "delete",
+      "path": "/users/{id}",
+      "source": {
+        "file": "users/users.controller.ts",
+        "line": 50
+      },
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 52
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "schema": {
+            "kind": "primitive",
+            "type": "null"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on UsersController.remove but not mapped to a security scheme",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 50
+          },
+          "subject": "UsersController.remove",
+          "suggestedOverridePath": "operations.UsersController.remove.security"
+        }
+      ]
+    },
+    {
+      "id": "UsersController.findOne",
+      "controller": "UsersController",
+      "handler": "findOne",
+      "method": "get",
+      "path": "/users/{id}",
+      "source": {
+        "file": "users/users.controller.ts",
+        "line": 38
+      },
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 40
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 38
+          },
+          "subject": "UsersController.findOne",
+          "suggestedOverridePath": "operations.UsersController.findOne.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on UsersController.findOne but not mapped to a security scheme",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 38
+          },
+          "subject": "UsersController.findOne",
+          "suggestedOverridePath": "operations.UsersController.findOne.security"
+        }
+      ]
+    },
+    {
+      "id": "UsersController.update",
+      "controller": "UsersController",
+      "handler": "update",
+      "method": "patch",
+      "path": "/users/{id}",
+      "source": {
+        "file": "users/users.controller.ts",
+        "line": 44
+      },
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 46
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "UpdateUserDto"
+        },
+        "required": true,
+        "source": {
+          "file": "users/users.controller.ts",
+          "line": 46
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 44
+          },
+          "subject": "UsersController.update",
+          "suggestedOverridePath": "operations.UsersController.update.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on UsersController.update but not mapped to a security scheme",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 44
+          },
+          "subject": "UsersController.update",
+          "suggestedOverridePath": "operations.UsersController.update.security"
+        }
+      ]
+    },
+    {
+      "id": "UsersController.getProfile",
+      "controller": "UsersController",
+      "handler": "getProfile",
+      "method": "get",
+      "path": "/users/me",
+      "source": {
+        "file": "users/users.controller.ts",
+        "line": 32
+      },
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "inference": {
+            "status": "unresolved",
+            "reason": "Return type \\"Promise<any>\\" is not a reducible exported shape"
+          }
+        }
+      ],
+      "security": {
+        "status": "unresolved",
+        "reason": "Guard/auth semantics require config override"
+      },
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
+          "message": "Return type \\"Promise<any>\\" is not a reducible exported shape",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 32
+          },
+          "subject": "UsersController.getProfile",
+          "suggestedOverridePath": "operations.UsersController.getProfile.responses"
+        },
+        {
+          "severity": "warning",
+          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
+          "message": "Guard/auth semantics observed on UsersController.getProfile but not mapped to a security scheme",
+          "source": {
+            "file": "users/users.controller.ts",
+            "line": 32
+          },
+          "subject": "UsersController.getProfile",
+          "suggestedOverridePath": "operations.UsersController.getProfile.security"
+        }
+      ]
+    }
+  ],
+  "schemas": {
+    "CreateProductDto": {
+      "name": "CreateProductDto",
+      "properties": {
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "price": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "constraints": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "category": {
+          "type": {
+            "kind": "ref",
+            "name": "Category"
+          },
+          "enum": [
+            "Electronics",
+            "Home",
+            "Clothing",
+            "Books"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "stock": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "constraints": {
+            "type": "number",
+            "minimum": 0
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "price",
+        "category",
+        "stock"
+      ],
+      "source": {
+        "file": "products/dto/create-product.dto.ts",
+        "line": 10
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "CreateUserDto": {
+      "name": "CreateUserDto",
+      "properties": {
+        "email": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "format": "email"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "password": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string",
+            "minLength": 6,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d)(?=.*[@$!%*?&])[A-Za-z\\\\d@$!%*?&]"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "firstName": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "lastName": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "phone": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "email",
+        "password",
+        "firstName",
+        "lastName"
+      ],
+      "source": {
+        "file": "users/dto/create-user.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "LoginUserDto": {
+      "name": "LoginUserDto",
+      "properties": {
+        "email": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "format": "email"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "password": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ],
+      "source": {
+        "file": "users/dto/login-user.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "PaginationDto": {
+      "name": "PaginationDto",
+      "properties": {
+        "page": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "default": 1,
+          "constraints": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "limit": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "default": 10,
+          "constraints": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "search": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "category": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [],
+      "source": {
+        "file": "products/dto/pagination.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "RefreshTokenDto": {
+      "name": "RefreshTokenDto",
+      "properties": {
+        "refreshToken": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "refreshToken"
+      ],
+      "source": {
+        "file": "auth/dto/refresh-token.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "UpdateProductDto": {
+      "name": "UpdateProductDto",
+      "properties": {},
+      "required": [],
+      "source": {
+        "file": "products/dto/update-product.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred-with-warning",
+        "reason": "Mapped type PartialType(CreateProductDto) cannot be fully resolved at extraction time"
+      }
+    },
+    "UpdateUserDto": {
+      "name": "UpdateUserDto",
+      "properties": {},
+      "required": [],
+      "source": {
+        "file": "users/dto/update-user.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred-with-warning",
+        "reason": "Mapped type PartialType(CreateUserDto) cannot be fully resolved at extraction time"
+      }
+    },
+    "User": {
+      "name": "User",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "email": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "password": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "firstName": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "lastName": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "isActive": {
+          "type": {
+            "kind": "primitive",
+            "type": "boolean"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "updatedAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "password",
+        "firstName",
+        "lastName",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ],
+      "source": {
+        "file": "users/entities/user.entity.ts",
+        "line": 1
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    }
+  },
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE",
+      "message": "UpdateProductDto extends PartialType(CreateProductDto) — mapped type cannot be fully resolved",
+      "source": {
+        "file": "products/dto/update-product.dto.ts",
+        "line": 4
+      },
+      "subject": "UpdateProductDto",
+      "suggestedOverridePath": "schemas.UpdateProductDto"
+    },
+    {
+      "severity": "warning",
+      "code": "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE",
+      "message": "UpdateUserDto extends PartialType(CreateUserDto) — mapped type cannot be fully resolved",
+      "source": {
+        "file": "users/dto/update-user.dto.ts",
+        "line": 4
+      },
+      "subject": "UpdateUserDto",
+      "suggestedOverridePath": "schemas.UpdateUserDto"
+    }
+  ]
+}"
+`;
