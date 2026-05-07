@@ -47,7 +47,9 @@ function parseFlags(args: string[]): CLIFlags {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    if (arg === "--project" && i + 1 < args.length) {
+    if (arg === "--") {
+      continue;
+    } else if (arg === "--project" && i + 1 < args.length) {
       flags.project = args[++i];
     } else if (arg === "--root" && i + 1 < args.length) {
       flags.root = args[++i];
