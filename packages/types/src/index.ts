@@ -19,4 +19,14 @@ export type {
   DiagnosticSeverity,
 } from "./diagnostics.js";
 
-export type { SpecordConfigV1 } from "./config.js";
+export type {
+  OpenApiMediaTypeObject,
+  OpenApiReferenceObject,
+  OpenApiResponseObject,
+  OpenApiResponsesObject,
+  OpenApiSchemaObject,
+  OpenApiSecurityRequirementObject,
+  OpenApiSecuritySchemeObject,
+  OperationOverrideConfig,
+  SpecordConfigV1,
+} from "./config.js";

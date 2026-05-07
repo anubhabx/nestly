@@ -5,6 +5,13 @@
 // ============================================================================
 
 import type { Diagnostic } from "./diagnostics.js";
+import type {
+  OpenApiResponseObject,
+  OpenApiResponsesObject,
+  OpenApiSchemaObject,
+  OpenApiSecurityRequirementObject,
+  OpenApiSecuritySchemeObject,
+} from "./config.js";
 
 /**
  * Source location within the inspected project.
@@ -69,6 +76,7 @@ export type SchemaModel = {
   required: string[];
   source?: SourceLocation;
   inference: InferenceState;
+  openapi?: OpenApiSchemaObject;
 };
 
 /**
@@ -101,6 +109,7 @@ export type ResponseModel = {
   description?: string;
   schema?: SchemaRef;
   inference: InferenceState;
+  openapi?: OpenApiResponseObject;
 };
 
 /**
@@ -114,11 +123,21 @@ export type OperationModel = {
   method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head";
   path: string;
   source?: SourceLocation;
+  summary?: string;
+  description?: string;
+  tags?: string[];
   params: ParameterModel[];
   requestBody?: BodyModel;
   responses: ResponseModel[];
   security: InferenceState;
   diagnostics: Diagnostic[];
+  openapi?: {
+    summary?: string;
+    description?: string;
+    tags?: string[];
+    security?: OpenApiSecurityRequirementObject[];
+    responses?: OpenApiResponsesObject;
+  };
 };
 
 /**
@@ -133,6 +152,7 @@ export type InspectionModel = {
   };
   operations: OperationModel[];
   schemas: Record<string, SchemaModel>;
+  securitySchemes?: Record<string, OpenApiSecuritySchemeObject>;
   diagnostics: Diagnostic[];
 };
 
