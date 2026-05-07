@@ -3,7 +3,9 @@
 // ============================================================================
 
 import { describe, expect, it } from "vitest";
+import path from "node:path";
 import { resolveConfig } from "../src/index.ts";
+import { validateConfig } from "../src/config/loader.ts";
 
 describe("resolveConfig", () => {
   // 6.1 CLI Flags Required Without Config
@@ -61,9 +63,9 @@ describe("resolveConfig", () => {
       undefined,
     );
 
-    // path.resolve always produces absolute paths
-    expect(resolved.project).toMatch(/^[A-Z]:\\/i);
-    expect(resolved.root).toMatch(/^[A-Z]:\\/i);
+    // Cross-platform: works on both Windows (C:\...) and Unix (/...)
+    expect(path.isAbsolute(resolved.project)).toBe(true);
+    expect(path.isAbsolute(resolved.root)).toBe(true);
   });
 
   it("passes through the merged config object", () => {
@@ -84,23 +86,26 @@ describe("resolveConfig", () => {
 });
 
 // 6.4 Deprecated Versioning Type Rejection
-// This test validates the config validation layer directly.
 describe("config validation", () => {
   it("rejects deprecated routing.versioning.type", () => {
-    // We test validateConfig indirectly through resolveConfig's config input
-    // by calling resolveConfig with the deprecated config shape.
-    // Note: validateConfig is called inside loadConfig, not resolveConfig.
-    // For direct validation testing, we import loadConfig and use a temp file.
-    // However, since loadConfig requires filesystem interaction, we test the
-    // validation logic by importing the validator indirectly.
+    const config = {
+      source: { project: "tsconfig.json", root: "src" },
+      routing: {
+        versioning: { type: "uri" },
+      },
+    } as any;
 
-    // The validateConfig function is called inside loadConfig.
-    // We can verify the contract by noting that resolveConfig does NOT
-    // call validateConfig — it trusts the caller already validated.
-    // So this test documents the expected behavior.
-    //
-    // Full integration test of deprecated type rejection would require
-    // a temp config file. Keeping this as a documented contract for now.
-    expect(true).toBe(true);
+    expect(() => validateConfig(config)).toThrow(/strategy/);
+  });
+
+  it("accepts routing.versioning.strategy", () => {
+    const config = {
+      source: { project: "tsconfig.json", root: "src" },
+      routing: {
+        versioning: { strategy: "uri" as const },
+      },
+    };
+
+    expect(() => validateConfig(config)).not.toThrow();
   });
 });

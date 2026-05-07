@@ -35,7 +35,7 @@ export async function loadConfig(
 /**
  * Validate a loaded config and throw on known issues.
  */
-function validateConfig(config: SpecordConfigV1): void {
+export function validateConfig(config: SpecordConfigV1): void {
   // Reject deprecated `versioning.type` key
   const routing = config.routing as Record<string, unknown> | undefined;
   if (routing?.versioning) {

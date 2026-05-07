@@ -153,8 +153,5 @@ examples/**/*.tsbuildinfo
 packages/**/dist/
 packages/**/*.tsbuildinfo
 
-# pnpm
-pnpm-lock.yaml
-
 # Turborepo
 .turbo/
