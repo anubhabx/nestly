@@ -2,7 +2,7 @@
 
 **Phase:** 1C — Mapped Type Resolution
 **Date:** 2026-05-10
-**Status:** In progress and locally verified for the first slice
+**Status:** In progress and locally verified for the first slice plus quality pass
 
 ---
 
@@ -12,7 +12,7 @@ Phase 1C starts by resolving the narrowest high-value extractor gap from Phase 1
 
 Health is green for the implemented slice:
 
-- `@specord/core` tests: 5 files, 34 tests passing after snapshot update.
+- `@specord/core` tests: 6 files, 35 tests passing after the quality-pass fallback test.
 - Workspace tests: 7 Turborepo tasks passing.
 - Workspace build: 5 package builds passing.
 - Canonical inspect output now reports 26 diagnostics instead of 28 because the two mapped-type diagnostics are gone.
@@ -28,11 +28,13 @@ Health is green for the implemented slice:
 | Conservative fallback | `PickType`, `OmitType`, `IntersectionType`, unknown bases, and unresolved mapped utilities still emit `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` |
 | Tests | Fixture acceptance now asserts `UpdateUserDto` and `UpdateProductDto` are optional copies of their base DTOs |
 | Snapshot | Stable inspection snapshot updated for resolved update DTO schemas and removed mapped-type diagnostics |
+| Quality pass | Added a regression test that keeps nested unresolved mapped types conservative |
 | Spec | V1 extractor spec updated to document supported `PartialType` behavior |
 
 Key modules:
 
 - `packages/core/src/extractors/schema-extractor.ts`
+- `packages/core/test/schema-extractor.test.ts`
 - `packages/core/test/pipeline.acceptance.test.ts`
 - `packages/core/test/__snapshots__/pipeline.snapshot.test.ts.snap`
 - `spec/specord-v1-extractor-spec.md`
@@ -49,6 +51,7 @@ Key modules:
 | `UpdateProductDto` resolves from `CreateProductDto` | Pass | 4 copied properties, 0 required fields |
 | Mapped-type diagnostics are removed for supported `PartialType` DTOs | Pass | `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` count is 0 |
 | Unsupported mapped utilities remain conservative | Pass | Fallback path is retained for non-`PartialType` utilities |
+| `PartialType` over unresolved mapped bases remains conservative | Pass | `UpdatePickedThingDto` fallback test emits an unresolved mapped-type diagnostic |
 | Query DTO behavior remains unchanged | Pass | `PaginationDto` is still represented as a query ref |
 
 ---
@@ -92,6 +95,7 @@ The system can now:
 - Preserve validator-derived constraints, enum values, defaults, and property type refs from the base DTO.
 - Keep update DTOs optional by clearing the mapped schema `required` list.
 - Keep unsupported mapped utilities loud and override-addressable.
+- Avoid marking `PartialType(...)` as inferred when its base mapped type is still unresolved.
 
 The system still cannot:
 
@@ -163,12 +167,14 @@ Commands run:
 pnpm.cmd --filter @specord/core test
 pnpm.cmd test
 pnpm.cmd build
+pnpm.cmd lint
 node packages/cli/bin/specord.js inspect --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src | node scripts/summarize-inspection.cjs
 ```
 
 Results:
 
-- Core tests: 5 files, 34 tests passing.
+- Core tests: 6 files, 35 tests passing.
 - Workspace tests: 7 Turborepo tasks passing.
 - Workspace build: 5 package builds passing.
+- Workspace lint: no configured lint tasks were executed by Turborepo.
 - Inspect summary: 4 controllers, 15 operations, 8 schemas, 26 diagnostics.

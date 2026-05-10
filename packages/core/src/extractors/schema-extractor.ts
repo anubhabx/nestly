@@ -236,6 +236,28 @@ function checkMappedType(
               );
               schemas[baseClassName] = baseResult.schema;
 
+              if (baseResult.schema.inference.status !== "inferred") {
+                return {
+                  schema: unsupportedMappedTypeSchema(
+                    className,
+                    utilName,
+                    baseClassName,
+                    file,
+                    line,
+                  ),
+                  diagnostics: [
+                    ...baseResult.diagnostics,
+                    unsupportedMappedTypeDiagnostic(
+                      className,
+                      utilName,
+                      baseClassName,
+                      file,
+                      line,
+                    ),
+                  ],
+                };
+              }
+
               return {
                 schema: {
                   name: className,
