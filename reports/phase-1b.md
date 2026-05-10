@@ -1,14 +1,14 @@
 # Phase 1B Session Report — OpenAPI-Shaped Config Overrides
 
-**Phase:** 1B — Config Override Application  
-**Date:** 2026-05-08  
+**Phase:** 1B — Config Override Application
+**Date:** 2026-05-10
 **Status:** Complete and locally verified
 
 ---
 
 ## Status Summary
 
-Phase 1B adds config-driven override application to `specord inspect` while keeping OpenAPI document emission deferred to Phase 2. The extractor baseline remains stable for the default fixture run, and override behavior is covered by fixture-driven tests.
+Phase 1B adds config-driven override application to `specord inspect` while keeping OpenAPI document emission deferred to Phase 2. The extractor baseline remains stable for the default fixture run, and override behavior is covered by fixture-driven tests. A fresh verification pass on 2026-05-10 confirmed the current branch remains green without expanding beyond the NestJS V1 path.
 
 Health is green:
 
@@ -110,20 +110,21 @@ The system still cannot:
 | Metric | Value |
 | --- | --- |
 | Branch | `codex/phase-1b-config-overrides` |
-| Total commits before final report commit | 29 |
-| Phase 1B implementation commits before final report commit | 5 |
-| Package TypeScript files, excluding `dist` | 32 |
-| Package TypeScript lines, excluding `dist` | 2,988 |
+| Total commits at verification | 30 |
+| Phase 1B scoped commits | 6 |
+| Package TypeScript files, excluding `dist` | 33 |
+| Package TypeScript lines, excluding `dist` | 3,469 |
 | Root dev dependencies | 4 |
 | Runtime dependencies added | 0 |
 
-Phase 1B commits before this report:
+Phase 1B commits:
 
 - `8c160b2 spec: add phase 1b config override contract`
 - `f7ecd1c feat(types): type openapi-shaped config overrides`
 - `0193ab7 feat(core): apply operation config overrides`
 - `b0ed451 test(core): cover config override application`
 - `2923c18 fix(cli): accept pnpm inspect argument separator`
+- `8968b2e docs: report phase 1b status`
 
 ---
 
@@ -186,4 +187,5 @@ Results:
 - Core tests: 5 files, 34 tests passing.
 - Workspace tests: 7 Turborepo tasks passing.
 - Workspace build: 5 package builds passing.
-- Inspect summary: 15 operations, 8 schemas, 28 diagnostics.
+- Inspect summary: 4 controllers, 15 operations, 8 schemas, 28 diagnostics.
+- Note: workspace `pnpm.cmd test` and `pnpm.cmd build` replayed Turborepo cache logs for all tasks during the 2026-05-10 verification pass; the focused core test and canonical inspect command were run directly in this session.
