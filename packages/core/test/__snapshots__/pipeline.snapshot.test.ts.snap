@@ -1219,28 +1219,140 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     "UpdateProductDto": {
       "name": "UpdateProductDto",
-      "properties": {},
+      "properties": {
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "price": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "constraints": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "category": {
+          "type": {
+            "kind": "ref",
+            "name": "Category"
+          },
+          "enum": [
+            "Electronics",
+            "Home",
+            "Clothing",
+            "Books"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "stock": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "constraints": {
+            "type": "number",
+            "minimum": 0
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
       "required": [],
       "source": {
         "file": "products/dto/update-product.dto.ts",
         "line": 4
       },
       "inference": {
-        "status": "inferred-with-warning",
-        "reason": "Mapped type PartialType(CreateProductDto) cannot be fully resolved at extraction time"
+        "status": "inferred"
       }
     },
     "UpdateUserDto": {
       "name": "UpdateUserDto",
-      "properties": {},
+      "properties": {
+        "email": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "format": "email"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "password": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string",
+            "minLength": 6,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d)(?=.*[@$!%*?&])[A-Za-z\\\\d@$!%*?&]"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "firstName": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "lastName": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "phone": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
       "required": [],
       "source": {
         "file": "users/dto/update-user.dto.ts",
         "line": 4
       },
       "inference": {
-        "status": "inferred-with-warning",
-        "reason": "Mapped type PartialType(CreateUserDto) cannot be fully resolved at extraction time"
+        "status": "inferred"
       }
     },
     "User": {
@@ -1338,29 +1450,6 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       }
     }
   },
-  "diagnostics": [
-    {
-      "severity": "warning",
-      "code": "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE",
-      "message": "UpdateProductDto extends PartialType(CreateProductDto) — mapped type cannot be fully resolved",
-      "source": {
-        "file": "products/dto/update-product.dto.ts",
-        "line": 4
-      },
-      "subject": "UpdateProductDto",
-      "suggestedOverridePath": "schemas.UpdateProductDto"
-    },
-    {
-      "severity": "warning",
-      "code": "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE",
-      "message": "UpdateUserDto extends PartialType(CreateUserDto) — mapped type cannot be fully resolved",
-      "source": {
-        "file": "users/dto/update-user.dto.ts",
-        "line": 4
-      },
-      "subject": "UpdateUserDto",
-      "suggestedOverridePath": "schemas.UpdateUserDto"
-    }
-  ]
+  "diagnostics": []
 }"
 `;

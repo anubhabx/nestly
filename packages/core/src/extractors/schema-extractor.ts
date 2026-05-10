@@ -7,11 +7,8 @@ import type {
   SchemaModel,
   PropertyModel,
   SchemaRef,
-  SourceLocation,
   Diagnostic,
-  InferenceState,
 } from "@specord/types";
-import { typeToSchemaRef } from "./param-extractor.js";
 
 /** class-validator decorators we map to schema constraints (V1 allowlist). */
 const VALIDATOR_MAP: Record<string, (args: ts.NodeArray<ts.Expression>) => Record<string, unknown>> = {
@@ -39,6 +36,14 @@ export interface SchemaExtractionResult {
   diagnostics: Diagnostic[];
 }
 
+type ExportedClassInfo = {
+  node: ts.ClassDeclaration;
+  sourceFile: ts.SourceFile;
+  className: string;
+  file: string;
+  line: number;
+};
+
 /**
  * Extract schemas from all discovered DTO/entity source files.
  */
@@ -50,6 +55,8 @@ export function extractSchemas(
   const schemas: Record<string, SchemaModel> = {};
   const diagnostics: Diagnostic[] = [];
   const normalizedRoot = root.replace(/\\/g, "/");
+  const exportedClasses: ExportedClassInfo[] = [];
+  const classIndex = new Map<string, ExportedClassInfo>();
 
   for (const sourceFile of dtoFiles) {
     ts.forEachChild(sourceFile, (node) => {
@@ -68,35 +75,16 @@ export function extractSchemas(
         : filePath;
 
       const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-
-      // Check for mapped types (PartialType, PickType, OmitType, etc.)
-      const mappedTypeResult = checkMappedType(node, className, relativePath, line + 1);
-      if (mappedTypeResult) {
-        diagnostics.push(...mappedTypeResult.diagnostics);
-        // Even if we can't fully resolve, add a skeleton schema
-        if (mappedTypeResult.schema) {
-          schemas[className] = mappedTypeResult.schema;
-        }
-        return;
-      }
-
-      // Extract properties
-      const { properties, required, propDiagnostics } = extractProperties(
+      const classInfo = {
         node,
-        checker,
         sourceFile,
-        normalizedRoot,
-      );
-
-      diagnostics.push(...propDiagnostics);
-
-      schemas[className] = {
-        name: className,
-        properties,
-        required,
-        source: { file: relativePath, line: line + 1 },
-        inference: { status: "inferred" },
+        className,
+        file: relativePath,
+        line: line + 1,
       };
+
+      exportedClasses.push(classInfo);
+      classIndex.set(className, classInfo);
     });
 
     // Also extract exported enums
@@ -113,18 +101,109 @@ export function extractSchemas(
     });
   }
 
+  for (const classInfo of exportedClasses) {
+    if (schemas[classInfo.className]) continue;
+
+    const result = extractClassSchema(
+      classInfo,
+      checker,
+      normalizedRoot,
+      classIndex,
+      schemas,
+      new Set(),
+    );
+
+    schemas[classInfo.className] = result.schema;
+    diagnostics.push(...result.diagnostics);
+  }
+
   return { schemas, diagnostics };
+}
+
+function extractClassSchema(
+  classInfo: ExportedClassInfo,
+  checker: ts.TypeChecker,
+  normalizedRoot: string,
+  classIndex: Map<string, ExportedClassInfo>,
+  schemas: Record<string, SchemaModel>,
+  resolving: Set<string>,
+): { schema: SchemaModel; diagnostics: Diagnostic[] } {
+  const existing = schemas[classInfo.className];
+  if (existing) {
+    return { schema: existing, diagnostics: [] };
+  }
+
+  if (resolving.has(classInfo.className)) {
+    return {
+      schema: unsupportedMappedTypeSchema(
+        classInfo.className,
+        "PartialType",
+        "?",
+        classInfo.file,
+        classInfo.line,
+      ),
+      diagnostics: [
+        unsupportedMappedTypeDiagnostic(
+          classInfo.className,
+          "PartialType",
+          "?",
+          classInfo.file,
+          classInfo.line,
+        ),
+      ],
+    };
+  }
+
+  resolving.add(classInfo.className);
+
+  const mappedTypeResult = checkMappedType(
+    classInfo,
+    checker,
+    normalizedRoot,
+    classIndex,
+    schemas,
+    resolving,
+  );
+
+  if (mappedTypeResult) {
+    resolving.delete(classInfo.className);
+    return mappedTypeResult;
+  }
+
+  const { properties, required, propDiagnostics } = extractProperties(
+    classInfo.node,
+    checker,
+    classInfo.sourceFile,
+    normalizedRoot,
+  );
+
+  resolving.delete(classInfo.className);
+
+  return {
+    schema: {
+      name: classInfo.className,
+      properties,
+      required,
+      source: { file: classInfo.file, line: classInfo.line },
+      inference: { status: "inferred" },
+    },
+    diagnostics: propDiagnostics,
+  };
 }
 
 /**
  * Check if a class extends a mapped type utility (PartialType, PickType, etc.).
  */
 function checkMappedType(
-  node: ts.ClassDeclaration,
-  className: string,
-  file: string,
-  line: number,
-): { schema?: SchemaModel; diagnostics: Diagnostic[] } | null {
+  classInfo: ExportedClassInfo,
+  checker: ts.TypeChecker,
+  normalizedRoot: string,
+  classIndex: Map<string, ExportedClassInfo>,
+  schemas: Record<string, SchemaModel>,
+  resolving: Set<string>,
+): { schema: SchemaModel; diagnostics: Diagnostic[] } | null {
+  const { node, className, file, line } = classInfo;
+
   if (!node.heritageClauses) return null;
 
   for (const clause of node.heritageClauses) {
@@ -143,26 +222,49 @@ function checkMappedType(
             baseClassName = expr.arguments[0].text;
           }
 
+          if (utilName === "PartialType" && baseClassName) {
+            const baseClass = classIndex.get(baseClassName);
+
+            if (baseClass) {
+              const baseResult = extractClassSchema(
+                baseClass,
+                checker,
+                normalizedRoot,
+                classIndex,
+                schemas,
+                resolving,
+              );
+              schemas[baseClassName] = baseResult.schema;
+
+              return {
+                schema: {
+                  name: className,
+                  properties: cloneProperties(baseResult.schema.properties),
+                  required: [],
+                  source: { file, line },
+                  inference: { status: "inferred" },
+                },
+                diagnostics: baseResult.diagnostics,
+              };
+            }
+          }
+
           return {
-            schema: {
-              name: className,
-              properties: {},
-              required: [],
-              source: { file, line },
-              inference: {
-                status: "inferred-with-warning",
-                reason: `Mapped type ${utilName}(${baseClassName ?? "?"}) cannot be fully resolved at extraction time`,
-              },
-            },
+            schema: unsupportedMappedTypeSchema(
+              className,
+              utilName,
+              baseClassName ?? "?",
+              file,
+              line,
+            ),
             diagnostics: [
-              {
-                severity: "warning",
-                code: "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE",
-                message: `${className} extends ${utilName}(${baseClassName ?? "?"}) — mapped type cannot be fully resolved`,
-                source: { file, line },
-                subject: className,
-                suggestedOverridePath: `schemas.${className}`,
-              },
+              unsupportedMappedTypeDiagnostic(
+                className,
+                utilName,
+                baseClassName ?? "?",
+                file,
+                line,
+              ),
             ],
           };
         }
@@ -171,6 +273,76 @@ function checkMappedType(
   }
 
   return null;
+}
+
+function unsupportedMappedTypeSchema(
+  className: string,
+  utilName: string,
+  baseClassName: string,
+  file: string,
+  line: number,
+): SchemaModel {
+  return {
+    name: className,
+    properties: {},
+    required: [],
+    source: { file, line },
+    inference: {
+      status: "inferred-with-warning",
+      reason: `Mapped type ${utilName}(${baseClassName}) cannot be fully resolved at extraction time`,
+    },
+  };
+}
+
+function unsupportedMappedTypeDiagnostic(
+  className: string,
+  utilName: string,
+  baseClassName: string,
+  file: string,
+  line: number,
+): Diagnostic {
+  return {
+    severity: "warning",
+    code: "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE",
+    message: `${className} extends ${utilName}(${baseClassName}) — mapped type cannot be fully resolved`,
+    source: { file, line },
+    subject: className,
+    suggestedOverridePath: `schemas.${className}`,
+  };
+}
+
+function cloneProperties(
+  properties: Record<string, PropertyModel>,
+): Record<string, PropertyModel> {
+  return Object.fromEntries(
+    Object.entries(properties).map(([name, property]) => [
+      name,
+      cloneProperty(property),
+    ]),
+  );
+}
+
+function cloneProperty(property: PropertyModel): PropertyModel {
+  return {
+    ...property,
+    type: cloneSchemaRef(property.type),
+    enum: property.enum ? [...property.enum] : undefined,
+    constraints: property.constraints ? { ...property.constraints } : undefined,
+    inference: { ...property.inference },
+  };
+}
+
+function cloneSchemaRef(type: SchemaRef): SchemaRef {
+  switch (type.kind) {
+    case "array":
+      return { kind: "array", items: cloneSchemaRef(type.items) };
+    case "ref":
+      return { kind: "ref", name: type.name };
+    case "primitive":
+      return { kind: "primitive", type: type.type };
+    case "unknown":
+      return { kind: "unknown" };
+  }
 }
 
 /**

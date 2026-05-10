@@ -216,34 +216,76 @@ describe("response diagnostics", () => {
 
 // ---------------------------------------------------------------------------
 // 4.10 Mapped Type Diagnostics
-// Current limitation: PartialType detected but not fully resolved.
+// PartialType DTOs are expanded from their base DTO with all fields optional.
 // ---------------------------------------------------------------------------
 describe("mapped type diagnostics", () => {
-  it("detects unsupported mapped types", () => {
+  it("resolves PartialType DTOs as optional copies of their base DTOs", () => {
     const model = inspectNestFixture();
 
     const diagnostics = model.diagnostics.filter(
       (diag) => diag.code === "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE",
     );
 
-    expect(diagnostics).toHaveLength(2);
+    expect(diagnostics).toHaveLength(0);
 
     expect(model.schemas.UpdateUserDto).toMatchObject({
       name: "UpdateUserDto",
-      properties: {},
+      properties: {
+        email: expect.objectContaining({
+          type: { kind: "primitive", type: "string" },
+          constraints: { format: "email" },
+        }),
+        password: expect.objectContaining({
+          type: { kind: "primitive", type: "string" },
+          constraints: expect.objectContaining({
+            type: "string",
+            minLength: 6,
+          }),
+        }),
+        firstName: expect.objectContaining({
+          type: { kind: "primitive", type: "string" },
+          constraints: { type: "string" },
+        }),
+        lastName: expect.objectContaining({
+          type: { kind: "primitive", type: "string" },
+          constraints: { type: "string" },
+        }),
+        phone: expect.objectContaining({
+          type: { kind: "primitive", type: "string" },
+        }),
+      },
       required: [],
-      inference: expect.objectContaining({
-        status: "inferred-with-warning",
-      }),
+      inference: { status: "inferred" },
     });
 
     expect(model.schemas.UpdateProductDto).toMatchObject({
       name: "UpdateProductDto",
-      properties: {},
+      properties: {
+        name: expect.objectContaining({
+          type: { kind: "primitive", type: "string" },
+          constraints: { type: "string" },
+        }),
+        price: expect.objectContaining({
+          type: { kind: "primitive", type: "number" },
+          constraints: expect.objectContaining({
+            type: "number",
+            exclusiveMinimum: 0,
+          }),
+        }),
+        category: expect.objectContaining({
+          type: { kind: "ref", name: "Category" },
+          enum: ["Electronics", "Home", "Clothing", "Books"],
+        }),
+        stock: expect.objectContaining({
+          type: { kind: "primitive", type: "number" },
+          constraints: expect.objectContaining({
+            type: "number",
+            minimum: 0,
+          }),
+        }),
+      },
       required: [],
-      inference: expect.objectContaining({
-        status: "inferred-with-warning",
-      }),
+      inference: { status: "inferred" },
     });
   });
 });

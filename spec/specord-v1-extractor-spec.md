@@ -127,6 +127,7 @@ type DiagnosticCode =
 - Pipe-derived type refinement only for an allowlist:
   - `ParseIntPipe` -> integer.
 - Request and query schemas from exported class DTO symbols.
+- `PartialType(BaseDto)` schemas from the base DTO with all copied fields optional.
 - DTO fields including:
   - optional markers,
   - defaults (as default values, not required flags),
@@ -158,7 +159,7 @@ When uncertain, extractor MUST emit incomplete-but-valid model data and at least
 | --- | --- | --- | --- |
 | `EXTRACTOR_UNRESOLVED_RESPONSE` | warning | Response schema cannot be safely inferred | `operations.<id>.responses` |
 | `EXTRACTOR_UNRESOLVED_SECURITY` | warning | Guard/auth semantics observed but not mapped | `securitySchemes` or `operations.<id>.security` |
-| `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` | warning | `PartialType`/mapped utility cannot be fully resolved | `schemas.<name>` |
+| `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` | warning | Mapped utility cannot be fully resolved | `schemas.<name>` |
 | `EXTRACTOR_UNSUPPORTED_DECORATOR` | info | Decorator seen but not in supported allowlist | `operations.<id>` |
 | `EXTRACTOR_TYPE_FALLBACK_ANY` | warning | Symbol resolves to `any` | `schemas.<name>` or `operations.<id>` |
 | `EXTRACTOR_ROUTE_CONFLICT` | error | Duplicate `method + path` extracted | `routing` |
@@ -173,7 +174,7 @@ The first spike is accepted only when all checks below pass.
 | Controller discovery | All controllers under `examples/nestjs-api/src` are present in `operations[*].controller`. |
 | Route extraction | Every controller handler with supported HTTP decorators appears with normalized `path` and `method`. |
 | DTO extraction | `CreateUserDto`, `CreateProductDto`, and `PaginationDto` are present with stable schema names. |
-| Mapped types | `UpdateUserDto` and `UpdateProductDto` are either inferred correctly or emit `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE`. |
+| Mapped types | `UpdateUserDto` and `UpdateProductDto` infer `PartialType(...)` fields from their base DTOs with no required fields. |
 | Security inference | Guard-backed operations emit `EXTRACTOR_UNRESOLVED_SECURITY` unless explicitly overridden. |
 | Response inference | Ambiguous return shapes emit `EXTRACTOR_UNRESOLVED_RESPONSE`. |
 | Snapshot stability | Two consecutive runs on unchanged source produce byte-identical JSON snapshot output (excluding `inspectedAt`, which may be normalized in test harness). |
@@ -185,7 +186,8 @@ The first spike is accepted only when all checks below pass.
 - Guard usage such as `JwtAuthGuard` -> unresolved security required until config override is present.
 - `@Param("id", ParseIntPipe) id: number` -> integer path parameter allowed.
 - `@Param("id") id: string` then `+id` in method body -> body coercion ignored, remain string.
-- `PartialType(...)` usage -> must infer or emit unsupported mapped type diagnostic.
+- `PartialType(...)` usage -> infer optional copies of the base DTO fields.
+- Other mapped utilities that cannot be resolved -> emit unsupported mapped type diagnostic.
 
 ## Minimum v1 config contract
 
