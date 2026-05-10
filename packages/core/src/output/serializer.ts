@@ -3,10 +3,16 @@
 // Ensures stable output ordering per spec determinism rules:
 //   1. operations sorted by path → method → id
 //   2. schemas keys sorted lexically
-//   3. diagnostics sorted by severity → code → source location
+//   3. securitySchemes keys sorted lexically
+//   4. diagnostics sorted by severity → code → source location
 // ============================================================================
 
-import type { InspectionModel, Diagnostic, SchemaModel } from "@specord/types";
+import type {
+  InspectionModel,
+  Diagnostic,
+  OpenApiSecuritySchemeObject,
+  SchemaModel,
+} from "@specord/types";
 
 /** Severity ordering for deterministic diagnostic sorting. */
 const SEVERITY_ORDER = { error: 0, warning: 1, info: 2 } as const;
@@ -20,6 +26,9 @@ export function serializeInspectionModel(model: InspectionModel): string {
     source: model.source,
     operations: sortOperations(model.operations),
     schemas: sortSchemas(model.schemas),
+    securitySchemes: model.securitySchemes
+      ? sortSecuritySchemes(model.securitySchemes)
+      : undefined,
     diagnostics: sortDiagnostics(model.diagnostics),
   };
 
@@ -59,6 +68,19 @@ function sortSchemas(
 
   for (const key of keys) {
     sorted[key] = schemas[key];
+  }
+
+  return sorted;
+}
+
+function sortSecuritySchemes(
+  securitySchemes: Record<string, OpenApiSecuritySchemeObject>,
+): Record<string, OpenApiSecuritySchemeObject> {
+  const sorted: Record<string, OpenApiSecuritySchemeObject> = {};
+  const keys = Object.keys(securitySchemes).sort();
+
+  for (const key of keys) {
+    sorted[key] = securitySchemes[key];
   }
 
   return sorted;

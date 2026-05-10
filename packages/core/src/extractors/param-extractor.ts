@@ -7,7 +7,7 @@ import type {
   ParameterModel,
   BodyModel,
   SchemaRef,
-  InferenceState,
+  SchemaModel,
   SourceLocation,
 } from "@specord/types";
 import {
@@ -37,6 +37,7 @@ export function extractParams(
   route: DiscoveredRoute,
   checker: ts.TypeChecker,
   root: string,
+  schemas: Record<string, SchemaModel> = {},
 ): ExtractedParams {
   const params: ParameterModel[] = [];
   let requestBody: BodyModel | undefined;
@@ -84,9 +85,16 @@ export function extractParams(
       } else {
         // @Query() paginationDto: PaginationDto — entire DTO as query params
         const typeRef = resolveTypeRef(param, checker);
-        if (typeRef.kind === "ref") {
-          // DTO query object — stored as a ref in requestBody-like structure
-          // but semantically represents query params from a DTO
+        const expandedParams = expandQueryDtoParams(
+          typeRef,
+          schemas,
+          location,
+          !!param.questionToken,
+        );
+
+        if (expandedParams) {
+          params.push(...expandedParams);
+        } else if (typeRef.kind === "ref") {
           params.push({
             name: typeRef.name,
             in: "query",
@@ -132,6 +140,47 @@ export function extractParams(
   }
 
   return { params, requestBody };
+}
+
+function expandQueryDtoParams(
+  typeRef: SchemaRef,
+  schemas: Record<string, SchemaModel>,
+  source: SourceLocation,
+  isContainerOptional: boolean,
+): ParameterModel[] | undefined {
+  if (typeRef.kind !== "ref") return undefined;
+
+  const schema = schemas[typeRef.name];
+  if (!schema) return undefined;
+
+  const required = new Set(schema.required);
+
+  return Object.entries(schema.properties).map(([name, property]) => ({
+    name,
+    in: "query",
+    type: cloneSchemaRef(property.type),
+    required: !isContainerOptional && required.has(name),
+    description: property.description,
+    default: property.default,
+    enum: property.enum ? [...property.enum] : undefined,
+    format: property.format,
+    constraints: property.constraints ? { ...property.constraints } : undefined,
+    source,
+    inference: { ...property.inference },
+  }));
+}
+
+function cloneSchemaRef(type: SchemaRef): SchemaRef {
+  switch (type.kind) {
+    case "array":
+      return { kind: "array", items: cloneSchemaRef(type.items) };
+    case "ref":
+      return { kind: "ref", name: type.name };
+    case "primitive":
+      return { kind: "primitive", type: type.type };
+    case "unknown":
+      return { kind: "unknown" };
+  }
 }
 
 /**

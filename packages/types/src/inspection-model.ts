@@ -87,6 +87,11 @@ export type ParameterModel = {
   in: "path" | "query" | "header";
   type: SchemaRef;
   required: boolean;
+  description?: string;
+  default?: unknown;
+  enum?: unknown[];
+  format?: string;
+  constraints?: Record<string, unknown>;
   source?: SourceLocation;
   inference: InferenceState;
 };

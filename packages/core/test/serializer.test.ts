@@ -120,6 +120,34 @@ describe("serializeInspectionModel", () => {
     expect(Object.keys(parsed.schemas)).toEqual(["Apple", "Mango", "Zebra"]);
   });
 
+  it("preserves and sorts top-level security schemes", () => {
+    const model = makeMinimalInspectionModel({
+      securitySchemes: {
+        zebraAuth: {
+          type: "apiKey",
+          in: "header",
+          name: "x-zebra-key",
+        },
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+        },
+      },
+    });
+
+    const json = serializeInspectionModel(model);
+    const parsed = JSON.parse(json);
+
+    expect(Object.keys(parsed.securitySchemes)).toEqual([
+      "bearerAuth",
+      "zebraAuth",
+    ]);
+    expect(parsed.securitySchemes.bearerAuth).toEqual({
+      type: "http",
+      scheme: "bearer",
+    });
+  });
+
   it("sorts diagnostics by severity, code, then source location", () => {
     const model = makeMinimalInspectionModel({
       diagnostics: [

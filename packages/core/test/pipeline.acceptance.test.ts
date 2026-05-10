@@ -5,9 +5,6 @@
 // something changed; these tests tell you *what* broke.
 //
 // Known limitations frozen here (to be lifted in future phases):
-// - UpdateUserDto / UpdateProductDto are skeletons because PartialType is
-//   detected but not resolved yet.
-// - PaginationDto query params are represented as a DTO ref, not expanded.
 // - Guard-backed routes produce unresolved security until config overrides.
 // - Anonymous/library return types produce unresolved response diagnostics.
 // ============================================================================
@@ -125,10 +122,10 @@ describe("request body extraction", () => {
 
 // ---------------------------------------------------------------------------
 // 4.7 Query DTO Extraction
-// Current limitation: query DTOs are represented as a ref, not expanded.
+// Query DTOs expand into individual query parameters.
 // ---------------------------------------------------------------------------
 describe("query DTO extraction", () => {
-  it("represents query DTO params as query refs", () => {
+  it("expands query DTO params into individual query parameters", () => {
     const model = inspectNestFixture();
 
     const productsList = model.operations.find(
@@ -138,15 +135,34 @@ describe("query DTO extraction", () => {
         op.path === "/products",
     );
 
-    expect(productsList?.params).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          name: "PaginationDto",
-          in: "query",
-          type: { kind: "ref", name: "PaginationDto" },
-        }),
-      ]),
-    );
+    expect(productsList?.params).toEqual([
+      expect.objectContaining({
+        name: "page",
+        in: "query",
+        type: { kind: "primitive", type: "number" },
+        required: false,
+        default: 1,
+      }),
+      expect.objectContaining({
+        name: "limit",
+        in: "query",
+        type: { kind: "primitive", type: "number" },
+        required: false,
+        default: 10,
+      }),
+      expect.objectContaining({
+        name: "search",
+        in: "query",
+        type: { kind: "primitive", type: "string" },
+        required: false,
+      }),
+      expect.objectContaining({
+        name: "category",
+        in: "query",
+        type: { kind: "primitive", type: "string" },
+        required: false,
+      }),
+    ]);
   });
 });
 

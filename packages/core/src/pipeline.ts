@@ -100,7 +100,7 @@ export function inspect(config: ResolvedConfig): InspectionModel {
       }
 
       // Extract parameters
-      const { params, requestBody } = extractParams(route, checker, root);
+      const { params, requestBody } = extractParams(route, checker, root, schemas);
 
       // Extract response
       const { responses, diagnostics: responseDiagnostics } = extractResponse(

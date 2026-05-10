@@ -250,13 +250,77 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       },
       "params": [
         {
-          "name": "PaginationDto",
+          "name": "page",
           "in": "query",
           "type": {
-            "kind": "ref",
-            "name": "PaginationDto"
+            "kind": "primitive",
+            "type": "number"
           },
-          "required": true,
+          "required": false,
+          "default": 1,
+          "constraints": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 30
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "required": false,
+          "default": 10,
+          "constraints": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 30
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "search",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "constraints": {
+            "type": "string"
+          },
+          "source": {
+            "file": "products/products.controller.ts",
+            "line": 30
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "category",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "constraints": {
+            "type": "string"
+          },
           "source": {
             "file": "products/products.controller.ts",
             "line": 30

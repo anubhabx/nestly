@@ -76,6 +76,26 @@ type OperationModel = {
   };
 };
 
+type ParameterModel = {
+  name: string;
+  in: "path" | "query" | "header";
+  type: SchemaRef;
+  required: boolean;
+  description?: string;
+  default?: unknown;
+  enum?: unknown[];
+  format?: string;
+  constraints?: Record<string, unknown>;
+  source?: SourceLocation;
+  inference: InferenceState;
+};
+
+type SchemaRef =
+  | { kind: "ref"; name: string }
+  | { kind: "primitive"; type: "string" | "number" | "integer" | "boolean" | "null" | "object" }
+  | { kind: "array"; items: SchemaRef }
+  | { kind: "unknown" };
+
 type InferenceState =
   | { status: "inferred" }
   | { status: "inferred-with-warning"; reason: string }
@@ -105,15 +125,16 @@ type DiagnosticCode =
 
 1. `operations` MUST be sorted by `path`, then `method`, then `id` (ascending lexical order).
 2. `schemas` keys MUST be sorted lexically during emission.
-3. `diagnostics` MUST be sorted by `severity`, then `code`, then source location.
-4. Component/schema naming MUST be stable:
+3. `securitySchemes` keys MUST be sorted lexically during emission when present.
+4. `diagnostics` MUST be sorted by `severity`, then `code`, then source location.
+5. Component/schema naming MUST be stable:
    - exported class DTO name as primary key,
    - collision fallback format: `{ClassName}_{FileStem}_{Hash4}`.
-5. `path` MUST normalize to:
+6. `path` MUST normalize to:
    - leading `/`,
    - no trailing slash (except `/`),
    - Nest `:id` tokens converted to `{id}`.
-6. No extraction behavior may depend on runtime evaluation of function bodies.
+7. No extraction behavior may depend on runtime evaluation of function bodies.
 
 ## V1 extraction rules
 
@@ -126,7 +147,9 @@ type DiagnosticCode =
 - Primitive parameter types from type annotations.
 - Pipe-derived type refinement only for an allowlist:
   - `ParseIntPipe` -> integer.
-- Request and query schemas from exported class DTO symbols.
+- Request schemas from exported class DTO symbols.
+- `@Query() Dto` query DTOs expanded into individual query parameters from the DTO properties.
+- Query parameter expansion preserves DTO property order, optional/required state, defaults, enum values, formats, and validator-derived constraints.
 - `PartialType(BaseDto)` schemas from the base DTO with all copied fields optional.
 - DTO fields including:
   - optional markers,
@@ -174,6 +197,7 @@ The first spike is accepted only when all checks below pass.
 | Controller discovery | All controllers under `examples/nestjs-api/src` are present in `operations[*].controller`. |
 | Route extraction | Every controller handler with supported HTTP decorators appears with normalized `path` and `method`. |
 | DTO extraction | `CreateUserDto`, `CreateProductDto`, and `PaginationDto` are present with stable schema names. |
+| Query DTO expansion | `ProductsController.findAll` emits `page`, `limit`, `search`, and `category` query parameters from `PaginationDto`. |
 | Mapped types | `UpdateUserDto` and `UpdateProductDto` infer `PartialType(...)` fields from their base DTOs with no required fields. |
 | Security inference | Guard-backed operations emit `EXTRACTOR_UNRESOLVED_SECURITY` unless explicitly overridden. |
 | Response inference | Ambiguous return shapes emit `EXTRACTOR_UNRESOLVED_RESPONSE`. |
@@ -186,6 +210,7 @@ The first spike is accepted only when all checks below pass.
 - Guard usage such as `JwtAuthGuard` -> unresolved security required until config override is present.
 - `@Param("id", ParseIntPipe) id: number` -> integer path parameter allowed.
 - `@Param("id") id: string` then `+id` in method body -> body coercion ignored, remain string.
+- `@Query() paginationDto: PaginationDto` -> expand DTO fields into query parameters while retaining `PaginationDto` in `schemas`.
 - `PartialType(...)` usage -> infer optional copies of the base DTO fields.
 - Other mapped utilities that cannot be resolved -> emit unsupported mapped type diagnostic.
 
@@ -294,6 +319,7 @@ Supported override fields:
 - `schemas.<name>`: OpenAPI Schema Object or Reference Object fragments.
 
 Override application MUST preserve extracted source facts. It MAY add carrier fields for raw OpenAPI fragments so Phase 2 can emit them without losing detail.
+When present, top-level `securitySchemes` MUST survive deterministic `specord inspect` serialization.
 
 When an override resolves a known uncertainty, the affected inference state MUST become `overridden` and only the directly resolved diagnostic MUST be removed:
 

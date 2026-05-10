@@ -1,21 +1,22 @@
-# Phase 1C Session Report — PartialType Schema Resolution
+# Phase 1C Session Report - Phase 1 Closeout Hardening
 
-**Phase:** 1C — Mapped Type Resolution
+**Phase:** 1C - Extractor closeout for the NestJS V1 path
 **Date:** 2026-05-10
-**Status:** In progress and locally verified for the first slice plus quality pass
+**Status:** Complete and locally verified
 
 ---
 
 ## Status Summary
 
-Phase 1C starts by resolving the narrowest high-value extractor gap from Phase 1B: NestJS `PartialType(BaseDto)` DTOs. The current slice keeps the scope on the NestJS V1 inspection path, leaves OpenAPI emission deferred, and does not change operation modeling.
+Phase 1C closes the remaining Phase 1 hardening gaps on the current NestJS V1 inspection path. It keeps `specord inspect` as the only functional surface, leaves OpenAPI document emission to Phase 2, and avoids expanding into non-Nest adapters or broader mapped-type utilities.
 
-Health is green for the implemented slice:
+Health is green:
 
-- `@specord/core` tests: 6 files, 35 tests passing after the quality-pass fallback test.
-- Workspace tests: 7 Turborepo tasks passing.
+- `@specord/core` tests: 6 files, 36 tests passing.
+- Workspace tests: 7 Turborepo tasks passing, including the CLI inspect regression.
 - Workspace build: 5 package builds passing.
-- Canonical inspect output now reports 26 diagnostics instead of 28 because the two mapped-type diagnostics are gone.
+- Workspace lint: no package lint tasks are configured, so Turborepo executes 0 lint tasks.
+- Fixture inspect integration: 4 controllers, 15 operations, 8 schemas, 26 diagnostics.
 
 ---
 
@@ -23,19 +24,22 @@ Health is green for the implemented slice:
 
 | Area | Delivered |
 | --- | --- |
-| Schema extractor | Two-pass exported-class indexing so mapped DTOs can resolve base DTOs independent of file order |
-| `PartialType` support | `PartialType(BaseDto)` copies base DTO properties and sets `required: []` |
-| Conservative fallback | `PickType`, `OmitType`, `IntersectionType`, unknown bases, and unresolved mapped utilities still emit `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` |
-| Tests | Fixture acceptance now asserts `UpdateUserDto` and `UpdateProductDto` are optional copies of their base DTOs |
-| Snapshot | Stable inspection snapshot updated for resolved update DTO schemas and removed mapped-type diagnostics |
-| Quality pass | Added a regression test that keeps nested unresolved mapped types conservative |
-| Spec | V1 extractor spec updated to document supported `PartialType` behavior |
+| `PartialType` resolution | Direct `PartialType(BaseDto)` classes copy base DTO properties and clear required fields |
+| Query DTO expansion | `@Query() PaginationDto` expands to `page`, `limit`, `search`, and `category` parameters |
+| Parameter model | Query parameters can now carry DTO-derived `description`, `default`, `enum`, `format`, and `constraints` metadata |
+| Serializer hardening | Top-level `securitySchemes` survive deterministic `specord inspect` JSON serialization and are key-sorted |
+| Tests | Fixture acceptance, snapshot, serializer regression, mapped-type fallback, config override, and CLI tests are scaffolded and passing |
+| Spec | V1 extractor spec documents query DTO expansion and `securitySchemes` serialization |
+| Report | This report supersedes the PartialType-only Phase 1C note as the Phase 1 closeout record |
 
 Key modules:
 
 - `packages/core/src/extractors/schema-extractor.ts`
-- `packages/core/test/schema-extractor.test.ts`
+- `packages/core/src/extractors/param-extractor.ts`
+- `packages/core/src/output/serializer.ts`
+- `packages/types/src/inspection-model.ts`
 - `packages/core/test/pipeline.acceptance.test.ts`
+- `packages/core/test/serializer.test.ts`
 - `packages/core/test/__snapshots__/pipeline.snapshot.test.ts.snap`
 - `spec/specord-v1-extractor-spec.md`
 
@@ -49,16 +53,19 @@ Key modules:
 | Default fixture schema count remains stable | Pass | 8 schemas |
 | `UpdateUserDto` resolves from `CreateUserDto` | Pass | 5 copied properties, 0 required fields |
 | `UpdateProductDto` resolves from `CreateProductDto` | Pass | 4 copied properties, 0 required fields |
-| Mapped-type diagnostics are removed for supported `PartialType` DTOs | Pass | `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` count is 0 |
-| Unsupported mapped utilities remain conservative | Pass | Fallback path is retained for non-`PartialType` utilities |
-| `PartialType` over unresolved mapped bases remains conservative | Pass | `UpdatePickedThingDto` fallback test emits an unresolved mapped-type diagnostic |
-| Query DTO behavior remains unchanged | Pass | `PaginationDto` is still represented as a query ref |
+| Supported mapped-type diagnostics are removed | Pass | `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` count is 0 |
+| Unsupported mapped utilities remain conservative | Pass | Synthetic fallback test keeps nested unresolved mapped types noisy |
+| Query DTOs expand to individual params | Pass | `ProductsController.findAll` emits `page`, `limit`, `search`, `category` |
+| Query param metadata is preserved | Pass | `page` and `limit` include defaults and validator constraints in snapshot output |
+| Config overrides still apply | Pass | Response, security, metadata, exclude, and schema override tests pass |
+| Serialized override carriers survive | Pass | Serializer test preserves and sorts `securitySchemes` |
+| CLI inspect path remains covered | Pass | CLI test covers `inspect -- --project ... --root ...` |
 
 ---
 
 ## Extraction Output Summary
 
-Default fixture output after this slice:
+Default fixture output after Phase 1 closeout:
 
 | Metric | Value |
 | --- | ---: |
@@ -78,12 +85,19 @@ Diagnostic counts:
 | `EXTRACTOR_UNSUPPORTED_DECORATOR` | 1 |
 | `EXTRACTOR_UNSUPPORTED_MAPPED_TYPE` | 0 |
 
-Schema changes:
+Notable extracted operation:
+
+| Operation | Method | Path | Params | Diagnostics |
+| --- | --- | --- | --- | ---: |
+| `ProductsController.findAll` | `get` | `/products` | `query:page`, `query:limit`, `query:search`, `query:category` | 2 |
+
+Schema changes retained:
 
 | Schema | Result |
 | --- | --- |
 | `UpdateUserDto` | `email`, `password`, `firstName`, `lastName`, `phone`; all optional |
 | `UpdateProductDto` | `name`, `price`, `category`, `stock`; all optional |
+| `PaginationDto` | Still present in `schemas`; also expands into operation query parameters |
 
 ---
 
@@ -91,18 +105,23 @@ Schema changes:
 
 The system can now:
 
-- Resolve direct NestJS `PartialType(BaseDto)` classes when the base DTO is an exported class in the inspected source set.
-- Preserve validator-derived constraints, enum values, defaults, and property type refs from the base DTO.
-- Keep update DTOs optional by clearing the mapped schema `required` list.
-- Keep unsupported mapped utilities loud and override-addressable.
-- Avoid marking `PartialType(...)` as inferred when its base mapped type is still unresolved.
+- Extract a deterministic NestJS V1 inspection model from the fixture.
+- Resolve direct `PartialType(BaseDto)` DTOs without executing Nest runtime code.
+- Expand `@Query() Dto` parameters using extracted DTO schemas.
+- Preserve query parameter defaults, enum values, formats, and validator constraints where available.
+- Apply Phase 1B config overrides for responses, security, operation metadata, exclusion, and schema fragments.
+- Preserve OpenAPI-shaped override carriers for Phase 2 emission.
+- Serialize operations, schemas, diagnostics, and security schemes deterministically.
+- Keep unresolved response and guard semantics loud through diagnostics and override paths.
 
 The system still cannot:
 
+- Emit OpenAPI 3.1 documents; that is Phase 2.
 - Resolve `PickType`, `OmitType`, `IntersectionType`, or composed mapped-type expressions.
-- Expand query DTOs into individual query parameters.
-- Emit OpenAPI 3.1 documents.
-- Infer ambiguous response bodies or guard security without config.
+- Infer ambiguous anonymous response bodies or service-returned `any` shapes without config.
+- Derive guard/auth semantics without explicit `specord.config.ts` security overrides.
+- Semantically validate OpenAPI fragments against a complete document graph.
+- Treat Express examples as supported; Phase 1 remains scoped to the NestJS V1 path.
 
 ---
 
@@ -110,11 +129,12 @@ The system still cannot:
 
 | Metric | Value |
 | --- | --- |
-| Branch | `codex/phase-1c-mapped-types` |
-| Base branch | `develop` after Phase 1B fast-forward merge |
-| Base commit at Phase 1C start | `9c4a1c0` |
-| Package TypeScript files, excluding `dist` | 33 |
-| Package TypeScript lines, excluding `dist` | 3,683 |
+| Branch | `codex/phase-1-closeout` |
+| Base commit before closeout branch | `8744c34` |
+| Total commits before closeout commit | 33 |
+| Package TypeScript files, excluding `dist` | 34 |
+| Package TypeScript lines, excluding `dist` | 3,415 |
+| Root dev dependencies | 4 |
 | Runtime dependencies added | 0 |
 
 ---
@@ -123,11 +143,12 @@ The system still cannot:
 
 | Decision | Rationale |
 | --- | --- |
-| Start Phase 1C with `PartialType` only | It removes known fixture uncertainty without changing operation model contracts |
-| Copy base schema properties instead of evaluating Nest runtime classes | Keeps extraction source-first and avoids runtime execution |
-| Set mapped DTO `required` to `[]` | Matches NestJS `PartialType` behavior: copied fields become optional |
-| Keep other mapped utilities unresolved | Their selection/omission semantics need a separate fixture and contract slice |
-| Defer query DTO expansion | It changes parameter shape and deserves its own focused acceptance update |
+| Keep Phase 1C on NestJS V1 only | The user explicitly asked to close Phase 1 without widening scope |
+| Expand query DTOs from already-extracted schemas | Reuses the source-first schema pass and avoids runtime reflection |
+| Copy DTO property metadata onto query params | Keeps query output useful for the Phase 2 OpenAPI emitter |
+| Preserve the fallback single-ref query param when a DTO schema is unavailable | Keeps extraction conservative for unsupported or external query types |
+| Add `securitySchemes` serializer coverage | Phase 1B carriers are part of inspect output and must not disappear in JSON |
+| Leave non-Partial mapped utilities unresolved | Their semantics require focused fixtures and belong to improvement work, not Phase 1 closeout |
 
 ---
 
@@ -135,16 +156,19 @@ The system still cannot:
 
 | Phase | Status | Focus |
 | --- | --- | --- |
-| Phase 1C.1 | Done | Direct `PartialType(BaseDto)` schema resolution |
-| Phase 1C.2 | Recommended | Query DTO expansion into individual query params |
-| Phase 1C.3 | Optional | `PickType`/`OmitType`/`IntersectionType` support |
-| Phase 2 | Planned | OpenAPI 3.1 emission from `InspectionModel` |
+| Phase 0 | Done | Extractor pipeline and reference fixture |
+| Phase 1A | Done | Deterministic tests and inspect-output trust |
+| Phase 1B | Done | OpenAPI-shaped config overrides |
+| Phase 1C | Done | PartialType resolution, query DTO expansion, serializer hardening |
+| Phase 2 | Next | OpenAPI 3.1 emission from `InspectionModel` |
 
-Recommended next steps:
+Phase 2 TODOs:
 
-- Add a focused query DTO expansion slice for `PaginationDto`.
-- Add synthetic fixture coverage before supporting `PickType`, `OmitType`, or composed mapped types.
-- Keep response/security inference config-backed until the OpenAPI emitter exists.
+- Translate `InspectionModel` into an OpenAPI 3.1 document.
+- Consume preserved config fragments for responses, security, schemas, and operation metadata.
+- Add OpenAPI structural/semantic validation.
+- Add emitter-focused fixture snapshots.
+- Decide whether non-Partial mapped utilities are needed before or after first emitter output.
 
 ---
 
@@ -152,10 +176,11 @@ Recommended next steps:
 
 | Risk | Severity | Mitigation |
 | --- | --- | --- |
-| Property copying could diverge from complex Nest mapped-type composition | Medium | Limit supported behavior to direct `PartialType(BaseDto)` and leave other utilities unresolved |
-| File-order assumptions could reappear | Low | Two-pass class indexing resolves bases independent of processing order |
-| Snapshot churn hides unrelated extractor changes | Low | Acceptance tests assert the specific `Update*Dto` property and diagnostic changes |
-| Query DTO expansion may change downstream expectations | Medium | Deferred to a separate slice with explicit acceptance tests |
+| Query DTO expansion assumes schema extraction found the DTO | Low | Falls back to the old single-ref query param if schema is unavailable |
+| Validator constraint metadata may need OpenAPI-specific normalization | Medium | Preserve raw metadata now; perform schema normalization in Phase 2 emitter |
+| Pnpm script banners are not JSON-safe when piping directly | Low | CLI bin and `pnpm --silent inspect` produce JSON-safe integration output |
+| Complex mapped-type composition remains unresolved | Medium | Explicitly deferred with diagnostics and schema override support |
+| Response/security diagnostics remain high | Medium | Intentional source-first boundary; Phase 1B overrides already resolve known cases |
 
 ---
 
@@ -165,16 +190,19 @@ Commands run:
 
 ```bash
 pnpm.cmd --filter @specord/core test
-pnpm.cmd test
 pnpm.cmd build
+pnpm.cmd test
 pnpm.cmd lint
+pnpm.cmd --silent inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src | node scripts/summarize-inspection.cjs
 node packages/cli/bin/specord.js inspect --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src | node scripts/summarize-inspection.cjs
+pnpm.cmd inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
 ```
 
 Results:
 
-- Core tests: 6 files, 35 tests passing.
+- Core tests: 6 files, 36 tests passing.
 - Workspace tests: 7 Turborepo tasks passing.
 - Workspace build: 5 package builds passing.
-- Workspace lint: no configured lint tasks were executed by Turborepo.
-- Inspect summary: 4 controllers, 15 operations, 8 schemas, 26 diagnostics.
+- Workspace lint: no configured lint tasks executed.
+- Silent pnpm inspect and direct CLI inspect both summarized successfully.
+- Documented pnpm inspect command exited successfully.
