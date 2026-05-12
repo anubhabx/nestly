@@ -7,13 +7,25 @@ It uses the same extractor as `specord inspect`, then translates the `Inspection
 ## Command
 
 ```bash
-specord generate --project <tsconfig.json> --root <src-dir> [--output openapi.json] [--pretty]
+specord generate [project-dir] [--output openapi.json] [--pretty]
 ```
 
 Repo-local form:
 
 ```bash
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
+```
+
+Inside a Nest project that has `tsconfig.json` and `src/`:
+
+```bash
+specord generate --pretty
+```
+
+Use explicit flags only for custom layouts:
+
+```bash
+specord generate --project apps/api/tsconfig.build.json --root apps/api/source
 ```
 
 ## Output
@@ -21,13 +33,13 @@ pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root ex
 When `--output` is omitted, JSON is written to stdout:
 
 ```bash
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --pretty
+pnpm.cmd generate -- examples/nestjs-realworld --pretty
 ```
 
 When `--output` is present, Specord creates the parent directory if needed and writes the validated document:
 
 ```bash
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
 ```
 
 ## What Gets Emitted

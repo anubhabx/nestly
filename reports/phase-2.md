@@ -1,23 +1,23 @@
 # Phase 2 Session Report - Real-World NestJS OpenAPI V1
 
 **Phase:** 2 - Real-world NestJS OpenAPI generation
-**Date:** 2026-05-12
-**Status:** Complete and locally verified
+**Date:** 2026-05-13
+**Status:** Complete and locally verified, including CLI UX follow-up
 
 ---
 
 ## Status Summary
 
-Phase 2 makes Specord usable as a NestJS-only OpenAPI 3.1 generator. The system now keeps `specord inspect` as the internal debugging surface and adds a real `specord generate` path that emits validated OpenAPI 3.1 JSON.
+Phase 2 makes Specord usable as a NestJS-only OpenAPI 3.1 generator. The system now keeps `specord inspect` as the internal debugging surface and adds a real `specord generate` path that emits validated OpenAPI 3.1 JSON. The 2026-05-13 follow-up simplified CLI usage so common NestJS layouts infer `tsconfig.json` and `src/` from the current directory or a positional project directory.
 
 Health is green:
 
-- `@specord/core`: 7 files, 42 tests passing.
+- `@specord/core`: 7 files, 43 tests passing.
 - `@specord/openapi`: 1 file, 1 test passing.
-- `@specord/cli`: 2 files, 4 tests passing.
+- `@specord/cli`: 2 files, 7 tests passing.
 - Workspace `pnpm.cmd test`: 8 Turborepo tasks successful.
 - Workspace `pnpm.cmd build`: 5 package builds successful.
-- Canonical inspect and generate commands pass for both NestJS fixtures.
+- Short-form inspect and generate commands pass for both NestJS fixtures.
 
 ---
 
@@ -32,7 +32,7 @@ Health is green:
 | Mapped types | `PartialType`, `PickType`, `OmitType`, `IntersectionType`, and nested/common compositions resolve deterministically |
 | OpenAPI emitter | `@specord/openapi` emits OpenAPI 3.1 paths, operations, params, request bodies, responses, schemas, and security schemes |
 | Validation | Generated documents are validated through `@seriousme/openapi-schema-validator` before output |
-| CLI | `specord generate --project --root [--output] [--pretty]` writes stdout or a validated output file |
+| CLI | `specord inspect [project-dir]` and `specord generate [project-dir] [--output] [--pretty]` infer common source paths, while `--project` and `--root` remain overrides |
 | Config | `specord.config.ts` loading works in the Node CLI runtime; source include/exclude, URI versioning, strict CI flags, and security schemes are supported |
 | Tests | Added fixture, core, emitter, and CLI coverage for the new V1 behavior |
 | Docs | README, configuration, getting started, inspect, generate, development, and Phase 2 report updated |
@@ -56,6 +56,7 @@ Health is green:
 | Source include/exclude filters work | Pass | fixture test filters out internal controller |
 | Strict CI fails unresolved cases | Pass | CLI test covers `ci.failOnUnresolved` |
 | Generate validates before writing | Pass | CLI output-file test writes validated JSON |
+| Simplified CLI defaults work | Pass | CLI tests cover positional project directories and current-directory defaults |
 
 ---
 
@@ -85,6 +86,7 @@ The system can now:
 - Expand query DTOs into query parameters.
 - Resolve common mapped type compositions.
 - Apply `specord.config.ts` as final override layer.
+- Infer `tsconfig.json` and `src/` from the current directory or a positional project directory.
 - Emit and validate OpenAPI 3.1 JSON.
 - Warn by default and fail strict CI when configured.
 
@@ -103,10 +105,10 @@ The system still cannot:
 | Metric | Value |
 | --- | --- |
 | Branch | `codex/phase-2-real-world-v1` |
-| Commits at verification | 34 |
-| Package TypeScript lines, excluding `dist` | 6,026 |
-| Repo files under packages/examples/spec/docs/reports | 151 |
-| Working tree scope | 30 tracked files modified, 39 untracked entries added |
+| Commits at verification | 38 |
+| Package TypeScript lines, excluding `dist` | 5,424 |
+| Repo files under packages/examples/spec/docs/reports | 163 |
+| Working tree scope | 14 tracked files modified, 0 untracked entries added |
 | Runtime dependency added | `@seriousme/openapi-schema-validator` in `@specord/openapi` |
 | Swagger package dependency in Specord packages | None added |
 
@@ -125,6 +127,8 @@ The system still cannot:
 | Require config for arbitrary `@ApiSecurity` schemes | Scheme type/location cannot be inferred safely from the decorator name alone |
 | Use a non-Swagger validator dependency | Keeps validation independent of NestJS Swagger |
 | Alias CLI tests to source packages | Prevents stale `dist` from masking or inventing CLI test behavior |
+| Default CLI source paths to `tsconfig.json` and `src/` | Matches the common NestJS project shape and keeps explicit `--project`/`--root` available for custom layouts |
+| Treat positional project directory as a CLI source choice | Lets monorepo users type `specord generate apps/api --pretty` without repeating source paths |
 
 ---
 
@@ -161,12 +165,14 @@ Commands run:
 pnpm.cmd --filter @specord/core test
 pnpm.cmd --filter @specord/openapi test
 pnpm.cmd --filter @specord/cli test
+pnpm.cmd --filter @specord/core exec vitest run test/config.test.ts
 pnpm.cmd test
 pnpm.cmd build
-pnpm.cmd --silent inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
-pnpm.cmd --silent generate -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src --pretty
-pnpm.cmd --silent inspect -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src
-pnpm.cmd --silent generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --pretty
+pnpm.cmd --silent inspect -- examples/nestjs-api
+pnpm.cmd --silent generate -- examples/nestjs-api --pretty
+pnpm.cmd --silent inspect -- examples/nestjs-realworld
+pnpm.cmd --silent generate -- examples/nestjs-realworld --pretty
+pnpm.cmd --silent generate -- examples/nestjs-realworld --output <temp>/specord-short-openapi.json --pretty
 ```
 
 Results:
@@ -175,3 +181,4 @@ Results:
 - Generated OpenAPI documents passed validation before output.
 - Default generation emitted unresolved-warning messages but did not fail.
 - Strict unresolved failure is covered by CLI test.
+- Short-form commands preserve the same fixture counts: `examples/nestjs-api` generated 9 paths, 15 operations, 8 schemas; `examples/nestjs-realworld` generated 5 paths, 6 operations, 6 schemas, and 1 security scheme.

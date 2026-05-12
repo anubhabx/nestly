@@ -2,15 +2,41 @@
 
 Specord V1 supports an optional `specord.config.ts` as the precision layer. CLI flags remain highest precedence.
 
-Specord loads TypeScript config files directly in the CLI runtime. The config file is optional: both `inspect` and `generate` work with only `--project` and `--root`.
+Specord loads TypeScript config files directly in the CLI runtime. The config file is optional: both `inspect` and `generate` infer `tsconfig.json` and `src/` from the current directory or a positional project directory, and still accept `--project` and `--root` for custom layouts.
 
 ## Precedence
 
 1. CLI flags
 2. `specord.config.ts`
-3. Built-in defaults
+3. Positional project directory defaults
+4. Current directory defaults
 
 Swagger decorators and plugin metadata sit below config and above TypeScript/class-validator inference.
+
+## Source Defaults
+
+For the common Nest layout, run from the project directory:
+
+```bash
+specord generate --pretty
+```
+
+From a monorepo root, pass the project directory once:
+
+```bash
+specord generate apps/api --pretty
+```
+
+Specord infers:
+
+- `project`: `<project-dir>/tsconfig.json`
+- `root`: `<project-dir>/src`
+
+Override either path when your project uses a custom layout:
+
+```bash
+specord generate apps/api --project apps/api/tsconfig.build.json --root apps/api/source
+```
 
 ## Minimum V1 Shape
 

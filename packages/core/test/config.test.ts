@@ -12,12 +12,16 @@ import { validateConfig } from "../src/config/loader.ts";
 describe("resolveConfig", () => {
   // 6.1 CLI Flags Required Without Config
   it("requires project and root when config does not provide them", () => {
-    expect(() => resolveConfig({}, undefined)).toThrow(/Missing --project/);
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "specord-empty-"));
+
+    expect(() => resolveConfig({}, undefined, { cwd })).toThrow(/Missing --project/);
   });
 
   it("requires root when only project is provided", () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "specord-empty-"));
+
     expect(() =>
-      resolveConfig({ project: "tsconfig.json" }, undefined),
+      resolveConfig({ project: "tsconfig.json" }, undefined, { cwd }),
     ).toThrow(/Missing --root/);
   });
 
@@ -54,6 +58,29 @@ describe("resolveConfig", () => {
 
     expect(resolved.project).toContain("config-tsconfig.json");
     expect(resolved.root).toContain("config-src");
+  });
+
+  it("uses a positional target directory before config source defaults", () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "specord-target-"));
+    const target = path.join(cwd, "apps", "api");
+    fs.mkdirSync(path.join(target, "src"), { recursive: true });
+    fs.writeFileSync(path.join(target, "tsconfig.json"), "{}", "utf8");
+
+    const resolved = resolveConfig(
+      {
+        target: "apps/api",
+      },
+      {
+        source: {
+          project: "config-tsconfig.json",
+          root: "config-src",
+        },
+      },
+      { cwd },
+    );
+
+    expect(resolved.project).toBe(path.join(target, "tsconfig.json"));
+    expect(resolved.root).toBe(path.join(target, "src"));
   });
 
   it("resolves project and root to absolute paths", () => {

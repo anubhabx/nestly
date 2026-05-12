@@ -46,6 +46,39 @@ describe("specord generate CLI", () => {
     });
   });
 
+  it("infers project and root from a positional project directory", async () => {
+    let stdout = "";
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => {
+      stdout += chunk.toString();
+      return true;
+    });
+
+    await main(["generate", fixtureRoot, "--pretty"]);
+
+    const document = JSON.parse(stdout);
+    expect(document.openapi).toBe("3.1.0");
+    expect(document.paths["/orders"].get.operationId).toBe("listOrders");
+    expect(stdout).toContain("\n  \"openapi\"");
+  });
+
+  it("uses the current directory as the default project directory", async () => {
+    let stdout = "";
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => {
+      stdout += chunk.toString();
+      return true;
+    });
+
+    process.chdir(fixtureRoot);
+
+    await main(["generate", "--pretty"]);
+
+    const document = JSON.parse(stdout);
+    expect(document.openapi).toBe("3.1.0");
+    expect(document.paths["/orders"].get.operationId).toBe("listOrders");
+  });
+
   it("writes OpenAPI JSON to --output", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "specord-generate-"));
     const output = path.join(dir, "openapi.json");

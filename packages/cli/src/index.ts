@@ -40,7 +40,7 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
 /**
  * Parse CLI flags from argv.
- * Supports: --project <path> --root <path>
+ * Supports: [project-dir] --project <path> --root <path>
  */
 function parseFlags(args: string[]): CLIFlags {
   const flags: CLIFlags = {};
@@ -57,8 +57,13 @@ function parseFlags(args: string[]): CLIFlags {
     } else if (arg === "--help" || arg === "-h") {
       printInspectHelp();
       process.exit(0);
-    } else {
+    } else if (arg.startsWith("-")) {
       process.stderr.write(`Unknown flag: ${arg}\n`);
+      process.exit(1);
+    } else if (!flags.target) {
+      flags.target = arg;
+    } else {
+      process.stderr.write(`Unknown argument: ${arg}\n`);
       process.exit(1);
     }
   }
@@ -85,8 +90,13 @@ function parseGenerateFlags(args: string[]): GenerateFlags {
     } else if (arg === "--help" || arg === "-h") {
       printGenerateHelp();
       process.exit(0);
-    } else {
+    } else if (arg.startsWith("-")) {
       process.stderr.write(`Unknown flag: ${arg}\n`);
+      process.exit(1);
+    } else if (!flags.target) {
+      flags.target = arg;
+    } else {
+      process.stderr.write(`Unknown argument: ${arg}\n`);
       process.exit(1);
     }
   }
@@ -99,7 +109,7 @@ function printUsage(): void {
     `specord — annotation-light OpenAPI documentation for NestJS
 
 Usage:
-  specord <command> [flags]
+  specord <command> [project-dir] [flags]
 
 Commands:
   inspect    Extract internal model from NestJS source (JSON output)
@@ -107,6 +117,10 @@ Commands:
 
 Flags:
   --help, -h    Show help
+
+Defaults:
+  project-dir defaults to the current directory.
+  Specord infers tsconfig.json and src/ unless --project/--root are provided.
 
 Run "specord <command> --help" for command-specific help.
 `,
@@ -118,6 +132,7 @@ function printGenerateHelp(): void {
     `specord generate — generate OpenAPI 3.1 from NestJS source
 
 Usage:
+  specord generate [project-dir] [--output openapi.json] [--pretty]
   specord generate --project <tsconfig.json> --root <src-dir> [--output openapi.json] [--pretty]
 
 Flags:
@@ -128,7 +143,9 @@ Flags:
   --help, -h          Show help
 
 Example:
-  specord generate --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src --output openapi.json --pretty
+  specord generate
+  specord generate apps/api --output openapi.json --pretty
+  specord generate --project apps/api/tsconfig.build.json --root apps/api/source
 `,
   );
 }
@@ -138,6 +155,7 @@ function printInspectHelp(): void {
     `specord inspect — extract internal model from NestJS source
 
 Usage:
+  specord inspect [project-dir]
   specord inspect --project <tsconfig.json> --root <src-dir>
 
 Flags:
@@ -146,7 +164,9 @@ Flags:
   --help, -h          Show help
 
 Example:
-  specord inspect --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+  specord inspect
+  specord inspect apps/api
+  specord inspect --project apps/api/tsconfig.build.json --root apps/api/source
 `,
   );
 }

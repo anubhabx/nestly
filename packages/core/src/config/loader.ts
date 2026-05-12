@@ -1,7 +1,7 @@
 // ============================================================================
 // Config — loader
 // Loads and validates specord.config.ts with precedence rules:
-//   CLI flags > config file > built-in defaults
+//   CLI flags > positional project directory > config file > current directory defaults
 // ============================================================================
 
 import { pathToFileURL } from "node:url";
@@ -93,13 +93,15 @@ export function validateConfig(config: SpecordConfigV1): void {
 export interface CLIFlags {
   project?: string;
   root?: string;
+  target?: string;
 }
 
 /**
  * Merge CLI flags, config file, and defaults following precedence rules:
  *   1. CLI flags override config file values.
- *   2. Config file values override defaults.
- *   3. Defaults apply only where neither CLI nor config provides values.
+ *   2. Positional project directory defaults override config source values.
+ *   3. Config file values override current directory defaults.
+ *   4. Current directory defaults apply only where neither CLI nor config provides values.
  */
 export interface ResolvedConfig {
   project: string;
@@ -107,32 +109,84 @@ export interface ResolvedConfig {
   config: SpecordConfigV1;
 }
 
+export interface ResolveConfigOptions {
+  cwd?: string;
+}
+
 export function resolveConfig(
   flags: CLIFlags,
   fileConfig: SpecordConfigV1 | undefined,
+  options: ResolveConfigOptions = {},
 ): ResolvedConfig {
   const config = fileConfig ?? {};
+  const cwd = options.cwd ?? process.cwd();
+  const targetDir = flags.target ? path.resolve(cwd, flags.target) : cwd;
 
-  const project = flags.project ?? config.source?.project;
-  const root = flags.root ?? config.source?.root;
+  const project =
+    resolveUserPath(flags.project, cwd) ??
+    inferProjectPath(flags.target ? targetDir : undefined) ??
+    resolveUserPath(config.source?.project, cwd) ??
+    inferProjectPath(targetDir);
+  const root =
+    resolveUserPath(flags.root, cwd) ??
+    inferRootPath(flags.target ? targetDir : undefined) ??
+    resolveUserPath(config.source?.root, cwd) ??
+    inferRootPath(targetDir);
 
   if (!project) {
     throw new Error(
       "[specord] Missing --project flag or source.project in config. " +
-      "Provide a path to tsconfig.json.",
+      sourceHint(targetDir),
     );
   }
 
   if (!root) {
     throw new Error(
       "[specord] Missing --root flag or source.root in config. " +
-      "Provide the source root directory to inspect.",
+      sourceHint(targetDir),
     );
   }
 
   return {
-    project: path.resolve(project),
-    root: path.resolve(root),
+    project,
+    root,
     config,
   };
+}
+
+function resolveUserPath(value: string | undefined, cwd: string): string | undefined {
+  return value ? path.resolve(cwd, value) : undefined;
+}
+
+function inferProjectPath(targetDir: string | undefined): string | undefined {
+  if (!targetDir) {
+    return undefined;
+  }
+
+  const candidate = path.join(targetDir, "tsconfig.json");
+  return fs.existsSync(candidate) ? candidate : undefined;
+}
+
+function inferRootPath(targetDir: string | undefined): string | undefined {
+  if (!targetDir) {
+    return undefined;
+  }
+
+  const candidate = path.join(targetDir, "src");
+  return isDirectory(candidate) ? candidate : undefined;
+}
+
+function isDirectory(value: string): boolean {
+  try {
+    return fs.statSync(value).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function sourceHint(targetDir: string): string {
+  return (
+    `Could not infer both tsconfig.json and src/ from ${targetDir}. ` +
+    "Run from a Nest project, pass a project directory, add source.project/source.root to specord.config.ts, or use --project/--root."
+  );
 }

@@ -7,19 +7,25 @@ Use `generate` for OpenAPI output.
 ## Canonical Command
 
 ```bash
-pnpm.cmd inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+pnpm.cmd inspect -- examples/nestjs-api
 ```
 
-Equivalent CLI form:
+Inside a Nest project that has `tsconfig.json` and `src/`:
 
 ```bash
-specord inspect --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+specord inspect
+```
+
+Use explicit flags only when the default project and root paths do not match your layout:
+
+```bash
+specord inspect --project apps/api/tsconfig.build.json --root apps/api/source
 ```
 
 ## Required Behavior
 
-- Load the TypeScript program from `--project`
-- Walk source under `--root`
+- Load the TypeScript program from `--project`, `source.project`, or inferred `tsconfig.json`
+- Walk source under `--root`, `source.root`, or inferred `src/`
 - Apply `source.include` and `source.exclude` filters from config
 - Extract controllers, routes, params, request bodies, responses, security state, and schemas
 - Harvest supported Swagger-compatible decorators and `_OPENAPI_METADATA_FACTORY()` metadata without importing `@nestjs/swagger`

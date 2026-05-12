@@ -20,8 +20,8 @@ This document defines local workflow for Specord V1 development.
 ## Recommended verification loop
 
 ```bash
-pnpm.cmd inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --pretty
+pnpm.cmd inspect -- examples/nestjs-api
+pnpm.cmd generate -- examples/nestjs-realworld --pretty
 ```
 
 Then verify:

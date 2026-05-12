@@ -31,7 +31,7 @@ The first delivery target is the extractor, not the renderer.
 ## Canonical command for this spike
 
 ```txt
-specord inspect --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+specord inspect examples/nestjs-api
 ```
 
 The command MUST emit a single JSON document conforming to the contract below.

@@ -24,20 +24,22 @@ pnpm install
 Inspect the primary fixture:
 
 ```bash
-pnpm.cmd inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+pnpm.cmd inspect -- examples/nestjs-api
 ```
 
 Generate OpenAPI for the Swagger-heavy fixture:
 
 ```bash
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --pretty
+pnpm.cmd generate -- examples/nestjs-realworld --pretty
 ```
 
 Write a validated file:
 
 ```bash
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
 ```
+
+Specord defaults to `tsconfig.json` and `src/` in the current directory or in the project directory argument. Use `--project` and `--root` only when the defaults do not match your app layout.
 
 ## Documentation Map
 

@@ -39,7 +39,7 @@ The V1 trust boundary remains source analysis plus explicit config, not runtime 
 ### Inspect
 
 ```bash
-specord inspect --project <tsconfig.json> --root <src-dir>
+specord inspect [project-dir]
 ```
 
 `inspect` emits the internal `InspectionModel`. It is the debugging command and must remain deterministic.
@@ -47,10 +47,10 @@ specord inspect --project <tsconfig.json> --root <src-dir>
 ### Generate
 
 ```bash
-specord generate --project <tsconfig.json> --root <src-dir> [--output openapi.json] [--pretty]
+specord generate [project-dir] [--output openapi.json] [--pretty]
 ```
 
-`generate` emits OpenAPI 3.1 JSON. When `--output` is omitted, JSON is written to stdout. When `--output` is present, Specord validates the document and writes the file only after validation succeeds.
+`generate` emits OpenAPI 3.1 JSON. When `--output` is omitted, JSON is written to stdout. When `--output` is present, Specord validates the document and writes the file only after validation succeeds. `inspect` and `generate` infer `tsconfig.json` and `src/` from the current directory or from an optional project directory argument; `--project` and `--root` remain explicit overrides for custom layouts.
 
 Generation MUST warn and emit by default for unresolved extraction warnings. CI strictness is controlled by config:
 

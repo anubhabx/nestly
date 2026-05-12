@@ -15,7 +15,7 @@ V1 is NestJS REST only. It can harvest common NestJS Swagger source patterns, bu
 Use `inspect` when you want to see the internal model and diagnostics:
 
 ```bash
-pnpm.cmd inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+pnpm.cmd inspect -- examples/nestjs-api
 ```
 
 Expected result:
@@ -29,13 +29,13 @@ Expected result:
 Use `generate` when you want OpenAPI 3.1 JSON:
 
 ```bash
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --pretty
+pnpm.cmd generate -- examples/nestjs-realworld --pretty
 ```
 
 Write to a file:
 
 ```bash
-pnpm.cmd generate -- --project examples/nestjs-realworld/tsconfig.json --root examples/nestjs-realworld/src --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
 ```
 
 Generation validates the OpenAPI document before writing. Unresolved extraction warnings are allowed by default and printed to stderr.
@@ -71,6 +71,18 @@ Then run:
 
 ```bash
 pnpm.cmd generate
+```
+
+When you run from a Nest project directory, Specord defaults to `tsconfig.json` and `src/`. From a monorepo root, pass the project directory once:
+
+```bash
+specord generate apps/api --pretty
+```
+
+Use explicit flags only for custom layouts:
+
+```bash
+specord generate --project apps/api/tsconfig.build.json --root apps/api/source
 ```
 
 ## Validate Against The Contract
