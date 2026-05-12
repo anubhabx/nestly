@@ -3,7 +3,7 @@
 // ============================================================================
 
 import { runInspect } from "./commands/inspect.js";
-import { runGenerate } from "./commands/generate.js";
+import { type GenerateFlags, runGenerate } from "./commands/generate.js";
 import type { CLIFlags } from "@specord/core";
 
 /**
@@ -25,7 +25,8 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
     }
 
     case "generate": {
-      await runGenerate();
+      const flags = parseGenerateFlags(argv.slice(1));
+      await runGenerate(flags);
       break;
     }
 
@@ -65,6 +66,34 @@ function parseFlags(args: string[]): CLIFlags {
   return flags;
 }
 
+function parseGenerateFlags(args: string[]): GenerateFlags {
+  const flags: GenerateFlags = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === "--") {
+      continue;
+    } else if (arg === "--project" && i + 1 < args.length) {
+      flags.project = args[++i];
+    } else if (arg === "--root" && i + 1 < args.length) {
+      flags.root = args[++i];
+    } else if (arg === "--output" && i + 1 < args.length) {
+      flags.output = args[++i];
+    } else if (arg === "--pretty") {
+      flags.pretty = true;
+    } else if (arg === "--help" || arg === "-h") {
+      printGenerateHelp();
+      process.exit(0);
+    } else {
+      process.stderr.write(`Unknown flag: ${arg}\n`);
+      process.exit(1);
+    }
+  }
+
+  return flags;
+}
+
 function printUsage(): void {
   process.stdout.write(
     `specord — annotation-light OpenAPI documentation for NestJS
@@ -74,12 +103,32 @@ Usage:
 
 Commands:
   inspect    Extract internal model from NestJS source (JSON output)
-  generate   Generate OpenAPI 3.1 document (not yet implemented)
+  generate   Generate OpenAPI 3.1 document
 
 Flags:
   --help, -h    Show help
 
 Run "specord <command> --help" for command-specific help.
+`,
+  );
+}
+
+function printGenerateHelp(): void {
+  process.stdout.write(
+    `specord generate — generate OpenAPI 3.1 from NestJS source
+
+Usage:
+  specord generate --project <tsconfig.json> --root <src-dir> [--output openapi.json] [--pretty]
+
+Flags:
+  --project <path>    Path to tsconfig.json
+  --root <path>       Source root directory to inspect
+  --output <path>     Write OpenAPI JSON to a file instead of stdout
+  --pretty            Pretty-print JSON output
+  --help, -h          Show help
+
+Example:
+  specord generate --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src --output openapi.json --pretty
 `,
   );
 }
