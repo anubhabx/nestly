@@ -60,8 +60,14 @@ export type PropertyModel = {
   type: SchemaRef;
   description?: string;
   default?: unknown;
+  example?: unknown;
+  examples?: unknown[];
   enum?: unknown[];
   format?: string;
+  deprecated?: boolean;
+  readOnly?: boolean;
+  writeOnly?: boolean;
+  nullable?: boolean;
   constraints?: Record<string, unknown>;
   inference: InferenceState;
 };
@@ -113,6 +119,7 @@ export type ResponseModel = {
   status: number;
   description?: string;
   schema?: SchemaRef;
+  contentType?: string;
   inference: InferenceState;
   openapi?: OpenApiResponseObject;
 };
@@ -123,6 +130,7 @@ export type ResponseModel = {
  */
 export type OperationModel = {
   id: string;
+  operationId?: string;
   controller: string;
   handler: string;
   method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head";
