@@ -1,5 +1,7 @@
 # Specord V1 Extractor — Implementation Owner Responses
 
+> Historical note: this document records Phase 0 decisions. The current V1 generate contract is now defined in `spec/Phase-2-real-world-nestjs-openapi-spec.md`; any notes below describing `specord generate` as a stub are superseded by Phase 2.
+
 This document is a follow‑up to the “Specord V1 Extractor — Implementation Plan” and serves as the single source of truth for decisions on all questions, inconsistencies, and concerns raised by the agent.
 
 Where relevant, this document **confirms** the agent’s “Recommended resolution”, or **overrides** it with a stronger decision. It is intended to be read alongside the original implementation plan and PRD/spec documents.

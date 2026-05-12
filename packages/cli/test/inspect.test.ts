@@ -40,4 +40,22 @@ describe("specord inspect CLI", () => {
     expect(model.source.version).toBe("v1");
     expect(model.operations).toHaveLength(15);
   });
+
+  it("infers project and root from a positional project directory", async () => {
+    let stdout = "";
+    const stdoutSpy = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation((chunk: string | Uint8Array) => {
+        stdout += chunk.toString();
+        return true;
+      });
+
+    await main(["inspect", fixtureRoot]);
+
+    expect(stdoutSpy).toHaveBeenCalled();
+    const model = JSON.parse(stdout);
+    expect(model.source.project).toBe(path.join(fixtureRoot, "tsconfig.json"));
+    expect(model.source.root).toBe(path.join(fixtureRoot, "src"));
+    expect(model.operations).toHaveLength(15);
+  });
 });

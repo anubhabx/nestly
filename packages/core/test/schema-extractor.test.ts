@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 describe("extractSchemas mapped type fallbacks", () => {
-  it("does not mark PartialType inferred when its base mapped type is unresolved", () => {
+  it("does not mark mapped types inferred when their base cannot be resolved", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "specord-schema-"));
     tempRoots.push(root);
 
@@ -31,7 +31,7 @@ describe("extractSchemas mapped type fallbacks", () => {
         "export class CreateThingDto {",
         "  name: string;",
         "}",
-        "export class PickedThingDto extends PickType(CreateThingDto, ['name'] as const) {}",
+        "export class PickedThingDto extends PickType(MissingThingDto, ['name'] as const) {}",
         "export class UpdatePickedThingDto extends PartialType(PickedThingDto) {}",
       ].join("\n"),
     );

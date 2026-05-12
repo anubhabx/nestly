@@ -9,7 +9,9 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
-    "inspect": "node packages/cli/bin/specord.js inspect"
+    "inspect": "node packages/cli/bin/specord.js inspect",
+    "generate": "node packages/cli/bin/specord.js generate",
+    "serve": "node packages/cli/bin/specord.js serve"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",

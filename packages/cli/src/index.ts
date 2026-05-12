@@ -3,7 +3,8 @@
 // ============================================================================
 
 import { runInspect } from "./commands/inspect.js";
-import { runGenerate } from "./commands/generate.js";
+import { type GenerateFlags, runGenerate } from "./commands/generate.js";
+import { type ServeFlags, runServe } from "./commands/serve.js";
 import type { CLIFlags } from "@specord/core";
 
 /**
@@ -25,7 +26,14 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
     }
 
     case "generate": {
-      await runGenerate();
+      const flags = parseGenerateFlags(argv.slice(1));
+      await runGenerate(flags);
+      break;
+    }
+
+    case "serve": {
+      const flags = parseServeFlags(argv.slice(1));
+      await runServe(flags);
       break;
     }
 
@@ -39,7 +47,7 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
 /**
  * Parse CLI flags from argv.
- * Supports: --project <path> --root <path>
+ * Supports: [project-dir] --project <path> --root <path>
  */
 function parseFlags(args: string[]): CLIFlags {
   const flags: CLIFlags = {};
@@ -56,8 +64,13 @@ function parseFlags(args: string[]): CLIFlags {
     } else if (arg === "--help" || arg === "-h") {
       printInspectHelp();
       process.exit(0);
-    } else {
+    } else if (arg.startsWith("-")) {
       process.stderr.write(`Unknown flag: ${arg}\n`);
+      process.exit(1);
+    } else if (!flags.target) {
+      flags.target = arg;
+    } else {
+      process.stderr.write(`Unknown argument: ${arg}\n`);
       process.exit(1);
     }
   }
@@ -65,21 +78,166 @@ function parseFlags(args: string[]): CLIFlags {
   return flags;
 }
 
+function parseGenerateFlags(args: string[]): GenerateFlags {
+  const flags: GenerateFlags = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === "--") {
+      continue;
+    } else if (arg === "--project" && i + 1 < args.length) {
+      flags.project = args[++i];
+    } else if (arg === "--root" && i + 1 < args.length) {
+      flags.root = args[++i];
+    } else if (arg === "--output" && i + 1 < args.length) {
+      flags.output = args[++i];
+    } else if (arg === "--pretty") {
+      flags.pretty = true;
+    } else if (arg === "--help" || arg === "-h") {
+      printGenerateHelp();
+      process.exit(0);
+    } else if (arg.startsWith("-")) {
+      process.stderr.write(`Unknown flag: ${arg}\n`);
+      process.exit(1);
+    } else if (!flags.target) {
+      flags.target = arg;
+    } else {
+      process.stderr.write(`Unknown argument: ${arg}\n`);
+      process.exit(1);
+    }
+  }
+
+  return flags;
+}
+
+function parseServeFlags(args: string[]): ServeFlags {
+  const flags: ServeFlags = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === "--") {
+      continue;
+    } else if (arg === "--project" && i + 1 < args.length) {
+      flags.project = args[++i];
+    } else if (arg === "--root" && i + 1 < args.length) {
+      flags.root = args[++i];
+    } else if (arg === "--host" && i + 1 < args.length) {
+      flags.host = args[++i];
+    } else if (arg === "--port" && i + 1 < args.length) {
+      flags.port = parsePort(args[++i]);
+    } else if (arg === "--docs-path" && i + 1 < args.length) {
+      flags.docsPath = args[++i];
+    } else if (arg === "--json-path" && i + 1 < args.length) {
+      flags.jsonPath = args[++i];
+    } else if (arg === "--pretty") {
+      flags.pretty = true;
+    } else if (arg === "--app-command" && i + 1 < args.length) {
+      flags.appCommand = args[++i];
+    } else if (arg === "--app-cwd" && i + 1 < args.length) {
+      flags.appCwd = args[++i];
+    } else if (arg === "--app-url" && i + 1 < args.length) {
+      flags.appUrl = args[++i];
+    } else if (arg === "--help" || arg === "-h") {
+      printServeHelp();
+      process.exit(0);
+    } else if (arg.startsWith("-")) {
+      process.stderr.write(`Unknown flag: ${arg}\n`);
+      process.exit(1);
+    } else if (!flags.target) {
+      flags.target = arg;
+    } else {
+      process.stderr.write(`Unknown argument: ${arg}\n`);
+      process.exit(1);
+    }
+  }
+
+  return flags;
+}
+
+function parsePort(value: string): number {
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    process.stderr.write(`Invalid port: ${value}\n`);
+    process.exit(1);
+  }
+  return port;
+}
+
 function printUsage(): void {
   process.stdout.write(
     `specord — annotation-light OpenAPI documentation for NestJS
 
 Usage:
-  specord <command> [flags]
+  specord <command> [project-dir] [flags]
 
 Commands:
   inspect    Extract internal model from NestJS source (JSON output)
-  generate   Generate OpenAPI 3.1 document (not yet implemented)
+  generate   Generate OpenAPI 3.1 document
+  serve      Serve generated API docs locally
 
 Flags:
   --help, -h    Show help
 
+Defaults:
+  project-dir defaults to the current directory.
+  Specord infers tsconfig.json and src/ unless --project/--root are provided.
+
 Run "specord <command> --help" for command-specific help.
+`,
+  );
+}
+
+function printServeHelp(): void {
+  process.stdout.write(
+    `specord serve — serve generated API docs locally
+
+Usage:
+  specord serve [project-dir] [--host 127.0.0.1] [--port 4777] [--pretty]
+  specord serve [project-dir] --app-command "pnpm start:dev" [--app-cwd apps/api] [--app-url http://localhost:3000]
+  specord serve --project <tsconfig.json> --root <src-dir>
+
+Flags:
+  --project <path>       Path to tsconfig.json
+  --root <path>          Source root directory to inspect
+  --host <host>          Host for the docs server, default 127.0.0.1
+  --port <port>          Port for the docs server, default 4777
+  --docs-path <path>     Docs UI route, default /api
+  --json-path <path>     OpenAPI JSON route, default <docs-path>/openapi.json
+  --pretty               Pretty-print /openapi.json
+  --app-command <cmd>    Optional Nest/dev command to start beside docs
+  --app-cwd <path>       Working directory for --app-command, default project-dir/current directory
+  --app-url <url>        Optional app URL shown in the docs shell
+  --help, -h             Show help
+
+Examples:
+  specord serve
+  specord serve apps/api --pretty
+  specord serve apps/api --app-command "pnpm start:dev" --app-url http://localhost:3000
+`,
+  );
+}
+
+function printGenerateHelp(): void {
+  process.stdout.write(
+    `specord generate — generate OpenAPI 3.1 from NestJS source
+
+Usage:
+  specord generate [project-dir] [--output openapi.json] [--pretty]
+  specord generate --project <tsconfig.json> --root <src-dir> [--output openapi.json] [--pretty]
+
+Flags:
+  --project <path>    Path to tsconfig.json
+  --root <path>       Source root directory to inspect
+  --output <path>     Write OpenAPI JSON to a file instead of stdout
+  --pretty            Pretty-print JSON output
+  --help, -h          Show help
+
+Example:
+  specord generate
+  specord generate apps/api --output openapi.json --pretty
+  specord generate --project apps/api/tsconfig.build.json --root apps/api/source
 `,
   );
 }
@@ -89,6 +247,7 @@ function printInspectHelp(): void {
     `specord inspect — extract internal model from NestJS source
 
 Usage:
+  specord inspect [project-dir]
   specord inspect --project <tsconfig.json> --root <src-dir>
 
 Flags:
@@ -97,7 +256,9 @@ Flags:
   --help, -h          Show help
 
 Example:
-  specord inspect --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+  specord inspect
+  specord inspect apps/api
+  specord inspect --project apps/api/tsconfig.build.json --root apps/api/source
 `,
   );
 }

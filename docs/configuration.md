@@ -1,14 +1,44 @@
 # Configuration
 
-Specord V1 supports an optional `specord.config.ts` as a precision layer. CLI flags remain the highest-precedence input.
+Specord V1 supports an optional `specord.config.ts` as the precision layer. CLI flags remain highest precedence.
+
+Specord loads TypeScript config files directly in the CLI runtime. The config file is optional: both `inspect` and `generate` infer `tsconfig.json` and `src/` from the current directory or a positional project directory, and still accept `--project` and `--root` for custom layouts.
 
 ## Precedence
 
 1. CLI flags
 2. `specord.config.ts`
-3. Built-in defaults
+3. Positional project directory defaults
+4. Current directory defaults
 
-## Minimum v1 shape
+Swagger decorators and plugin metadata sit below config and above TypeScript/class-validator inference.
+
+## Source Defaults
+
+For the common Nest layout, run from the project directory:
+
+```bash
+specord generate --pretty
+```
+
+From a monorepo root, pass the project directory once:
+
+```bash
+specord generate apps/api --pretty
+```
+
+Specord infers:
+
+- `project`: `<project-dir>/tsconfig.json`
+- `root`: `<project-dir>/src`
+
+Override either path when your project uses a custom layout:
+
+```bash
+specord generate apps/api --project apps/api/tsconfig.build.json --root apps/api/source
+```
+
+## Minimum V1 Shape
 
 ```ts
 export type SpecordConfigV1 = {
@@ -49,70 +79,100 @@ export type SpecordConfigV1 = {
 };
 ```
 
-## Notes
-
-- Use operation-level overrides for known unresolved response/security cases.
-- Keep config explicit and minimal for V1.
-- Any new config shape should be reflected in the extractor spec before implementation.
-
-## Phase 1B override fragments
-
-Config overrides use OpenAPI 3.1-shaped fragments. `specord inspect` preserves these fragments on the inspection model; `specord generate` remains a later phase.
+## Example
 
 ```ts
-export default defineConfig({
+export default {
+  document: {
+    title: "Orders API",
+    version: "1.0.0",
+    servers: [{ url: "https://api.example.com" }],
+    tags: [{ name: "Orders", description: "Order operations" }],
+  },
+  source: {
+    project: "examples/nestjs-realworld/tsconfig.json",
+    root: "examples/nestjs-realworld/src",
+    include: ["orders/**/*.ts"],
+    exclude: ["**/internal/**"],
+  },
+  routing: {
+    globalPrefix: "api",
+    versioning: { strategy: "uri", value: "1" },
+  },
   securitySchemes: {
     bearerAuth: {
       type: "http",
       scheme: "bearer",
       bearerFormat: "JWT",
     },
+    apiKeyAuth: {
+      type: "apiKey",
+      in: "header",
+      name: "X-API-Key",
+    },
   },
   operations: {
-    "AuthController.login": {
-      summary: "Log in",
-      description: "Returns access and refresh tokens.",
-      tags: ["Auth"],
-      security: [{ bearerAuth: [] }],
+    "OrdersController.download": {
       responses: {
         "200": {
-          description: "Authenticated.",
+          description: "CSV export.",
           content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  accessToken: { type: "string" },
-                  refreshToken: { type: "string" },
-                },
-                required: ["accessToken", "refreshToken"],
-              },
+            "text/csv": {
+              schema: { type: "string" },
             },
           },
         },
       },
     },
-    "HealthController.check": {
-      exclude: true,
-    },
   },
-  schemas: {
-    UpdateUserDto: {
-      type: "object",
-      properties: {
-        firstName: { type: "string" },
-      },
-    },
+  ci: {
+    failOnUnresolved: true,
   },
-});
+};
 ```
 
-Supported fields:
+## Source Filters
 
-- `securitySchemes`: OpenAPI Security Scheme Object fragments.
-- `operations[id].responses`: OpenAPI Responses Object fragments keyed by status code or `default`.
-- `operations[id].security`: OpenAPI Security Requirement Object array.
-- `operations[id].summary`, `description`, `tags`, and `exclude`.
-- `schemas[name]`: OpenAPI Schema Object or Reference Object fragments.
+`source.include` and `source.exclude` are glob filters applied to files under `source.root`.
 
-When an override resolves extractor uncertainty, the affected inference state is marked as `overridden` and the matching unresolved diagnostic is removed. Unknown operation ids, unknown schema names, and invalid response status keys are treated as config errors.
+Examples:
+
+- `include: ["orders/**/*.ts"]`
+- `exclude: ["**/*.spec.ts", "**/internal/**"]`
+
+Include filters run first. Exclude filters then remove matching files.
+
+## Routing
+
+`routing.globalPrefix` is prepended to extracted paths.
+
+URI versioning is supported:
+
+```ts
+routing: {
+  versioning: { strategy: "uri", value: "1" },
+}
+```
+
+This emits paths under `/v1/...`. Header and media-type versioning currently emit `EXTRACTOR_UNSUPPORTED_VERSIONING` because V1 cannot safely express them as static paths.
+
+## Overrides
+
+Use operation overrides for cases static extraction cannot safely infer, especially:
+
+- dynamic response shapes
+- file downloads
+- manual `@Res()` responses
+- guard/security semantics not documented by Swagger decorators
+
+When an override resolves extractor uncertainty, the affected inference state is marked `overridden` and the matching diagnostic is removed.
+
+Unknown operation ids, unknown schema names, invalid response status keys, and malformed security overrides are config errors.
+
+## Strict CI
+
+Default generation warns and emits. CI flags can make unresolved cases fatal:
+
+- `ci.failOnUnresolved`: fail on unresolved response/security diagnostics
+- `ci.failOnWarning`: fail on any warning diagnostic
+- `ci.failOnInvalid`: reserved for invalid document policy; generated OpenAPI validation failures are already fatal

@@ -17,7 +17,8 @@ export type DiagnosticCode =
   | "EXTRACTOR_UNSUPPORTED_DECORATOR"
   | "EXTRACTOR_TYPE_FALLBACK_ANY"
   | "EXTRACTOR_ROUTE_CONFLICT"
-  | "EXTRACTOR_INVALID_PATH_TEMPLATE";
+  | "EXTRACTOR_INVALID_PATH_TEMPLATE"
+  | "EXTRACTOR_UNSUPPORTED_VERSIONING";
 
 /**
  * Diagnostic severity levels.
@@ -36,4 +37,5 @@ export type Diagnostic = {
   source?: SourceLocation;
   subject?: string;
   suggestedOverridePath?: string;
+  origin?: "typescript" | "nestjs" | "swagger" | "config" | "openapi";
 };

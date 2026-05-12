@@ -3,9 +3,18 @@
 // ============================================================================
 
 import ts from "typescript";
-import type { SourceLocation } from "@specord/types";
+import type {
+  OpenApiSecurityRequirementObject,
+  OpenApiSecuritySchemeObject,
+  SourceLocation,
+} from "@specord/types";
 import type { DiscoveredController } from "./controller-discovery.js";
 import { findDecorator, extractDecoratorStringArg, hasDecorator } from "./controller-discovery.js";
+import {
+  extractSwaggerOperation,
+  extractSwaggerSecurityMetadata,
+  extractSwaggerTags,
+} from "./swagger-compat.js";
 
 /** HTTP methods supported for V1 extraction. */
 const HTTP_METHOD_DECORATORS = [
@@ -33,6 +42,12 @@ export interface DiscoveredRoute {
   hasClassLevelGuard: boolean;
   /** Names of unsupported decorators on this handler. */
   unsupportedDecorators: string[];
+  operationId?: string;
+  summary?: string;
+  description?: string;
+  tags: string[];
+  security: OpenApiSecurityRequirementObject[];
+  securitySchemes: Record<string, OpenApiSecuritySchemeObject>;
 }
 
 /** Known NestJS/common decorators that we handle or explicitly ignore. */
@@ -41,6 +56,11 @@ const KNOWN_DECORATORS = new Set([
   "Controller", "UseGuards", "HttpCode",
   "Param", "Query", "Body", "Headers", "Request", "Req", "Res", "Response",
   "Injectable", "Inject",
+  "ApiTags", "ApiOperation", "ApiResponse", "ApiOkResponse",
+  "ApiCreatedResponse", "ApiAcceptedResponse", "ApiNoContentResponse",
+  "ApiBadRequestResponse", "ApiUnauthorizedResponse", "ApiForbiddenResponse",
+  "ApiNotFoundResponse", "ApiConflictResponse", "ApiUnprocessableEntityResponse",
+  "ApiInternalServerErrorResponse", "ApiBearerAuth", "ApiSecurity",
 ]);
 
 /**
@@ -48,7 +68,8 @@ const KNOWN_DECORATORS = new Set([
  */
 export function extractRoutes(
   controller: DiscoveredController,
-  globalPrefix: string = "",
+  globalPrefix: string,
+  versionPrefix: string,
   root: string,
 ): DiscoveredRoute[] {
   const routes: DiscoveredRoute[] = [];
@@ -64,7 +85,12 @@ export function extractRoutes(
       if (!httpDecorator) continue;
 
       const methodPath = extractDecoratorStringArg(httpDecorator) ?? "";
-      const fullPath = normalizePath(globalPrefix, controller.prefix, methodPath);
+      const fullPath = normalizePath(
+        globalPrefix,
+        versionPrefix,
+        controller.prefix,
+        methodPath,
+      );
 
       const filePath = controller.sourceFile.fileName.replace(/\\/g, "/");
       const relativePath = filePath.startsWith(normalizedRoot + "/")
@@ -77,6 +103,9 @@ export function extractRoutes(
 
       // Detect unsupported decorators
       const unsupported = detectUnsupportedDecorators(node);
+      const operation = extractSwaggerOperation(node);
+      const methodTags = extractSwaggerTags(node);
+      const methodSecurity = extractSwaggerSecurityMetadata(node);
 
       routes.push({
         id: `${controller.name}.${methodName}`,
@@ -90,6 +119,15 @@ export function extractRoutes(
         hasMethodLevelGuard: hasDecorator(node, "UseGuards"),
         hasClassLevelGuard: controller.hasClassLevelGuard,
         unsupportedDecorators: unsupported,
+        operationId: operation.operationId,
+        summary: operation.summary,
+        description: operation.description,
+        tags: [...controller.tags, ...methodTags],
+        security: [...controller.security, ...methodSecurity.requirements],
+        securitySchemes: {
+          ...controller.securitySchemes,
+          ...methodSecurity.schemes,
+        },
       });
 
       break; // One HTTP method per handler

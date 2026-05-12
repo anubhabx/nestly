@@ -9,6 +9,13 @@ import type {
   SchemaRef,
   Diagnostic,
 } from "@specord/types";
+import {
+  arrayLiteralStrings,
+  extractOpenApiMetadataFactory,
+  extractSwaggerProperty,
+  schemaRefFromExpression,
+  type SwaggerPropertyMetadata,
+} from "./swagger-compat.js";
 
 /** class-validator decorators we map to schema constraints (V1 allowlist). */
 const VALIDATOR_MAP: Record<string, (args: ts.NodeArray<ts.Expression>) => Record<string, unknown>> = {
@@ -57,6 +64,7 @@ export function extractSchemas(
   const normalizedRoot = root.replace(/\\/g, "/");
   const exportedClasses: ExportedClassInfo[] = [];
   const classIndex = new Map<string, ExportedClassInfo>();
+  const enumIndex = new Map<string, unknown[]>();
 
   for (const sourceFile of dtoFiles) {
     ts.forEachChild(sourceFile, (node) => {
@@ -96,8 +104,7 @@ export function extractSchemas(
       );
       if (!isExported) return;
 
-      // Enums are referenced as types but don't become standalone schemas
-      // They are handled inline via enum members on properties
+      enumIndex.set(node.name.text, enumValuesFromDeclaration(node));
     });
   }
 
@@ -109,6 +116,7 @@ export function extractSchemas(
       checker,
       normalizedRoot,
       classIndex,
+      enumIndex,
       schemas,
       new Set(),
     );
@@ -125,6 +133,7 @@ function extractClassSchema(
   checker: ts.TypeChecker,
   normalizedRoot: string,
   classIndex: Map<string, ExportedClassInfo>,
+  enumIndex: Map<string, unknown[]>,
   schemas: Record<string, SchemaModel>,
   resolving: Set<string>,
 ): { schema: SchemaModel; diagnostics: Diagnostic[] } {
@@ -161,6 +170,7 @@ function extractClassSchema(
     checker,
     normalizedRoot,
     classIndex,
+    enumIndex,
     schemas,
     resolving,
   );
@@ -170,25 +180,76 @@ function extractClassSchema(
     return mappedTypeResult;
   }
 
+  const baseResult = extractBaseClassSchema(
+    classInfo,
+    checker,
+    normalizedRoot,
+    classIndex,
+    enumIndex,
+    schemas,
+    resolving,
+  );
   const { properties, required, propDiagnostics } = extractProperties(
     classInfo.node,
     checker,
     classInfo.sourceFile,
     normalizedRoot,
+    enumIndex,
   );
+  const mergedProperties = baseResult
+    ? { ...cloneProperties(baseResult.schema.properties), ...properties }
+    : properties;
+  const mergedRequired = baseResult
+    ? [...new Set([...baseResult.schema.required, ...required])]
+    : required;
 
   resolving.delete(classInfo.className);
 
   return {
     schema: {
       name: classInfo.className,
-      properties,
-      required,
+      properties: mergedProperties,
+      required: mergedRequired,
       source: { file: classInfo.file, line: classInfo.line },
       inference: { status: "inferred" },
     },
-    diagnostics: propDiagnostics,
+    diagnostics: [...(baseResult?.diagnostics ?? []), ...propDiagnostics],
   };
+}
+
+function extractBaseClassSchema(
+  classInfo: ExportedClassInfo,
+  checker: ts.TypeChecker,
+  normalizedRoot: string,
+  classIndex: Map<string, ExportedClassInfo>,
+  enumIndex: Map<string, unknown[]>,
+  schemas: Record<string, SchemaModel>,
+  resolving: Set<string>,
+): { schema: SchemaModel; diagnostics: Diagnostic[] } | undefined {
+  for (const clause of classInfo.node.heritageClauses ?? []) {
+    if (clause.token !== ts.SyntaxKind.ExtendsKeyword) continue;
+
+    for (const type of clause.types) {
+      if (ts.isIdentifier(type.expression)) {
+        const baseClass = classIndex.get(type.expression.text);
+        if (!baseClass) return undefined;
+
+        const result = extractClassSchema(
+          baseClass,
+          checker,
+          normalizedRoot,
+          classIndex,
+          enumIndex,
+          schemas,
+          resolving,
+        );
+        schemas[baseClass.className] = result.schema;
+        return result;
+      }
+    }
+  }
+
+  return undefined;
 }
 
 /**
@@ -199,6 +260,7 @@ function checkMappedType(
   checker: ts.TypeChecker,
   normalizedRoot: string,
   classIndex: Map<string, ExportedClassInfo>,
+  enumIndex: Map<string, unknown[]>,
   schemas: Record<string, SchemaModel>,
   resolving: Set<string>,
 ): { schema: SchemaModel; diagnostics: Diagnostic[] } | null {
@@ -212,89 +274,240 @@ function checkMappedType(
     for (const type of clause.types) {
       const expr = type.expression;
 
-      // Check for PartialType(BaseDto), PickType(BaseDto, ...), etc.
-      if (ts.isCallExpression(expr) && ts.isIdentifier(expr.expression)) {
-        const utilName = expr.expression.text;
-        if (["PartialType", "PickType", "OmitType", "IntersectionType"].includes(utilName)) {
-          // Try to extract the base class name
-          let baseClassName: string | undefined;
-          if (expr.arguments.length > 0 && ts.isIdentifier(expr.arguments[0])) {
-            baseClassName = expr.arguments[0].text;
-          }
+      if (ts.isCallExpression(expr)) {
+        const mapped = resolveMappedTypeExpression(
+          expr,
+          classInfo,
+          checker,
+          normalizedRoot,
+          classIndex,
+          enumIndex,
+          schemas,
+          resolving,
+        );
 
-          if (utilName === "PartialType" && baseClassName) {
-            const baseClass = classIndex.get(baseClassName);
-
-            if (baseClass) {
-              const baseResult = extractClassSchema(
-                baseClass,
-                checker,
-                normalizedRoot,
-                classIndex,
-                schemas,
-                resolving,
-              );
-              schemas[baseClassName] = baseResult.schema;
-
-              if (baseResult.schema.inference.status !== "inferred") {
-                return {
-                  schema: unsupportedMappedTypeSchema(
-                    className,
-                    utilName,
-                    baseClassName,
-                    file,
-                    line,
-                  ),
-                  diagnostics: [
-                    ...baseResult.diagnostics,
-                    unsupportedMappedTypeDiagnostic(
-                      className,
-                      utilName,
-                      baseClassName,
-                      file,
-                      line,
-                    ),
-                  ],
-                };
-              }
-
-              return {
-                schema: {
-                  name: className,
-                  properties: cloneProperties(baseResult.schema.properties),
-                  required: [],
-                  source: { file, line },
-                  inference: { status: "inferred" },
-                },
-                diagnostics: baseResult.diagnostics,
-              };
-            }
-          }
-
-          return {
-            schema: unsupportedMappedTypeSchema(
-              className,
-              utilName,
-              baseClassName ?? "?",
-              file,
-              line,
-            ),
-            diagnostics: [
-              unsupportedMappedTypeDiagnostic(
-                className,
-                utilName,
-                baseClassName ?? "?",
-                file,
-                line,
-              ),
-            ],
-          };
+        if (mapped) {
+          return mapped;
         }
       }
     }
   }
 
   return null;
+}
+
+function resolveMappedTypeExpression(
+  expr: ts.CallExpression,
+  classInfo: ExportedClassInfo,
+  checker: ts.TypeChecker,
+  normalizedRoot: string,
+  classIndex: Map<string, ExportedClassInfo>,
+  enumIndex: Map<string, unknown[]>,
+  schemas: Record<string, SchemaModel>,
+  resolving: Set<string>,
+): { schema: SchemaModel; diagnostics: Diagnostic[] } | null {
+  if (!ts.isIdentifier(expr.expression)) return null;
+
+  const utilName = expr.expression.text;
+  if (!["PartialType", "PickType", "OmitType", "IntersectionType"].includes(utilName)) {
+    return null;
+  }
+
+  const resolved = schemaFromMappedInput(
+    expr,
+    checker,
+    normalizedRoot,
+    classIndex,
+    enumIndex,
+    schemas,
+    resolving,
+  );
+
+  if (!resolved) {
+    const baseClassName = mappedTypeInputName(expr.arguments[0]);
+    return {
+      schema: unsupportedMappedTypeSchema(
+        classInfo.className,
+        utilName,
+        baseClassName,
+        classInfo.file,
+        classInfo.line,
+      ),
+      diagnostics: [
+        unsupportedMappedTypeDiagnostic(
+          classInfo.className,
+          utilName,
+          baseClassName,
+          classInfo.file,
+          classInfo.line,
+        ),
+      ],
+    };
+  }
+
+  return {
+    schema: {
+      name: classInfo.className,
+      properties: cloneProperties(resolved.schema.properties),
+      required: [...resolved.schema.required],
+      source: { file: classInfo.file, line: classInfo.line },
+      inference: { status: "inferred" },
+    },
+    diagnostics: resolved.diagnostics,
+  };
+}
+
+function schemaFromMappedInput(
+  expr: ts.Expression,
+  checker: ts.TypeChecker,
+  normalizedRoot: string,
+  classIndex: Map<string, ExportedClassInfo>,
+  enumIndex: Map<string, unknown[]>,
+  schemas: Record<string, SchemaModel>,
+  resolving: Set<string>,
+): { schema: SchemaModel; diagnostics: Diagnostic[] } | undefined {
+  const unwrapped = unwrapExpression(expr);
+
+  if (ts.isIdentifier(unwrapped)) {
+    const baseClass = classIndex.get(unwrapped.text);
+    if (!baseClass) return undefined;
+
+    const baseResult = extractClassSchema(
+      baseClass,
+      checker,
+      normalizedRoot,
+      classIndex,
+      enumIndex,
+      schemas,
+      resolving,
+    );
+    schemas[baseClass.className] = baseResult.schema;
+    return baseResult;
+  }
+
+  if (!ts.isCallExpression(unwrapped) || !ts.isIdentifier(unwrapped.expression)) {
+    return undefined;
+  }
+
+  const utilName = unwrapped.expression.text;
+  const base = unwrapped.arguments[0]
+    ? schemaFromMappedInput(
+        unwrapped.arguments[0],
+        checker,
+        normalizedRoot,
+        classIndex,
+        enumIndex,
+        schemas,
+        resolving,
+      )
+    : undefined;
+
+  if (utilName === "PartialType" && base) {
+    if (base.schema.inference.status !== "inferred") {
+      return undefined;
+    }
+
+    return {
+      schema: {
+        ...base.schema,
+        properties: cloneProperties(base.schema.properties),
+        required: [],
+      },
+      diagnostics: base.diagnostics,
+    };
+  }
+
+  if ((utilName === "PickType" || utilName === "OmitType") && base) {
+    if (base.schema.inference.status !== "inferred") {
+      return undefined;
+    }
+
+    const keysArg = unwrapped.arguments[1];
+    const keys = keysArg && ts.isExpression(keysArg)
+      ? arrayLiteralStrings(keysArg)
+      : undefined;
+    if (!keys) return undefined;
+
+    const selected = new Set(keys);
+    const properties = Object.fromEntries(
+      Object.entries(base.schema.properties).filter(([name]) =>
+        utilName === "PickType" ? selected.has(name) : !selected.has(name),
+      ).map(([name, property]) => [name, cloneProperty(property)]),
+    );
+    const required = base.schema.required.filter((name) =>
+      utilName === "PickType" ? selected.has(name) : !selected.has(name),
+    );
+
+    return {
+      schema: { ...base.schema, properties, required },
+      diagnostics: base.diagnostics,
+    };
+  }
+
+  if (utilName === "IntersectionType") {
+    const left = unwrapped.arguments[0]
+      ? schemaFromMappedInput(
+          unwrapped.arguments[0],
+          checker,
+          normalizedRoot,
+          classIndex,
+          enumIndex,
+          schemas,
+          resolving,
+        )
+      : undefined;
+    const right = unwrapped.arguments[1]
+      ? schemaFromMappedInput(
+          unwrapped.arguments[1],
+          checker,
+          normalizedRoot,
+          classIndex,
+          enumIndex,
+          schemas,
+          resolving,
+        )
+      : undefined;
+    if (!left || !right) return undefined;
+    if (
+      left.schema.inference.status !== "inferred" ||
+      right.schema.inference.status !== "inferred"
+    ) {
+      return undefined;
+    }
+
+    return {
+      schema: {
+        ...left.schema,
+        properties: {
+          ...cloneProperties(left.schema.properties),
+          ...cloneProperties(right.schema.properties),
+        },
+        required: [...new Set([...left.schema.required, ...right.schema.required])],
+      },
+      diagnostics: [...left.diagnostics, ...right.diagnostics],
+    };
+  }
+
+  return undefined;
+}
+
+function mappedTypeInputName(expression: ts.Expression | undefined): string {
+  if (!expression) return "?";
+  const unwrapped = unwrapExpression(expression);
+  if (ts.isIdentifier(unwrapped)) return unwrapped.text;
+  return unwrapped.getText();
+}
+
+function unwrapExpression(expression: ts.Expression): ts.Expression {
+  let current = expression;
+  while (
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current) ||
+    ts.isParenthesizedExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
 }
 
 function unsupportedMappedTypeSchema(
@@ -348,10 +561,18 @@ function cloneProperty(property: PropertyModel): PropertyModel {
   return {
     ...property,
     type: cloneSchemaRef(property.type),
+    example: cloneUnknown(property.example),
+    examples: property.examples ? [...property.examples] : undefined,
     enum: property.enum ? [...property.enum] : undefined,
     constraints: property.constraints ? { ...property.constraints } : undefined,
     inference: { ...property.inference },
   };
+}
+
+function cloneUnknown(value: unknown): unknown {
+  if (Array.isArray(value)) return [...value];
+  if (value && typeof value === "object") return { ...(value as Record<string, unknown>) };
+  return value;
 }
 
 function cloneSchemaRef(type: SchemaRef): SchemaRef {
@@ -375,6 +596,7 @@ function extractProperties(
   checker: ts.TypeChecker,
   sourceFile: ts.SourceFile,
   normalizedRoot: string,
+  enumIndex: Map<string, unknown[]>,
 ): {
   properties: Record<string, PropertyModel>;
   required: string[];
@@ -383,6 +605,7 @@ function extractProperties(
   const properties: Record<string, PropertyModel> = {};
   const required: string[] = [];
   const propDiagnostics: Diagnostic[] = [];
+  const factoryMetadata = extractOpenApiMetadataFactory(classNode, checker);
 
   for (const member of classNode.members) {
     if (!ts.isPropertyDeclaration(member) || !member.name) continue;
@@ -401,19 +624,27 @@ function extractProperties(
 
       // Check for enum type
       if (ts.isTypeReferenceNode(member.type)) {
-        const symbol = checker.getSymbolAtLocation(member.type.typeName);
-        if (symbol) {
-          const decl = symbol.declarations?.[0];
+        const typeName = ts.isIdentifier(member.type.typeName)
+          ? member.type.typeName.text
+          : member.type.typeName.getText();
+        if (enumIndex.has(typeName)) {
+          enumValues = enumIndex.get(typeName);
+          typeRef = enumValues?.every((value) => typeof value === "number")
+            ? { kind: "primitive", type: "number" }
+            : { kind: "primitive", type: "string" };
+        }
+        const memberType = checker.getTypeFromTypeNode(member.type);
+        const symbol =
+          checker.getSymbolAtLocation(member.type.typeName) ??
+          memberType.symbol ??
+          memberType.aliasSymbol;
+        if (!enumValues && symbol) {
+          const decl = symbol.declarations?.find(ts.isEnumDeclaration);
           if (decl && ts.isEnumDeclaration(decl)) {
-            enumValues = decl.members.map((m) => {
-              if (m.initializer && ts.isStringLiteral(m.initializer)) {
-                return m.initializer.text;
-              }
-              if (m.initializer && ts.isNumericLiteral(m.initializer)) {
-                return Number(m.initializer.text);
-              }
-              return m.name.getText(decl.getSourceFile());
-            });
+            enumValues = enumValuesFromDeclaration(decl);
+            typeRef = enumValues.every((value) => typeof value === "number")
+              ? { kind: "primitive", type: "number" }
+              : { kind: "primitive", type: "string" };
           }
         }
       }
@@ -442,6 +673,7 @@ function extractProperties(
       : undefined;
 
     let markedOptional = isOptional;
+    const swaggerProperty = extractSwaggerProperty(member, checker);
 
     if (decorators) {
       for (const decorator of decorators) {
@@ -465,21 +697,92 @@ function extractProperties(
       }
     }
 
+    const mergedMetadata = mergePropertyMetadata(
+      swaggerProperty,
+      factoryMetadata[propName],
+    );
+
+    if (mergedMetadata.type) {
+      typeRef = mergedMetadata.type;
+    }
+    if (mergedMetadata.required === false) {
+      markedOptional = true;
+    }
+    if (mergedMetadata.required === true) {
+      markedOptional = false;
+    }
+    if (mergedMetadata.constraints) {
+      Object.assign(constraints, mergedMetadata.constraints);
+    }
+
     if (!markedOptional) {
       required.push(propName);
     }
 
     properties[propName] = {
       type: typeRef,
+      description: mergedMetadata.description,
       default: defaultValue,
-      enum: enumValues,
-      format,
+      example: mergedMetadata.example,
+      examples: mergedMetadata.examples,
+      enum: mergedMetadata.enum ?? enumValues,
+      format: mergedMetadata.format ?? format,
+      deprecated: mergedMetadata.deprecated,
+      readOnly: mergedMetadata.readOnly,
+      writeOnly: mergedMetadata.writeOnly,
+      nullable: mergedMetadata.nullable,
       constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
       inference: { status: "inferred" },
     };
   }
 
+  for (const [propName, metadata] of Object.entries(factoryMetadata)) {
+    if (properties[propName]) continue;
+
+    const markedOptional = metadata.required === false;
+    if (!markedOptional) {
+      required.push(propName);
+    }
+
+    properties[propName] = {
+      type: metadata.type ?? { kind: "unknown" },
+      description: metadata.description,
+      default: metadata.default,
+      example: metadata.example,
+      examples: metadata.examples,
+      enum: metadata.enum,
+      format: metadata.format,
+      deprecated: metadata.deprecated,
+      readOnly: metadata.readOnly,
+      writeOnly: metadata.writeOnly,
+      nullable: metadata.nullable,
+      constraints: metadata.constraints,
+      inference: { status: "inferred" },
+    };
+  }
+
   return { properties, required, propDiagnostics };
+}
+
+function mergePropertyMetadata(
+  ...items: Array<SwaggerPropertyMetadata | undefined>
+): SwaggerPropertyMetadata {
+  const merged: SwaggerPropertyMetadata = {};
+  const constraints: Record<string, unknown> = {};
+
+  for (const item of items) {
+    if (!item) continue;
+    Object.assign(merged, item);
+    if (item.constraints) {
+      Object.assign(constraints, item.constraints);
+    }
+  }
+
+  if (Object.keys(constraints).length > 0) {
+    merged.constraints = constraints;
+  }
+
+  return merged;
 }
 
 /**
@@ -542,4 +845,16 @@ function extractNumericArg(
     return Number(args[0].text);
   }
   return undefined;
+}
+
+function enumValuesFromDeclaration(decl: ts.EnumDeclaration): unknown[] {
+  return decl.members.map((member) => {
+    if (member.initializer && ts.isStringLiteral(member.initializer)) {
+      return member.initializer.text;
+    }
+    if (member.initializer && ts.isNumericLiteral(member.initializer)) {
+      return Number(member.initializer.text);
+    }
+    return member.name.getText(decl.getSourceFile());
+  });
 }

@@ -11,6 +11,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
   "operations": [
     {
       "id": "AuthController.login",
+      "operationId": "AuthController.login",
       "controller": "AuthController",
       "handler": "login",
       "method": "post",
@@ -75,6 +76,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "AuthController.refreshToken",
+      "operationId": "AuthController.refreshToken",
       "controller": "AuthController",
       "handler": "refreshToken",
       "method": "post",
@@ -139,6 +141,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "AuthController.register",
+      "operationId": "AuthController.register",
       "controller": "AuthController",
       "handler": "register",
       "method": "post",
@@ -191,6 +194,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "HealthController.check",
+      "operationId": "HealthController.check",
       "controller": "HealthController",
       "handler": "check",
       "method": "get",
@@ -240,6 +244,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "ProductsController.findAll",
+      "operationId": "ProductsController.findAll",
       "controller": "ProductsController",
       "handler": "findAll",
       "method": "get",
@@ -371,6 +376,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "ProductsController.create",
+      "operationId": "ProductsController.create",
       "controller": "ProductsController",
       "handler": "create",
       "method": "post",
@@ -435,6 +441,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "ProductsController.remove",
+      "operationId": "ProductsController.remove",
       "controller": "ProductsController",
       "handler": "remove",
       "method": "delete",
@@ -502,6 +509,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "ProductsController.findOne",
+      "operationId": "ProductsController.findOne",
       "controller": "ProductsController",
       "handler": "findOne",
       "method": "get",
@@ -569,6 +577,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "ProductsController.update",
+      "operationId": "ProductsController.update",
       "controller": "ProductsController",
       "handler": "update",
       "method": "patch",
@@ -650,6 +659,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "UsersController.findAll",
+      "operationId": "UsersController.findAll",
       "controller": "UsersController",
       "handler": "findAll",
       "method": "get",
@@ -693,6 +703,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "UsersController.create",
+      "operationId": "UsersController.create",
       "controller": "UsersController",
       "handler": "create",
       "method": "post",
@@ -745,6 +756,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "UsersController.remove",
+      "operationId": "UsersController.remove",
       "controller": "UsersController",
       "handler": "remove",
       "method": "delete",
@@ -803,6 +815,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "UsersController.findOne",
+      "operationId": "UsersController.findOne",
       "controller": "UsersController",
       "handler": "findOne",
       "method": "get",
@@ -870,6 +883,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "UsersController.update",
+      "operationId": "UsersController.update",
       "controller": "UsersController",
       "handler": "update",
       "method": "patch",
@@ -951,6 +965,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
     },
     {
       "id": "UsersController.getProfile",
+      "operationId": "UsersController.getProfile",
       "controller": "UsersController",
       "handler": "getProfile",
       "method": "get",
@@ -1031,8 +1046,8 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         },
         "category": {
           "type": {
-            "kind": "ref",
-            "name": "Category"
+            "kind": "primitive",
+            "type": "string"
           },
           "enum": [
             "Electronics",
@@ -1311,8 +1326,8 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         },
         "category": {
           "type": {
-            "kind": "ref",
-            "name": "Category"
+            "kind": "primitive",
+            "type": "string"
           },
           "enum": [
             "Electronics",

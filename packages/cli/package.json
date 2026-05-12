@@ -23,6 +23,8 @@
   },
   "dependencies": {
     "@specord/core": "workspace:*",
+    "@specord/openapi": "workspace:*",
+    "@specord/ui": "workspace:*",
     "@specord/types": "workspace:*"
   }
 }

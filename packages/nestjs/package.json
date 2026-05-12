@@ -15,10 +15,13 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsc",
+    "test": "vitest run",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@specord/core": "workspace:*",
+    "@specord/openapi": "workspace:*",
+    "@specord/ui": "workspace:*",
     "@specord/types": "workspace:*"
   }
 }

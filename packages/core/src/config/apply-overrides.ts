@@ -63,9 +63,24 @@ export function applyConfigOverrides(
     ...model,
     operations,
     schemas,
-    securitySchemes: config.securitySchemes ?? model.securitySchemes,
+    securitySchemes: mergeSecuritySchemes(
+      model.securitySchemes,
+      config.securitySchemes,
+    ),
     diagnostics,
   };
+}
+
+function mergeSecuritySchemes(
+  extracted: InspectionModel["securitySchemes"],
+  configured: SpecordConfigV1["securitySchemes"],
+): InspectionModel["securitySchemes"] {
+  const merged = {
+    ...(extracted ?? {}),
+    ...(configured ?? {}),
+  };
+
+  return Object.keys(merged).length > 0 ? merged : undefined;
 }
 
 function applyOperationOverride(
