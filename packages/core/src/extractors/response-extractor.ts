@@ -12,6 +12,7 @@ import type {
 import { findDecorator, extractDecoratorStringArg } from "./controller-discovery.js";
 import { typeToSchemaRef } from "./param-extractor.js";
 import type { DiscoveredRoute } from "./route-extractor.js";
+import { extractSwaggerResponses } from "./swagger-compat.js";
 
 /** Default status codes per HTTP method (NestJS convention). */
 const DEFAULT_STATUS: Record<string, number> = {
@@ -43,6 +44,20 @@ export function extractResponse(
   discoveredSchemas: Set<string>,
 ): ResponseExtractionResult {
   const diagnostics: Diagnostic[] = [];
+  const swaggerResponses = extractSwaggerResponses(route.node);
+
+  if (swaggerResponses.length > 0) {
+    return {
+      responses: swaggerResponses.map((response) => ({
+        status: response.status,
+        description: response.description,
+        schema: response.schema,
+        inference: { status: "overridden" },
+        openapi: response.openapi,
+      })),
+      diagnostics,
+    };
+  }
 
   // Determine status code
   let statusCode = DEFAULT_STATUS[route.method] ?? 200;

@@ -6,6 +6,9 @@ import type {
   InspectionModel,
   OperationModel,
   Diagnostic,
+  OpenApiSecurityRequirementObject,
+  OpenApiSecuritySchemeObject,
+  SpecordConfigV1,
 } from "@specord/types";
 import { createProgram } from "./program/create-program.js";
 import { discoverSources } from "./program/source-discovery.js";
@@ -40,6 +43,10 @@ export function inspect(config: ResolvedConfig): InspectionModel {
     root,
     DEFAULT_CONTROLLER_SUFFIXES,
     DEFAULT_DTO_SUFFIXES,
+    {
+      include: userConfig.source?.include,
+      exclude: userConfig.source?.exclude,
+    },
   );
 
   // Step 3: Extract schemas from DTO/entity files
@@ -56,14 +63,32 @@ export function inspect(config: ResolvedConfig): InspectionModel {
 
   // Step 5: Extract routes and build operations
   const globalPrefix = userConfig.routing?.globalPrefix ?? "";
+  const versionPrefix = getUriVersionPrefix(userConfig.routing?.versioning);
   const operations: OperationModel[] = [];
   const globalDiagnostics: Diagnostic[] = [...schemaDiagnostics];
+  if (
+    userConfig.routing?.versioning &&
+    userConfig.routing.versioning.strategy !== "uri"
+  ) {
+    globalDiagnostics.push({
+      severity: "warning",
+      code: "EXTRACTOR_UNSUPPORTED_VERSIONING",
+      message: `Routing versioning strategy "${userConfig.routing.versioning.strategy}" is not expressible as a V1 path prefix`,
+      subject: "routing.versioning",
+      suggestedOverridePath: "routing.versioning",
+      origin: "nestjs",
+    });
+  }
 
   // Track paths for route conflict detection
   const routeMap = new Map<string, string>();
+  const inferredSecuritySchemes: Record<string, OpenApiSecuritySchemeObject> = {};
+  const configuredSecuritySchemeNames = new Set(
+    Object.keys(userConfig.securitySchemes ?? {}),
+  );
 
   for (const controller of controllers) {
-    const routes = extractRoutes(controller, globalPrefix, root);
+    const routes = extractRoutes(controller, globalPrefix, versionPrefix, root);
 
     for (const route of routes) {
       const operationDiagnostics: Diagnostic[] = [];
@@ -111,11 +136,30 @@ export function inspect(config: ResolvedConfig): InspectionModel {
       );
       operationDiagnostics.push(...responseDiagnostics);
 
+      const routeSecurity = mergeSecurityRequirements(route.security);
+      Object.assign(inferredSecuritySchemes, route.securitySchemes);
+      const hasGuard = route.hasMethodLevelGuard || route.hasClassLevelGuard;
+
       // Security diagnostics
-      if (route.hasMethodLevelGuard || route.hasClassLevelGuard) {
+      if (hasGuard && routeSecurity.length === 0) {
         operationDiagnostics.push(
           unresolvedSecurityDiagnostic(route.id, route.location),
         );
+      }
+      for (const schemeName of missingSecuritySchemes(
+        routeSecurity,
+        inferredSecuritySchemes,
+        configuredSecuritySchemeNames,
+      )) {
+        operationDiagnostics.push({
+          severity: "warning",
+          code: "EXTRACTOR_UNRESOLVED_SECURITY",
+          message: `Security requirement "${schemeName}" was harvested but no security scheme was configured or inferable`,
+          source: route.location,
+          subject: route.id,
+          suggestedOverridePath: `securitySchemes.${schemeName}`,
+          origin: "swagger",
+        });
       }
 
       // Unsupported decorator diagnostics
@@ -127,18 +171,27 @@ export function inspect(config: ResolvedConfig): InspectionModel {
 
       operations.push({
         id: route.id,
+        operationId: route.operationId ?? route.id,
         controller: route.controller,
         handler: route.handler,
         method: route.method,
         path: route.path,
         source: route.location,
+        summary: route.summary,
+        description: route.description,
+        tags: route.tags.length > 0 ? route.tags : undefined,
         params,
         requestBody,
         responses,
-        security: (route.hasMethodLevelGuard || route.hasClassLevelGuard)
-          ? { status: "unresolved", reason: "Guard/auth semantics require config override" }
-          : { status: "inferred" },
+        security: routeSecurity.length > 0
+          ? { status: "overridden" }
+          : hasGuard
+            ? { status: "unresolved", reason: "Guard/auth semantics require config override" }
+            : { status: "inferred" },
         diagnostics: operationDiagnostics,
+        openapi: routeSecurity.length > 0
+          ? { security: routeSecurity }
+          : undefined,
       });
     }
   }
@@ -152,6 +205,9 @@ export function inspect(config: ResolvedConfig): InspectionModel {
     },
     operations,
     schemas,
+    securitySchemes: Object.keys(inferredSecuritySchemes).length > 0
+      ? inferredSecuritySchemes
+      : undefined,
     diagnostics: globalDiagnostics,
   };
 
@@ -164,4 +220,51 @@ export function inspect(config: ResolvedConfig): InspectionModel {
 function extractPathParams(path: string): string[] {
   const matches = path.matchAll(/\{([^}]+)\}/g);
   return [...matches].map((m) => m[1]);
+}
+
+function getUriVersionPrefix(
+  versioning: NonNullable<SpecordConfigV1["routing"]>["versioning"] | undefined,
+): string {
+  if (!versioning || versioning.strategy !== "uri" || !versioning.value) {
+    return "";
+  }
+
+  return versioning.value.startsWith("v")
+    ? versioning.value
+    : `v${versioning.value}`;
+}
+
+function mergeSecurityRequirements(
+  security: OpenApiSecurityRequirementObject[],
+): OpenApiSecurityRequirementObject[] {
+  const merged: OpenApiSecurityRequirementObject[] = [];
+  const seen = new Set<string>();
+
+  for (const requirement of security ?? []) {
+    const key = JSON.stringify(requirement);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(requirement);
+  }
+
+  return merged;
+}
+
+function missingSecuritySchemes(
+  requirements: OpenApiSecurityRequirementObject[],
+  inferred: Record<string, OpenApiSecuritySchemeObject>,
+  configuredNames: Set<string>,
+): string[] {
+  const available = new Set([...Object.keys(inferred), ...configuredNames]);
+  const missing = new Set<string>();
+
+  for (const requirement of requirements) {
+    for (const schemeName of Object.keys(requirement)) {
+      if (!available.has(schemeName)) {
+        missing.add(schemeName);
+      }
+    }
+  }
+
+  return [...missing].sort();
 }

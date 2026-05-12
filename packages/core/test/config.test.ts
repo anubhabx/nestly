@@ -3,8 +3,10 @@
 // ============================================================================
 
 import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import { resolveConfig } from "../src/index.ts";
+import { loadConfig, resolveConfig } from "../src/index.ts";
 import { validateConfig } from "../src/config/loader.ts";
 
 describe("resolveConfig", () => {
@@ -82,6 +84,38 @@ describe("resolveConfig", () => {
     const resolved = resolveConfig({}, userConfig);
 
     expect(resolved.config.routing?.globalPrefix).toBe("api");
+  });
+});
+
+describe("loadConfig", () => {
+  it("loads a TypeScript specord.config.ts file in the CLI runtime", async () => {
+    const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "specord-config-"));
+    fs.writeFileSync(
+      path.join(cwd, "specord.config.ts"),
+      `export default {
+        source: {
+          project: "examples/nestjs-api/tsconfig.json",
+          root: "examples/nestjs-api/src"
+        },
+        document: {
+          title: "Configured API",
+          version: "1.2.3"
+        },
+        ci: {
+          failOnUnresolved: true
+        }
+      };
+      `,
+      "utf8",
+    );
+
+    const config = await loadConfig(cwd);
+
+    expect(config?.document?.title).toBe("Configured API");
+    expect(config?.ci?.failOnUnresolved).toBe(true);
+    expect(
+      fs.readdirSync(cwd).some((name) => name.startsWith(".specord.config.")),
+    ).toBe(false);
   });
 });
 

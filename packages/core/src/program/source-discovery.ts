@@ -18,6 +18,11 @@ export interface DiscoveredSources {
   allFiles: ts.SourceFile[];
 }
 
+export interface SourceDiscoveryOptions {
+  include?: string[];
+  exclude?: string[];
+}
+
 /**
  * Filter the TypeScript Program's source files to only those under `root`,
  * then categorize by suffix patterns.
@@ -27,6 +32,7 @@ export function discoverSources(
   root: string,
   controllerSuffixes: string[] = DEFAULT_CONTROLLER_SUFFIXES,
   dtoSuffixes: string[] = DEFAULT_DTO_SUFFIXES,
+  options: SourceDiscoveryOptions = {},
 ): DiscoveredSources {
   const normalizedRoot = path.resolve(root).replace(/\\/g, "/");
 
@@ -42,6 +48,8 @@ export function discoverSources(
 
     // Only walk files under --root
     if (!filePath.startsWith(normalizedRoot + "/")) continue;
+    const relativePath = filePath.slice(normalizedRoot.length + 1);
+    if (!matchesSourceFilters(relativePath, options)) continue;
 
     allFiles.push(sourceFile);
 
@@ -57,4 +65,36 @@ export function discoverSources(
   }
 
   return { controllerFiles, dtoFiles, allFiles };
+}
+
+function matchesSourceFilters(
+  relativePath: string,
+  options: SourceDiscoveryOptions,
+): boolean {
+  const normalized = relativePath.replace(/\\/g, "/");
+  const include = options.include ?? [];
+  const exclude = options.exclude ?? [];
+
+  if (include.length > 0 && !include.some((pattern) => matchesGlob(normalized, pattern))) {
+    return false;
+  }
+
+  if (exclude.some((pattern) => matchesGlob(normalized, pattern))) {
+    return false;
+  }
+
+  return true;
+}
+
+function matchesGlob(path: string, pattern: string): boolean {
+  const normalizedPattern = pattern.replace(/\\/g, "/");
+  const escaped = normalizedPattern
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*\*\//g, "\u0001")
+    .replace(/\*\*/g, "\u0000")
+    .replace(/\*/g, "[^/]*")
+    .replace(/\u0001/g, "(?:.*/)?")
+    .replace(/\u0000/g, ".*");
+
+  return new RegExp(`^${escaped}$`).test(path);
 }

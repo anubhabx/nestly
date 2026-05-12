@@ -289,7 +289,7 @@ describe("mapped type diagnostics", () => {
           }),
         }),
         category: expect.objectContaining({
-          type: { kind: "ref", name: "Category" },
+          type: { kind: "primitive", type: "string" },
           enum: ["Electronics", "Home", "Clothing", "Books"],
         }),
         stock: expect.objectContaining({

@@ -3,7 +3,15 @@
 // ============================================================================
 
 import ts from "typescript";
-import type { SourceLocation } from "@specord/types";
+import type {
+  OpenApiSecurityRequirementObject,
+  OpenApiSecuritySchemeObject,
+  SourceLocation,
+} from "@specord/types";
+import {
+  extractSwaggerSecurityMetadata,
+  extractSwaggerTags,
+} from "./swagger-compat.js";
 
 /** Represents a discovered NestJS controller class. */
 export interface DiscoveredController {
@@ -19,6 +27,12 @@ export interface DiscoveredController {
   location: SourceLocation;
   /** Whether a guard decorator (e.g. @UseGuards) is applied at class level. */
   hasClassLevelGuard: boolean;
+  /** Tags harvested from @ApiTags without importing @nestjs/swagger. */
+  tags: string[];
+  /** Security requirements harvested from class-level Swagger decorators. */
+  security: OpenApiSecurityRequirementObject[];
+  /** Security schemes inferable from class-level Swagger decorators. */
+  securitySchemes: Record<string, OpenApiSecuritySchemeObject>;
 }
 
 /**
@@ -45,6 +59,7 @@ export function discoverControllers(
         : filePath;
 
       const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+      const security = extractSwaggerSecurityMetadata(node);
 
       controllers.push({
         name: node.name.text,
@@ -56,6 +71,9 @@ export function discoverControllers(
           line: line + 1, // 1-based
         },
         hasClassLevelGuard: hasDecorator(node, "UseGuards"),
+        tags: extractSwaggerTags(node),
+        security: security.requirements,
+        securitySchemes: security.schemes,
       });
     });
   }

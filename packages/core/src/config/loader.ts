@@ -7,6 +7,8 @@
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
+import crypto from "node:crypto";
+import ts from "typescript";
 import type { SpecordConfigV1 } from "@specord/types";
 
 /**
@@ -23,13 +25,49 @@ export async function loadConfig(
     return undefined;
   }
 
-  // Dynamic import for ESM config files
-  const configUrl = pathToFileURL(configPath).href;
-  const module = await import(configUrl);
-  const config: SpecordConfigV1 = module.default ?? module;
+  const config = await importTypeScriptConfig(configPath);
 
   validateConfig(config);
   return config;
+}
+
+async function importTypeScriptConfig(
+  configPath: string,
+): Promise<SpecordConfigV1> {
+  const source = fs.readFileSync(configPath, "utf8");
+  const compiled = ts.transpileModule(source, {
+    fileName: configPath,
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.ES2022,
+      moduleResolution: ts.ModuleResolutionKind.Node16,
+      esModuleInterop: true,
+      isolatedModules: true,
+      sourceMap: false,
+      inlineSourceMap: false,
+    },
+  });
+
+  const hash = crypto
+    .createHash("sha256")
+    .update(configPath)
+    .update(source)
+    .digest("hex")
+    .slice(0, 12);
+  const compiledPath = path.resolve(
+    path.dirname(configPath),
+    `.specord.config.${process.pid}.${hash}.mjs`,
+  );
+
+  fs.writeFileSync(compiledPath, compiled.outputText, "utf8");
+
+  try {
+    const configUrl = `${pathToFileURL(compiledPath).href}?t=${Date.now()}`;
+    const module = await import(configUrl);
+    return module.default ?? module;
+  } finally {
+    fs.rmSync(compiledPath, { force: true });
+  }
 }
 
 /**
