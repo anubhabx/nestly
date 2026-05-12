@@ -8,6 +8,8 @@ Specord V1 is focused on real-world NestJS REST projects:
 
 - `specord inspect`: deterministic internal model and diagnostics
 - `specord generate`: validated OpenAPI 3.1 JSON
+- `setupSpecordDocs(app)`: Nest bootstrap route injection at `/api`
+- `specord serve`: standalone local docs server at `/api`
 - Compatibility: static harvesting for common NestJS Swagger decorators, mapped types, and `_OPENAPI_METADATA_FACTORY()`
 - Precision layer: optional `specord.config.ts`
 
@@ -39,6 +41,20 @@ Write a validated file:
 pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
 ```
 
+Inject docs into a Nest app:
+
+```ts
+import { setupSpecordDocs } from "@specord/nestjs";
+
+setupSpecordDocs(app); // /api and /api/openapi.json
+```
+
+Serve docs independently:
+
+```bash
+pnpm.cmd serve -- examples/nestjs-realworld --pretty
+```
+
 Specord defaults to `tsconfig.json` and `src/` in the current directory or in the project directory argument. Use `--project` and `--root` only when the defaults do not match your app layout.
 
 ## Documentation Map
@@ -48,8 +64,11 @@ Specord defaults to `tsconfig.json` and `src/` in the current directory or in th
 - [`docs/getting-started.md`](docs/getting-started.md): first inspect/generate workflow
 - [`docs/specord-inspect.md`](docs/specord-inspect.md): internal model command
 - [`docs/specord-generate.md`](docs/specord-generate.md): OpenAPI generation command
+- [`docs/specord-nestjs.md`](docs/specord-nestjs.md): Nest route injection helper
+- [`docs/specord-serve.md`](docs/specord-serve.md): standalone local docs server
 - [`docs/configuration.md`](docs/configuration.md): config shape, filters, routing, strict CI
 - [`docs/development.md`](docs/development.md): local development and test/snapshot flow
+- [`spec/Phase-3-dev-docs-runtime-spec.md`](spec/Phase-3-dev-docs-runtime-spec.md): docs route and serve contract
 
 ## Guiding Principles
 

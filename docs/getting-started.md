@@ -40,6 +40,26 @@ pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
 
 Generation validates the OpenAPI document before writing. Unresolved extraction warnings are allowed by default and printed to stderr.
 
+## Serve Or Inject Docs
+
+For an existing Nest app bootstrap, inject docs routes:
+
+```ts
+import { setupSpecordDocs } from "@specord/nestjs";
+
+setupSpecordDocs(app);
+```
+
+This mounts the UI at `/api` and JSON at `/api/openapi.json` by default.
+
+For a standalone local docs server:
+
+```bash
+pnpm.cmd serve -- examples/nestjs-realworld --pretty
+```
+
+Open `http://127.0.0.1:4777/api`.
+
 ## Add Precision With Config
 
 Create `specord.config.ts` when the source code cannot express enough detail:
@@ -93,4 +113,6 @@ Use these documents as the product boundary:
 - `spec/Phase-2-real-world-nestjs-openapi-spec.md`
 - `docs/specord-inspect.md`
 - `docs/specord-generate.md`
+- `docs/specord-nestjs.md`
+- `docs/specord-serve.md`
 - `docs/configuration.md`

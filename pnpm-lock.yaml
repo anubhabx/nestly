@@ -32,6 +32,9 @@ importers:
       '@specord/types':
         specifier: workspace:*
         version: link:../types
+      '@specord/ui':
+        specifier: workspace:*
+        version: link:../ui
 
   packages/core:
     dependencies:
@@ -47,9 +50,15 @@ importers:
       '@specord/core':
         specifier: workspace:*
         version: link:../core
+      '@specord/openapi':
+        specifier: workspace:*
+        version: link:../openapi
       '@specord/types':
         specifier: workspace:*
         version: link:../types
+      '@specord/ui':
+        specifier: workspace:*
+        version: link:../ui
 
   packages/openapi:
     dependencies:
@@ -61,6 +70,8 @@ importers:
         version: link:../types
 
   packages/types: {}
+
+  packages/ui: {}
 
 packages:
 

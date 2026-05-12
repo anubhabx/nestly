@@ -8,8 +8,9 @@ This document defines local workflow for Specord V1 development.
 2. Implement extractor/emitter changes in small increments.
 3. Run fixture extraction against `examples/nestjs-api`.
 4. Run OpenAPI generation against `examples/nestjs-api` and `examples/nestjs-realworld`.
-5. Compare output against expected acceptance matrices and snapshots.
-6. Add or update diagnostics when behavior is intentionally unresolved.
+5. For docs-runtime changes, verify route injection and standalone serving.
+6. Compare output against expected acceptance matrices and snapshots.
+7. Add or update diagnostics when behavior is intentionally unresolved.
 
 ## Test and snapshot expectations
 
@@ -22,6 +23,7 @@ This document defines local workflow for Specord V1 development.
 ```bash
 pnpm.cmd inspect -- examples/nestjs-api
 pnpm.cmd generate -- examples/nestjs-realworld --pretty
+pnpm.cmd serve -- examples/nestjs-realworld --pretty
 ```
 
 Then verify:
@@ -31,6 +33,8 @@ Then verify:
 - Required unresolved diagnostics
 - OpenAPI 3.1 validation
 - Swagger-compatible metadata harvesting
+- Docs UI loads at `/api`
+- Docs JSON loads at `/api/openapi.json`
 - Snapshot stability across repeated runs
 
 ## Design changes
