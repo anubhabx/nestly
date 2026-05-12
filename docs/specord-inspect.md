@@ -1,38 +1,53 @@
 # `specord inspect`
 
-`specord inspect` is the V1 extractor command. It produces internal JSON for review and testing, not OpenAPI output.
+`specord inspect` is the debugging command. It extracts the internal `InspectionModel` from NestJS source and prints deterministic JSON.
 
-## Canonical command
+Use `generate` for OpenAPI output.
+
+## Canonical Command
+
+```bash
+pnpm.cmd inspect -- --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
+```
+
+Equivalent CLI form:
 
 ```bash
 specord inspect --project examples/nestjs-api/tsconfig.json --root examples/nestjs-api/src
 ```
 
-## Required behavior
+## Required Behavior
 
-- Load TypeScript program from `--project`
+- Load the TypeScript program from `--project`
 - Walk source under `--root`
-- Extract operations, schemas, and diagnostics
+- Apply `source.include` and `source.exclude` filters from config
+- Extract controllers, routes, params, request bodies, responses, security state, and schemas
+- Harvest supported Swagger-compatible decorators and `_OPENAPI_METADATA_FACTORY()` metadata without importing `@nestjs/swagger`
+- Apply `specord.config.ts` overrides
 - Emit deterministic JSON ordering
-- Emit unresolved diagnostics instead of guessing when confidence is low
+- Emit diagnostics instead of guessing when confidence is low
 
 ## Output
 
-The output is an `InspectionModel` JSON document (see `spec/specord-v1-extractor-spec.md` for the normative contract).
+The output is an `InspectionModel` JSON document. See `spec/specord-v1-extractor-spec.md` for the base contract and `spec/Phase-2-real-world-nestjs-openapi-spec.md` for the Phase 2 additions.
 
 At minimum, output includes:
 
-- `source` metadata (`project`, `root`, `inspectedAt`, `version`)
+- `source`
 - `operations`
 - `schemas`
 - `diagnostics`
 
-## Exit behavior (recommended v1 policy)
+Operations may also carry OpenAPI-ready metadata such as `operationId`, `summary`, `description`, `tags`, response fragments, and security requirements.
+
+## Exit Behavior
 
 - Successful extraction with warnings: exit 0
 - Structural extraction failure: non-zero exit
-- CI strictness is controlled by config `ci` flags
+- Config validation failure: non-zero exit
+
+`inspect` remains tolerant of unresolved extraction cases so teams can debug what Specord can and cannot infer.
 
 ## Diagnostics
 
-The command must use canonical diagnostic codes documented in the V1 spec. New diagnostic codes should be added to the spec before shipping.
+Diagnostics use canonical codes documented in the specs. New diagnostic codes should be added to the spec before shipping.

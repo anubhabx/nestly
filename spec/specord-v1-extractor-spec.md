@@ -3,6 +3,8 @@
 Date: 2026-04-27
 Status: Active normative spec for `specord inspect` spike
 
+Phase 2 extension: OpenAPI generation is now specified in `spec/Phase-2-real-world-nestjs-openapi-spec.md`. This document remains the base inspection model contract.
+
 ## Purpose
 
 V1 focuses on one trustworthy path: extract a deterministic internal model from a conventional NestJS REST codebase, then use that model for later OpenAPI generation. V1 does not require Swagger decorators or the Nest Swagger CLI plugin.
@@ -54,6 +56,7 @@ type InspectionModel = {
 
 type OperationModel = {
   id: string; // ControllerName.methodName
+  operationId?: string; // OpenAPI operationId, defaults to id when absent
   controller: string;
   handler: string;
   method: "get" | "post" | "put" | "patch" | "delete" | "options" | "head";
@@ -109,6 +112,7 @@ type Diagnostic = {
   source?: SourceLocation;
   subject?: string;
   suggestedOverridePath?: string;
+  origin?: "typescript" | "nestjs" | "swagger" | "config" | "openapi";
 };
 
 type DiagnosticCode =
@@ -118,7 +122,8 @@ type DiagnosticCode =
   | "EXTRACTOR_UNSUPPORTED_DECORATOR"
   | "EXTRACTOR_TYPE_FALLBACK_ANY"
   | "EXTRACTOR_ROUTE_CONFLICT"
-  | "EXTRACTOR_INVALID_PATH_TEMPLATE";
+  | "EXTRACTOR_INVALID_PATH_TEMPLATE"
+  | "EXTRACTOR_UNSUPPORTED_VERSIONING";
 ```
 
 ### Determinism rules (MUST)
@@ -187,6 +192,7 @@ When uncertain, extractor MUST emit incomplete-but-valid model data and at least
 | `EXTRACTOR_TYPE_FALLBACK_ANY` | warning | Symbol resolves to `any` | `schemas.<name>` or `operations.<id>` |
 | `EXTRACTOR_ROUTE_CONFLICT` | error | Duplicate `method + path` extracted | `routing` |
 | `EXTRACTOR_INVALID_PATH_TEMPLATE` | error | Invalid `path` parameter template | `routing` |
+| `EXTRACTOR_UNSUPPORTED_VERSIONING` | warning | Configured versioning strategy cannot be safely expressed as a V1 path | `routing.versioning` |
 
 ## Fixture-specific acceptance matrix (`examples/nestjs-api`)
 
