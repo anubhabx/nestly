@@ -2,7 +2,7 @@
 // @specord/nestjs docs route injection tests
 // ============================================================================
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { OpenApiDocument } from "@specord/openapi";
 import { setupSpecordDocs } from "../src/index.js";
 
@@ -25,6 +25,10 @@ const document: OpenApiDocument = {
 };
 
 describe("setupSpecordDocs", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("injects docs and OpenAPI JSON routes at /api by default", async () => {
     const routes = new Map<string, Function>();
     const app = createApp(routes);
@@ -63,6 +67,41 @@ describe("setupSpecordDocs", () => {
     });
     expect([...routes.keys()]).toEqual(["/reference", "/reference/spec.json"]);
   });
+
+  it("registers routes through a Fastify-shaped adapter instance", async () => {
+    const routes = new Map<string, Function>();
+    const app = createFastifyApp(routes);
+
+    setupSpecordDocs(app, { document });
+
+    expect([...routes.keys()]).toEqual(["/api", "/api/openapi.json"]);
+
+    const json = await invokeFastify(routes.get("/api/openapi.json"));
+
+    expect(json.statusCode).toBe(200);
+    expect(json.headers["content-type"]).toBe("application/json; charset=utf-8");
+    expect(JSON.parse(json.body).paths["/users"].get.operationId).toBe("listUsers");
+  });
+
+  it("logs lazy document generation failures before returning a 500 response", async () => {
+    const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    const routes = new Map<string, Function>();
+    const app = createApp(routes);
+
+    setupSpecordDocs(app, {
+      document: () => {
+        throw new Error("fixture generation failed");
+      },
+    });
+
+    const json = await invoke(routes.get("/api/openapi.json"));
+
+    expect(json.statusCode).toBe(500);
+    expect(json.body).toBe("fixture generation failed\n");
+    expect(stderr).toHaveBeenCalledWith(
+      "[specord] Failed to resolve OpenAPI document for /api/openapi.json: fixture generation failed\n",
+    );
+  });
 });
 
 function createApp(routes: Map<string, Function>) {
@@ -71,6 +110,22 @@ function createApp(routes: Map<string, Function>) {
       return {
         get(path: string, handler: Function) {
           routes.set(path, handler);
+        },
+      };
+    },
+  };
+}
+
+function createFastifyApp(routes: Map<string, Function>) {
+  return {
+    getHttpAdapter() {
+      return {
+        getInstance() {
+          return {
+            get(path: string, handler: Function) {
+              routes.set(path, handler);
+            },
+          };
         },
       };
     },
@@ -102,6 +157,40 @@ function createResponse() {
     },
     type(value: string) {
       this.headers["content-type"] = value;
+      return this;
+    },
+    send(value: string) {
+      this.body = value;
+      return this;
+    },
+  };
+}
+
+async function invokeFastify(handler: Function | undefined): Promise<{
+  statusCode: number;
+  headers: Record<string, string>;
+  body: string;
+}> {
+  if (!handler) {
+    throw new Error("Missing route handler");
+  }
+
+  const response = createFastifyResponse();
+  await handler({}, response);
+  return response;
+}
+
+function createFastifyResponse() {
+  return {
+    statusCode: 200,
+    headers: {} as Record<string, string>,
+    body: "",
+    code(value: number) {
+      this.statusCode = value;
+      return this;
+    },
+    header(name: string, value: string) {
+      this.headers[name.toLowerCase()] = value;
       return this;
     },
     send(value: string) {

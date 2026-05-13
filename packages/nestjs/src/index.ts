@@ -75,6 +75,9 @@ export function setupSpecordDocs(
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      process.stderr.write(
+        `[specord] Failed to resolve OpenAPI document for ${jsonPath}: ${message}\n`,
+      );
       sendResponse(response, 500, "text/plain; charset=utf-8", `${message}\n`);
     }
   });
