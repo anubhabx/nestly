@@ -6,39 +6,59 @@ import { describe, expect, it } from "vitest";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { inspect, resolveConfig } from "../src/index.ts";
+import type { InspectionModel, SpecordConfigV1 } from "@specord/types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "../../..");
 const fixtureRoot = path.join(repoRoot, "examples/nestjs-realworld");
+const fixtureCache = new Map<string, InspectionModel>();
 
-function inspectRealworldFixture() {
-  return inspect(
+function inspectRealworldFixture(): InspectionModel {
+  return inspectRealworldFixtureWithConfig({
+    document: {
+      title: "Realworld Orders API",
+      version: "1.0.0",
+    },
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+      apiKeyAuth: {
+        type: "apiKey",
+        in: "header",
+        name: "X-API-Key",
+      },
+    },
+  });
+}
+
+function inspectRealworldFixtureWithConfig(
+  config: SpecordConfigV1 | undefined,
+): InspectionModel {
+  const cacheKey = JSON.stringify(config ?? null);
+  const cached = fixtureCache.get(cacheKey);
+  if (cached) {
+    return cloneInspectionModel(cached);
+  }
+
+  const model = inspect(
     resolveConfig(
       {
         project: path.join(fixtureRoot, "tsconfig.json"),
         root: path.join(fixtureRoot, "src"),
       },
-      {
-        document: {
-          title: "Realworld Orders API",
-          version: "1.0.0",
-        },
-        securitySchemes: {
-          bearerAuth: {
-            type: "http",
-            scheme: "bearer",
-            bearerFormat: "JWT",
-          },
-          apiKeyAuth: {
-            type: "apiKey",
-            in: "header",
-            name: "X-API-Key",
-          },
-        },
-      },
+      config,
     ),
   );
+  fixtureCache.set(cacheKey, model);
+  return cloneInspectionModel(model);
+}
+
+function cloneInspectionModel(model: InspectionModel): InspectionModel {
+  return JSON.parse(JSON.stringify(model)) as InspectionModel;
 }
 
 describe("NestJS Swagger compatibility extraction", () => {
@@ -77,15 +97,7 @@ describe("NestJS Swagger compatibility extraction", () => {
   });
 
   it("infers bearer security schemes and warns for named schemes that need config", () => {
-    const model = inspect(
-      resolveConfig(
-        {
-          project: path.join(fixtureRoot, "tsconfig.json"),
-          root: path.join(fixtureRoot, "src"),
-        },
-        undefined,
-      ),
-    );
+    const model = inspectRealworldFixtureWithConfig(undefined);
 
     expect(model.securitySchemes?.bearerAuth).toEqual({
       type: "http",
@@ -155,20 +167,12 @@ describe("NestJS Swagger compatibility extraction", () => {
   });
 
   it("applies source include and exclude glob filters", () => {
-    const model = inspect(
-      resolveConfig(
-        {
-          project: path.join(fixtureRoot, "tsconfig.json"),
-          root: path.join(fixtureRoot, "src"),
-        },
-        {
-          source: {
-            include: ["orders/**/*.ts"],
-            exclude: ["**/guards/*.ts"],
-          },
-        },
-      ),
-    );
+    const model = inspectRealworldFixtureWithConfig({
+      source: {
+        include: ["orders/**/*.ts"],
+        exclude: ["**/guards/*.ts"],
+      },
+    });
 
     expect(model.operations.map((op) => op.controller)).not.toContain("InternalController");
     expect(model.operations.map((op) => op.controller)).toContain("OrdersController");

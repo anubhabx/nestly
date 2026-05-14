@@ -61,4 +61,12 @@ setupSpecordDocs(app, {
 });
 ```
 
+Document factories and generated documents are cached per mounted docs instance by default. Disable caching when you want the JSON route to rebuild on every request:
+
+```ts
+setupSpecordDocs(app, {
+  cacheDocument: false,
+});
+```
+
 The UI is currently a scaffold: summary cards, operation list, and the JSON link. It is not yet the final API reference experience.

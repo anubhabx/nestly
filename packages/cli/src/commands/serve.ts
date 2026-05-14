@@ -22,6 +22,8 @@ export interface ServeFlags extends CLIFlags {
   docsPath?: string;
   jsonPath?: string;
   pretty?: boolean;
+  cache?: boolean;
+  allowPublicHost?: boolean;
   appCommand?: string;
   appCwd?: string;
   appUrl?: string;
@@ -51,9 +53,10 @@ export function createDocsRequestHandler(
   const cwd = options.cwd ?? process.cwd();
   const docsPath = normalizePath(flags.docsPath ?? "/api");
   const jsonPath = normalizePath(flags.jsonPath ?? joinPath(docsPath, "openapi.json"));
+  const getOpenApiDocument = createCachedDocumentBuilder(flags, cwd);
 
   return (request, response) => {
-    void handleDocsRequest(request, response, flags, cwd, docsPath, jsonPath);
+    void handleDocsRequest(request, response, flags, docsPath, jsonPath, getOpenApiDocument);
   };
 }
 
@@ -84,6 +87,7 @@ export async function runServe(
   const cwd = options.cwd ?? process.cwd();
   const host = flags.host ?? "127.0.0.1";
   const port = flags.port ?? 4777;
+  assertSafeServeHost(host, flags.allowPublicHost === true);
   const appProcess = startAppProcess(flags, {
     cwd,
     spawn: options.spawn,
@@ -100,9 +104,11 @@ export async function runServe(
 
   const address = server.address();
   const actualPort = typeof address === "object" && address ? address.port : port;
-  const docsUrl = `http://${host}:${actualPort}`;
-  process.stdout.write(`[specord] Serving API docs at ${docsUrl}\n`);
-  process.stdout.write(`[specord] OpenAPI JSON at ${docsUrl}/openapi.json\n`);
+  const baseUrl = `http://${formatHostForUrl(host)}:${actualPort}`;
+  const docsPath = normalizePath(flags.docsPath ?? "/api");
+  const jsonPath = normalizePath(flags.jsonPath ?? joinPath(docsPath, "openapi.json"));
+  process.stdout.write(`[specord] Serving API docs at ${baseUrl}${docsPath}\n`);
+  process.stdout.write(`[specord] OpenAPI JSON at ${baseUrl}${jsonPath}\n`);
   if (flags.appCommand) {
     process.stdout.write(`[specord] Started app command: ${flags.appCommand}\n`);
   }
@@ -124,9 +130,9 @@ async function handleDocsRequest(
   request: IncomingMessage,
   response: ServerResponse,
   flags: ServeFlags,
-  cwd: string,
   docsPath: string,
   jsonPath: string,
+  getOpenApiDocument: () => Promise<Record<string, unknown>>,
 ): Promise<void> {
   if (request.method !== "GET") {
     sendText(response, 405, "Method not allowed");
@@ -158,7 +164,7 @@ async function handleDocsRequest(
     }
 
     if (samePath(url.pathname, jsonPath)) {
-      const document = await buildOpenApiDocument(flags, cwd);
+      const document = await getOpenApiDocument();
       sendJson(response, document, flags.pretty);
       return;
     }
@@ -179,6 +185,27 @@ async function handleDocsRequest(
     const message = error instanceof Error ? error.message : String(error);
     sendText(response, 500, message);
   }
+}
+
+function createCachedDocumentBuilder(
+  flags: ServeFlags,
+  cwd: string,
+): () => Promise<Record<string, unknown>> {
+  const build = () => buildOpenApiDocument(flags, cwd);
+
+  if (flags.cache === false) {
+    return build;
+  }
+
+  let cachedDocument: Promise<Record<string, unknown>> | undefined;
+  return () => {
+    cachedDocument ??= build().catch((error) => {
+      cachedDocument = undefined;
+      throw error;
+    });
+
+    return cachedDocument;
+  };
 }
 
 async function buildOpenApiDocument(
@@ -210,6 +237,28 @@ async function buildOpenApiDocument(
   }
 
   return document;
+}
+
+export function assertSafeServeHost(
+  host: string,
+  allowPublicHost = false,
+): void {
+  if (allowPublicHost || isLoopbackHost(host)) {
+    return;
+  }
+
+  throw new Error(
+    `[specord] Refusing to bind docs server to non-loopback host "${host}". ` +
+    "Use 127.0.0.1 or localhost, or pass --allow-public-host if you intentionally want network access.",
+  );
+}
+
+function isLoopbackHost(host: string): boolean {
+  const normalized = host.trim().toLowerCase().replace(/^\[|\]$/g, "");
+  return normalized === "localhost" ||
+    normalized === "127.0.0.1" ||
+    normalized === "::1" ||
+    normalized.startsWith("127.");
 }
 
 function allDiagnostics(model: ReturnType<typeof inspect>): Diagnostic[] {
@@ -266,4 +315,8 @@ function joinPath(base: string, segment: string): string {
 
 function samePath(left: string, right: string): boolean {
   return normalizePath(left) === normalizePath(right);
+}
+
+function formatHostForUrl(host: string): string {
+  return host.includes(":") && !host.startsWith("[") ? `[${host}]` : host;
 }

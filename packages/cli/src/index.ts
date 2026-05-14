@@ -33,7 +33,13 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
 
     case "serve": {
       const flags = parseServeFlags(argv.slice(1));
-      await runServe(flags);
+      try {
+        await runServe(flags);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(`Error: ${message}\n`);
+        process.exit(1);
+      }
       break;
     }
 
@@ -133,6 +139,10 @@ function parseServeFlags(args: string[]): ServeFlags {
       flags.jsonPath = args[++i];
     } else if (arg === "--pretty") {
       flags.pretty = true;
+    } else if (arg === "--no-cache") {
+      flags.cache = false;
+    } else if (arg === "--allow-public-host") {
+      flags.allowPublicHost = true;
     } else if (arg === "--app-command" && i + 1 < args.length) {
       flags.appCommand = args[++i];
     } else if (arg === "--app-cwd" && i + 1 < args.length) {
@@ -206,6 +216,8 @@ Flags:
   --docs-path <path>     Docs UI route, default /api
   --json-path <path>     OpenAPI JSON route, default <docs-path>/openapi.json
   --pretty               Pretty-print /openapi.json
+  --no-cache             Rebuild OpenAPI JSON on every request
+  --allow-public-host    Allow binding to a non-loopback host such as 0.0.0.0
   --app-command <cmd>    Optional Nest/dev command to start beside docs
   --app-cwd <path>       Working directory for --app-command, default project-dir/current directory
   --app-url <url>        Optional app URL shown in the docs shell

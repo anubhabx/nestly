@@ -25,8 +25,10 @@ Both surfaces serve the same generated OpenAPI 3.1 document and the same lightwe
 - Both routes are overridable.
 - A caller may provide a prebuilt OpenAPI document or document factory.
 - If no document is provided, Specord generates from source using the same static pipeline as `specord generate`.
+- Generated or factory-provided documents are cached per mounted docs instance by default; callers may disable this when they need rebuild-on-refresh behavior.
 - `specord serve` serves the docs UI and OpenAPI JSON independently of a Nest app.
 - `specord serve` may optionally start a user-provided app command beside the docs server.
+- `specord serve` binds to loopback by default and refuses non-loopback hosts unless network access is explicit.
 - The UI is a scaffold only: document summary, operation list, and link to the JSON document.
 
 ### Out of scope
@@ -91,6 +93,14 @@ setupSpecordDocs(app, {
 });
 ```
 
+Disable per-instance caching:
+
+```ts
+setupSpecordDocs(app, {
+  cacheDocument: false,
+});
+```
+
 ## Standalone Serve Contract
 
 Usage:
@@ -116,6 +126,10 @@ specord serve apps/api --app-command "pnpm start:dev" --app-url http://localhost
 
 `--app-command` is only orchestration. It does not influence extraction and does not make Specord inspect runtime Nest state.
 
+By default, `specord serve` caches the generated OpenAPI document after the first successful JSON request. Use `--no-cache` to rebuild on every JSON request during source-edit debugging.
+
+The docs server defaults to `127.0.0.1`. Binding to hosts such as `0.0.0.0` or LAN addresses requires `--allow-public-host`.
+
 ## Architecture
 
 ```mermaid
@@ -133,6 +147,7 @@ flowchart LR
 
 - `@specord/ui` tests cover escaped UI rendering.
 - `@specord/nestjs` tests cover default `/api` injection and route overrides.
-- `@specord/cli` tests cover independent docs serving and optional app command spawning.
+- `@specord/nestjs` tests cover document caching and cache opt-out.
+- `@specord/cli` tests cover independent docs serving, cached JSON serving, loopback-only host protection, and optional app command spawning.
 - Workspace tests and builds pass.
 - Browser check verifies the served scaffold renders and loads `/api/openapi.json`.

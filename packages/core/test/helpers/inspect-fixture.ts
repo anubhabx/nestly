@@ -15,6 +15,7 @@ const repoRoot = path.resolve(__dirname, "../../../../");
 
 /** Absolute path to the NestJS fixture project root. */
 const fixtureRoot = path.join(repoRoot, "examples/nestjs-api");
+const fixtureCache = new Map<string, InspectionModel>();
 
 /**
  * Return the fixture root path for use in custom config tests.
@@ -27,15 +28,7 @@ export function getNestFixtureRoot(): string {
  * Inspect the NestJS fixture using default config (no globalPrefix, no overrides).
  */
 export function inspectNestFixture(): InspectionModel {
-  const resolvedConfig = resolveConfig(
-    {
-      project: path.join(fixtureRoot, "tsconfig.json"),
-      root: path.join(fixtureRoot, "src"),
-    },
-    undefined,
-  );
-
-  return inspect(resolvedConfig);
+  return cachedInspect("default", undefined);
 }
 
 /**
@@ -45,6 +38,18 @@ export function inspectNestFixture(): InspectionModel {
 export function inspectNestFixtureWithConfig(
   config: SpecordConfigV1,
 ): InspectionModel {
+  return cachedInspect(JSON.stringify(config), config);
+}
+
+function cachedInspect(
+  cacheKey: string,
+  config: SpecordConfigV1 | undefined,
+): InspectionModel {
+  const cached = fixtureCache.get(cacheKey);
+  if (cached) {
+    return cloneInspectionModel(cached);
+  }
+
   const resolvedConfig = resolveConfig(
     {
       project: path.join(fixtureRoot, "tsconfig.json"),
@@ -53,5 +58,11 @@ export function inspectNestFixtureWithConfig(
     config,
   );
 
-  return inspect(resolvedConfig);
+  const model = inspect(resolvedConfig);
+  fixtureCache.set(cacheKey, model);
+  return cloneInspectionModel(model);
+}
+
+function cloneInspectionModel(model: InspectionModel): InspectionModel {
+  return JSON.parse(JSON.stringify(model)) as InspectionModel;
 }

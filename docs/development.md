@@ -24,6 +24,8 @@ This document defines local workflow for Specord V1 development.
 pnpm.cmd inspect -- examples/nestjs-api
 pnpm.cmd generate -- examples/nestjs-realworld --pretty
 pnpm.cmd serve -- examples/nestjs-realworld --pretty
+pnpm.cmd audit --prod --json
+pnpm.cmd audit --json
 ```
 
 Then verify:
@@ -35,6 +37,8 @@ Then verify:
 - Swagger-compatible metadata harvesting
 - Docs UI loads at `/api`
 - Docs JSON loads at `/api/openapi.json`
+- Repeated docs JSON requests use the server-side cache unless `--no-cache` is set
+- `specord serve` refuses non-loopback hosts unless `--allow-public-host` is set
 - Snapshot stability across repeated runs
 
 ## Design changes

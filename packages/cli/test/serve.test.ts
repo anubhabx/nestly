@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import type { ChildProcess, SpawnOptions } from "node:child_process";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  assertSafeServeHost,
   createDocsRequestHandler,
   startAppProcess,
 } from "../src/commands/serve.js";
@@ -48,9 +49,13 @@ describe("specord serve", () => {
       expect(html).toContain("data-specord-docs-shell");
       expect(html).toContain("/api/openapi.json");
       expect(openApiResponse.status).toBe(200);
-      expect(document.openapi).toBe("3.1.0");
-      expect(document.paths["/orders"].get.operationId).toBe("listOrders");
-    } finally {
+    expect(document.openapi).toBe("3.1.0");
+    expect(document.paths["/orders"].get.operationId).toBe("listOrders");
+
+    const repeatedOpenApiResponse = await fetch(`${baseUrl}/api/openapi.json`);
+    expect(repeatedOpenApiResponse.status).toBe(200);
+    expect(process.stderr.write).toHaveBeenCalledTimes(1);
+  } finally {
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),
       );
@@ -92,5 +97,14 @@ describe("specord serve", () => {
       shell: true,
       stdio: "inherit",
     });
+  });
+
+  it("keeps the docs server loopback-only unless public binding is explicit", () => {
+    expect(() => assertSafeServeHost("127.0.0.1")).not.toThrow();
+    expect(() => assertSafeServeHost("localhost")).not.toThrow();
+    expect(() => assertSafeServeHost("::1")).not.toThrow();
+    expect(() => assertSafeServeHost("0.0.0.0")).toThrow(/non-loopback host/);
+    expect(() => assertSafeServeHost("192.168.1.10")).toThrow(/non-loopback host/);
+    expect(() => assertSafeServeHost("0.0.0.0", true)).not.toThrow();
   });
 });

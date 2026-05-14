@@ -102,6 +102,37 @@ describe("setupSpecordDocs", () => {
       "[specord] Failed to resolve OpenAPI document for /api/openapi.json: fixture generation failed\n",
     );
   });
+
+  it("caches document factories by default and can opt out", async () => {
+    const cachedRoutes = new Map<string, Function>();
+    let cachedCalls = 0;
+    setupSpecordDocs(createApp(cachedRoutes), {
+      document: () => {
+        cachedCalls += 1;
+        return document;
+      },
+    });
+
+    await invoke(cachedRoutes.get("/api/openapi.json"));
+    await invoke(cachedRoutes.get("/api/openapi.json"));
+
+    expect(cachedCalls).toBe(1);
+
+    const uncachedRoutes = new Map<string, Function>();
+    let uncachedCalls = 0;
+    setupSpecordDocs(createApp(uncachedRoutes), {
+      cacheDocument: false,
+      document: () => {
+        uncachedCalls += 1;
+        return document;
+      },
+    });
+
+    await invoke(uncachedRoutes.get("/api/openapi.json"));
+    await invoke(uncachedRoutes.get("/api/openapi.json"));
+
+    expect(uncachedCalls).toBe(2);
+  });
 });
 
 function createApp(routes: Map<string, Function>) {

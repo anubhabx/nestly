@@ -7,7 +7,7 @@ Use this when you want to view docs independently of the Nest app bootstrap. The
 ## Command
 
 ```bash
-specord serve [project-dir] [--host 127.0.0.1] [--port 4777] [--pretty]
+specord serve [project-dir] [--host 127.0.0.1] [--port 4777] [--pretty] [--no-cache]
 ```
 
 Repo-local form:
@@ -29,6 +29,22 @@ Routes:
 
 ```bash
 specord serve apps/api --docs-path /reference --json-path /reference/spec.json
+```
+
+## Caching
+
+The OpenAPI document is cached after the first successful JSON request so repeated docs refreshes do not rebuild the TypeScript program. Use `--no-cache` when you want every request to re-read source during debugging:
+
+```bash
+specord serve apps/api --no-cache
+```
+
+## Local Binding
+
+The server binds to `127.0.0.1` by default. Non-loopback hosts such as `0.0.0.0` are refused unless you pass `--allow-public-host` intentionally:
+
+```bash
+specord serve apps/api --host 0.0.0.0 --allow-public-host
 ```
 
 ## Start A Nest Dev Process Beside Docs

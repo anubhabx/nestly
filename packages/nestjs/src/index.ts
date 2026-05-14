@@ -35,6 +35,7 @@ export interface SpecordDocsOptions extends CLIFlags {
   jsonPath?: string;
   title?: string;
   pretty?: boolean;
+  cacheDocument?: boolean;
   cwd?: string;
   config?: SpecordConfigV1;
   document?: OpenApiDocument | (() => OpenApiDocument | Promise<OpenApiDocument>);
@@ -51,6 +52,7 @@ export function setupSpecordDocs(
 ): SpecordDocsMount {
   const docsPath = normalizePath(options.path ?? "/api");
   const jsonPath = normalizePath(options.jsonPath ?? joinPath(docsPath, "openapi.json"));
+  const getDocument = createDocumentResolver(options);
 
   registerGetRoute(app, docsPath, async (_request, response) => {
     sendResponse(
@@ -66,7 +68,7 @@ export function setupSpecordDocs(
 
   registerGetRoute(app, jsonPath, async (_request, response) => {
     try {
-      const document = await resolveDocument(options);
+      const document = await getDocument();
       sendResponse(
         response,
         200,
@@ -88,17 +90,41 @@ export function setupSpecordDocs(
   };
 }
 
-async function resolveDocument(
+function createDocumentResolver(
+  options: SpecordDocsOptions,
+): () => Promise<OpenApiDocument> {
+  const cacheDocument = options.cacheDocument !== false;
+
+  const loadDocument = async (): Promise<OpenApiDocument> => {
+    if (typeof options.document === "function") {
+      return options.document();
+    }
+
+    if (options.document) {
+      return options.document;
+    }
+
+    return generateDocument(options);
+  };
+
+  if (!cacheDocument) {
+    return loadDocument;
+  }
+
+  let cachedDocument: Promise<OpenApiDocument> | undefined;
+  return () => {
+    cachedDocument ??= loadDocument().catch((error) => {
+      cachedDocument = undefined;
+      throw error;
+    });
+
+    return cachedDocument;
+  };
+}
+
+async function generateDocument(
   options: SpecordDocsOptions,
 ): Promise<OpenApiDocument> {
-  if (typeof options.document === "function") {
-    return options.document();
-  }
-
-  if (options.document) {
-    return options.document;
-  }
-
   const cwd = options.cwd ?? process.cwd();
   const fileConfig = options.config ?? await loadConfig(cwd);
   const resolvedConfig = resolveConfig(options, fileConfig, { cwd });
