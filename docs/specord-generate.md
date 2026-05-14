@@ -64,6 +64,8 @@ OpenAPI validation errors are fatal.
 
 Unresolved extraction warnings do not block default generation. Specord prints a warning to stderr and still emits JSON.
 
+When source analysis finds a named request/response type but no matching component schema, Specord emits an unconstrained schema object instead of a dangling `$ref`. This keeps the OpenAPI document valid while making the missing precision visible through diagnostics and config overrides.
+
 Use config for strict CI:
 
 ```ts

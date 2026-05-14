@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { InspectionModel } from "@specord/types";
-import { emitOpenApiDocument } from "../src/index.ts";
+import { emitOpenApiDocument, validateOpenApiDocument } from "../src/index.ts";
 
 const model: InspectionModel = {
   source: {
@@ -134,5 +134,29 @@ describe("emitOpenApiDocument", () => {
         },
       },
     });
+  });
+
+  it("does not emit dangling component refs for missing schema definitions", async () => {
+    const document = emitOpenApiDocument({
+      ...model,
+      operations: [
+        {
+          ...model.operations[0],
+          requestBody: {
+            schema: { kind: "ref", name: "FormViewEventBodyDto" },
+            required: true,
+            inference: { status: "inferred" },
+          },
+        },
+      ],
+      schemas: {},
+    });
+
+    expect(
+      document.paths["/orders"].get.requestBody.content["application/json"].schema,
+    ).toEqual({});
+
+    const validation = await validateOpenApiDocument(document);
+    expect(validation.valid).toBe(true);
   });
 });

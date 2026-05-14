@@ -120,6 +120,8 @@ The emitter MUST produce:
 
 Schema emission MUST translate internal refs to OpenAPI component references and preserve Swagger/config metadata such as descriptions, examples, enums, formats, deprecation, read/write flags, nullable, and validator constraints.
 
+If an internal `SchemaRef` points to a schema name that is not present in `InspectionModel.schemas`, the emitter MUST NOT output a dangling component `$ref`. It should emit an unconstrained schema object (`{}`) so the OpenAPI document remains valid, while diagnostics/config remain the precision path for unsupported source shapes such as type aliases or Zod-inferred bodies.
+
 ## Routing Contract
 
 - `routing.globalPrefix` prefixes emitted paths.

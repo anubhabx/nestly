@@ -92,7 +92,7 @@ Performance check:
 | `specord serve` JSON before cache | 5-run average 554.0 ms; warning logged per request |
 | `specord serve` JSON after cache | 5-run average 171.2 ms; first request 840.7 ms, cached requests 8.8/2.4/2.4/1.9 ms; warning logged once |
 | `inspect C:\workspace\tresta\apps\api_v2` | 4233.3 ms, 260425 bytes of inspection JSON |
-| `generate C:\workspace\tresta\apps\api_v2` | Still fails validation on `#/components/schemas/FormViewEventBodyDto`; this remains a generator fidelity gap, not a docs-runtime regression |
+| `generate C:\workspace\tresta\apps\api_v2` | Initial benchmark failed validation on `#/components/schemas/FormViewEventBodyDto`; the follow-up Phase 2 fix now emits valid OpenAPI with unconstrained schemas for missing refs |
 
 ---
 
@@ -164,7 +164,7 @@ The system still cannot:
 | Phase 3 follow-up | Config ergonomics | Document compiled `dist/` bootstrap patterns more explicitly |
 | Phase 4 | Packaging | Decide publishable package shape and install workflow |
 | Phase 4 prerequisite | Merge hygiene | Merge the verified Phase 3 hardening branch into local `develop` before starting new feature work |
-| Real-project fidelity | Tresta benchmark | Fix the `FormViewEventBodyDto` schema reference path before treating large-project `generate` as green |
+| Real-project fidelity | Tresta benchmark | Missing-ref validation is fixed; Zod/type-alias schema fidelity remains a later generator task |
 
 ---
 

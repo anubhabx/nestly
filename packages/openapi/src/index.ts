@@ -38,6 +38,7 @@ export function emitOpenApiDocument(
   model: InspectionModel,
   config: SpecordConfigV1 = {},
 ): OpenApiDocument {
+  const schemaNames = new Set(Object.keys(model.schemas));
   const document: OpenApiDocument = {
     openapi: "3.1.0",
     info: {
@@ -63,17 +64,17 @@ export function emitOpenApiDocument(
       ...(operation.description ? { description: operation.description } : {}),
       operationId: operation.operationId ?? operation.id,
       ...(operation.params.length
-        ? { parameters: operation.params.map(parameterToOpenApi) }
+        ? { parameters: operation.params.map((parameter) => parameterToOpenApi(parameter, schemaNames)) }
         : {}),
       ...(operation.requestBody
-        ? { requestBody: requestBodyToOpenApi(operation.requestBody) }
+        ? { requestBody: requestBodyToOpenApi(operation.requestBody, schemaNames) }
         : {}),
-      responses: responsesToOpenApi(operation.responses),
+      responses: responsesToOpenApi(operation.responses, schemaNames),
       ...(operation.openapi?.security ? { security: operation.openapi.security } : {}),
     };
   }
 
-  const schemas = schemasToOpenApi(model.schemas);
+  const schemas = schemasToOpenApi(model.schemas, schemaNames);
   const securitySchemes = model.securitySchemes;
 
   if (Object.keys(schemas).length > 0 || securitySchemes) {
@@ -108,27 +109,37 @@ function compareOperations(
   );
 }
 
-function parameterToOpenApi(parameter: ParameterModel): Record<string, unknown> {
+function parameterToOpenApi(
+  parameter: ParameterModel,
+  schemaNames: ReadonlySet<string>,
+): Record<string, unknown> {
   return {
     name: parameter.name,
     in: parameter.in,
     required: parameter.in === "path" ? true : parameter.required,
     ...(parameter.description ? { description: parameter.description } : {}),
-    schema: schemaRefToOpenApi(parameter.type, {
-      default: parameter.default,
-      enum: parameter.enum,
-      format: parameter.format,
-      constraints: parameter.constraints,
-    }),
+    schema: schemaRefToOpenApi(
+      parameter.type,
+      {
+        default: parameter.default,
+        enum: parameter.enum,
+        format: parameter.format,
+        constraints: parameter.constraints,
+      },
+      schemaNames,
+    ),
   };
 }
 
-function requestBodyToOpenApi(body: BodyModel): Record<string, unknown> {
+function requestBodyToOpenApi(
+  body: BodyModel,
+  schemaNames: ReadonlySet<string>,
+): Record<string, unknown> {
   return {
     required: body.required,
     content: {
       "application/json": {
-        schema: schemaRefToOpenApi(body.schema),
+        schema: schemaRefToOpenApi(body.schema, {}, schemaNames),
       },
     },
   };
@@ -136,11 +147,12 @@ function requestBodyToOpenApi(body: BodyModel): Record<string, unknown> {
 
 function responsesToOpenApi(
   responses: ResponseModel[],
+  schemaNames: ReadonlySet<string>,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const response of [...responses].sort((a, b) => a.status - b.status)) {
-    result[String(response.status)] = responseToOpenApi(response);
+    result[String(response.status)] = responseToOpenApi(response, schemaNames);
   }
 
   if (Object.keys(result).length === 0) {
@@ -150,11 +162,14 @@ function responsesToOpenApi(
   return result;
 }
 
-function responseToOpenApi(response: ResponseModel): Record<string, unknown> {
+function responseToOpenApi(
+  response: ResponseModel,
+  schemaNames: ReadonlySet<string>,
+): Record<string, unknown> {
   if (response.openapi) {
     const openapi: Record<string, unknown> = { ...response.openapi };
     if (response.schema && !("content" in openapi)) {
-      openapi.content = responseContent(response);
+      openapi.content = responseContent(response, schemaNames);
     }
     return openapi;
   }
@@ -164,40 +179,51 @@ function responseToOpenApi(response: ResponseModel): Record<string, unknown> {
   };
 
   if (response.schema && response.status !== 204) {
-    base.content = responseContent(response);
+    base.content = responseContent(response, schemaNames);
   }
 
   return base;
 }
 
-function responseContent(response: ResponseModel): Record<string, unknown> {
+function responseContent(
+  response: ResponseModel,
+  schemaNames: ReadonlySet<string>,
+): Record<string, unknown> {
   return {
     [response.contentType ?? "application/json"]: {
-      schema: schemaRefToOpenApi(response.schema ?? { kind: "unknown" }),
+      schema: schemaRefToOpenApi(
+        response.schema ?? { kind: "unknown" },
+        {},
+        schemaNames,
+      ),
     },
   };
 }
 
 function schemasToOpenApi(
   schemas: Record<string, SchemaModel>,
+  schemaNames: ReadonlySet<string>,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [name, schema] of Object.entries(sortObject(schemas))) {
-    result[name] = schemaToOpenApi(schema);
+    result[name] = schemaToOpenApi(schema, schemaNames);
   }
 
   return result;
 }
 
-function schemaToOpenApi(schema: SchemaModel): Record<string, unknown> {
+function schemaToOpenApi(
+  schema: SchemaModel,
+  schemaNames: ReadonlySet<string>,
+): Record<string, unknown> {
   const generated: Record<string, unknown> = {
     type: "object",
     ...(schema.required.length ? { required: [...schema.required].sort() } : {}),
     properties: Object.fromEntries(
       Object.entries(sortObject(schema.properties)).map(([name, property]) => [
         name,
-        propertyToOpenApi(property),
+        propertyToOpenApi(property, schemaNames),
       ]),
     ),
   };
@@ -209,20 +235,27 @@ function schemaToOpenApi(schema: SchemaModel): Record<string, unknown> {
   return generated;
 }
 
-function propertyToOpenApi(property: PropertyModel): Record<string, unknown> {
-  return schemaRefToOpenApi(property.type, {
-    description: property.description,
-    default: property.default,
-    example: property.example,
-    examples: property.examples,
-    enum: property.enum,
-    format: property.format,
-    deprecated: property.deprecated,
-    readOnly: property.readOnly,
-    writeOnly: property.writeOnly,
-    nullable: property.nullable,
-    constraints: property.constraints,
-  });
+function propertyToOpenApi(
+  property: PropertyModel,
+  schemaNames: ReadonlySet<string>,
+): Record<string, unknown> {
+  return schemaRefToOpenApi(
+    property.type,
+    {
+      description: property.description,
+      default: property.default,
+      example: property.example,
+      examples: property.examples,
+      enum: property.enum,
+      format: property.format,
+      deprecated: property.deprecated,
+      readOnly: property.readOnly,
+      writeOnly: property.writeOnly,
+      nullable: property.nullable,
+      constraints: property.constraints,
+    },
+    schemaNames,
+  );
 }
 
 function schemaRefToOpenApi(
@@ -240,8 +273,9 @@ function schemaRefToOpenApi(
     nullable?: boolean;
     constraints?: Record<string, unknown>;
   } = {},
+  schemaNames: ReadonlySet<string>,
 ): Record<string, unknown> {
-  const base = schemaRefBaseToOpenApi(ref);
+  const base = schemaRefBaseToOpenApi(ref, schemaNames);
   const next: Record<string, unknown> = { ...base };
 
   if (metadata.description !== undefined) next.description = metadata.description;
@@ -267,13 +301,19 @@ function schemaRefToOpenApi(
   return next;
 }
 
-function schemaRefBaseToOpenApi(ref: SchemaRef): Record<string, unknown> {
+function schemaRefBaseToOpenApi(
+  ref: SchemaRef,
+  schemaNames: ReadonlySet<string>,
+): Record<string, unknown> {
   switch (ref.kind) {
     case "primitive":
       return { type: ref.type === "null" ? "null" : ref.type };
     case "array":
-      return { type: "array", items: schemaRefToOpenApi(ref.items) };
+      return { type: "array", items: schemaRefToOpenApi(ref.items, {}, schemaNames) };
     case "ref":
+      if (!schemaNames.has(ref.name)) {
+        return {};
+      }
       return { $ref: `#/components/schemas/${ref.name}` };
     case "unknown":
       return {};

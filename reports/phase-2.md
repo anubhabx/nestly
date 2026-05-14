@@ -1,14 +1,16 @@
 # Phase 2 Session Report - Real-World NestJS OpenAPI V1
 
 **Phase:** 2 - Real-world NestJS OpenAPI generation
-**Date:** 2026-05-13
-**Status:** Complete and locally verified, including CLI UX follow-up
+**Date:** 2026-05-15
+**Status:** Complete and locally verified, including CLI UX and real-project validation follow-ups
 
 ---
 
 ## Status Summary
 
 Phase 2 makes Specord usable as a NestJS-only OpenAPI 3.1 generator. The system now keeps `specord inspect` as the internal debugging surface and adds a real `specord generate` path that emits validated OpenAPI 3.1 JSON. The 2026-05-13 follow-up simplified CLI usage so common NestJS layouts infer `tsconfig.json` and `src/` from the current directory or a positional project directory.
+
+The 2026-05-15 follow-up fixed a real-project validation failure discovered against `C:\workspace\tresta\apps\api_v2`: inferred request-body refs that have no matching component schema now emit as unconstrained schemas instead of dangling `$ref` values.
 
 Health is green:
 
@@ -18,6 +20,7 @@ Health is green:
 - Workspace `pnpm.cmd test`: 8 Turborepo tasks successful.
 - Workspace `pnpm.cmd build`: 5 package builds successful.
 - Short-form inspect and generate commands pass for both NestJS fixtures.
+- Large-project `generate` now emits valid OpenAPI for `C:\workspace\tresta\apps\api_v2`, with unresolved warnings preserved.
 
 ---
 
@@ -32,6 +35,7 @@ Health is green:
 | Mapped types | `PartialType`, `PickType`, `OmitType`, `IntersectionType`, and nested/common compositions resolve deterministically |
 | OpenAPI emitter | `@specord/openapi` emits OpenAPI 3.1 paths, operations, params, request bodies, responses, schemas, and security schemes |
 | Validation | Generated documents are validated through `@seriousme/openapi-schema-validator` before output |
+| Missing-ref fallback | Request/response refs without matching component schemas emit as `{}` instead of invalid dangling `$ref` values |
 | CLI | `specord inspect [project-dir]` and `specord generate [project-dir] [--output] [--pretty]` infer common source paths, while `--project` and `--root` remain overrides |
 | Config | `specord.config.ts` loading works in the Node CLI runtime; source include/exclude, URI versioning, strict CI flags, and security schemes are supported |
 | Tests | Added fixture, core, emitter, and CLI coverage for the new V1 behavior |
@@ -57,6 +61,7 @@ Health is green:
 | Strict CI fails unresolved cases | Pass | CLI test covers `ci.failOnUnresolved` |
 | Generate validates before writing | Pass | CLI output-file test writes validated JSON |
 | Simplified CLI defaults work | Pass | CLI tests cover positional project directories and current-directory defaults |
+| Missing request-body component refs do not break validation | Pass | `packages/openapi/test/emit-openapi.test.ts` and Tresta API benchmark |
 
 ---
 
@@ -66,6 +71,7 @@ Health is green:
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | `examples/nestjs-api` | 15 | 8 | 26 | 9 | 15 | 8 | 0 |
 | `examples/nestjs-realworld` | 6 | 6 | 2 | 5 | 6 | 6 | 1 |
+| `C:\workspace\tresta\apps\api_v2` | 96 | 0 | 0 global / 162 operation warnings | 75 | 96 | 0 | 0 |
 
 Generate warnings:
 
@@ -73,6 +79,7 @@ Generate warnings:
 | --- | --- |
 | `examples/nestjs-api` | 25 unresolved response/security warnings |
 | `examples/nestjs-realworld` | 2 unresolved warnings: dynamic download response and unconfigured `apiKeyAuth` scheme |
+| `C:\workspace\tresta\apps\api_v2` | 162 unresolved warnings; schemas are empty because the app heavily uses unsupported type aliases/Zod-inferred request bodies |
 
 ---
 
@@ -88,12 +95,14 @@ The system can now:
 - Apply `specord.config.ts` as final override layer.
 - Infer `tsconfig.json` and `src/` from the current directory or a positional project directory.
 - Emit and validate OpenAPI 3.1 JSON.
+- Avoid invalid OpenAPI when an inferred ref has no matching component schema.
 - Warn by default and fail strict CI when configured.
 
 The system still cannot:
 
 - Guarantee full parity with every `@nestjs/swagger` decorator or plugin edge case.
 - Infer arbitrary `@ApiSecurity("name")` scheme definitions without config.
+- Infer Zod/type-alias request body schemas as component schemas.
 - Express header/media-type versioning as static OpenAPI paths.
 - Execute decorators or inspect runtime Nest module state.
 - Emit YAML.
@@ -129,6 +138,7 @@ The system still cannot:
 | Alias CLI tests to source packages | Prevents stale `dist` from masking or inventing CLI test behavior |
 | Default CLI source paths to `tsconfig.json` and `src/` | Matches the common NestJS project shape and keeps explicit `--project`/`--root` available for custom layouts |
 | Treat positional project directory as a CLI source choice | Lets monorepo users type `specord generate apps/api --pretty` without repeating source paths |
+| Emit `{}` for refs missing from the component catalog | Valid OpenAPI is a harder requirement than pretending unsupported type aliases have generated schemas |
 
 ---
 
@@ -139,6 +149,7 @@ The system still cannot:
 | Phase 2 follow-up | Polish V1 output | Add stronger semantic checks for missing security scheme refs |
 | Phase 2 follow-up | Response coverage | Add explicit support for common file/stream response decorators or config examples |
 | Phase 2 follow-up | Schema fidelity | Normalize more validator constraints and decorator schema fragments |
+| Phase 2 follow-up | Zod/type alias fidelity | Infer or document a config path for Zod-inferred request bodies instead of emitting unconstrained schemas |
 | Phase 3 | Packaging | Decide package publishing surface and end-user install workflow |
 | Later | Formats | Add YAML output after JSON path is stable |
 | Later | Frameworks | Revisit non-Nest adapters only after NestJS V1 proves useful |
@@ -151,6 +162,7 @@ The system still cannot:
 | --- | --- | --- |
 | Static Swagger compatibility is not full Swagger parity | Medium | Scope documented; diagnostics and config cover gaps |
 | OpenAPI validator may not catch every semantic issue | Medium | Add dedicated semantic validation for known weak spots such as security scheme refs |
+| Missing schema refs now validate as `{}` but lose precision | Medium | Keep diagnostics/config as the precision path; add Zod/type-alias extraction or examples in a later follow-up |
 | `specord.config.ts` runtime loading writes a temporary `.mjs` beside the config | Low | File is removed immediately after import; covered by config loader test |
 | Real-world mapped type patterns can exceed V1 support | Medium | Deterministic diagnostics plus schema overrides remain the fallback |
 | Existing historical docs mention old phase boundaries | Low | Current README/docs/spec/report point to the Phase 2 contract; historical docs are marked where most likely to confuse |
@@ -173,6 +185,8 @@ pnpm.cmd --silent generate -- examples/nestjs-api --pretty
 pnpm.cmd --silent inspect -- examples/nestjs-realworld
 pnpm.cmd --silent generate -- examples/nestjs-realworld --pretty
 pnpm.cmd --silent generate -- examples/nestjs-realworld --output <temp>/specord-short-openapi.json --pretty
+pnpm.cmd --filter @specord/openapi test
+node packages/cli/bin/specord.js generate C:\workspace\tresta\apps\api_v2 --output <temp>/specord-tresta-openapi.json --pretty
 ```
 
 Results:
@@ -182,3 +196,4 @@ Results:
 - Default generation emitted unresolved-warning messages but did not fail.
 - Strict unresolved failure is covered by CLI test.
 - Short-form commands preserve the same fixture counts: `examples/nestjs-api` generated 9 paths, 15 operations, 8 schemas; `examples/nestjs-realworld` generated 5 paths, 6 operations, 6 schemas, and 1 security scheme.
+- Tresta API generation now exits 0 and writes valid OpenAPI with 75 paths and 0 schemas; 162 unresolved warnings remain as the fidelity backlog.
