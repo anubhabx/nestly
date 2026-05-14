@@ -4,6 +4,15 @@
   "description": "Static API documentation UI scaffold for Specord",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anubhabx/specord.git",
+    "directory": "packages/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/anubhabx/specord/issues"
+  },
+  "homepage": "https://github.com/anubhabx/specord#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -12,7 +21,13 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

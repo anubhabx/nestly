@@ -4,6 +4,15 @@
   "description": "CLI entrypoint for Specord",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anubhabx/specord.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/anubhabx/specord/issues"
+  },
+  "homepage": "https://github.com/anubhabx/specord#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
@@ -15,7 +24,14 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "bin"],
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

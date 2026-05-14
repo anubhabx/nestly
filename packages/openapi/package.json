@@ -4,6 +4,15 @@
   "description": "OpenAPI 3.1 emission and validation for Specord",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anubhabx/specord.git",
+    "directory": "packages/openapi"
+  },
+  "bugs": {
+    "url": "https://github.com/anubhabx/specord/issues"
+  },
+  "homepage": "https://github.com/anubhabx/specord#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,8 +22,12 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

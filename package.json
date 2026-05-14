@@ -11,8 +11,25 @@
     "clean": "turbo run clean",
     "inspect": "node packages/cli/bin/specord.js inspect",
     "generate": "node packages/cli/bin/specord.js generate",
-    "serve": "node packages/cli/bin/specord.js serve"
+    "serve": "node packages/cli/bin/specord.js serve",
+    "release:dry-run": "pnpm publish -r --dry-run --access public --no-git-checks",
+    "release:publish": "pnpm publish -r --access public --publish-branch develop"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anubhabx/specord.git"
+  },
+  "bugs": {
+    "url": "https://github.com/anubhabx/specord/issues"
+  },
+  "homepage": "https://github.com/anubhabx/specord#readme",
+  "keywords": [
+    "openapi",
+    "nestjs",
+    "typescript",
+    "api-docs",
+    "swagger"
+  ],
   "devDependencies": {
     "@types/node": "^20.10.6",
     "turbo": "^2.0.0",
