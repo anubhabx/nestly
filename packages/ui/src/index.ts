@@ -261,8 +261,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
         max-width: min(92vw, 980px);
         max-height: calc(100vh - 70px);
         flex: 0 0 auto;
-        resize: both;
-        overflow: auto;
+        overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 0;
         background: var(--surface);
@@ -270,9 +269,10 @@ export function renderDocsUi(options: DocsUiOptions): string {
 
       .panel-inner {
         display: flex;
-        min-width: 100%;
-        min-height: 100%;
+        width: 100%;
+        height: 100%;
         flex-direction: column;
+        overflow: auto;
       }
 
       .panel-top {
@@ -817,7 +817,6 @@ export function renderDocsUi(options: DocsUiOptions): string {
           max-width: none;
           min-width: 0;
           max-height: none;
-          resize: vertical;
         }
 
         .detail {
@@ -829,6 +828,81 @@ export function renderDocsUi(options: DocsUiOptions): string {
           grid-template-columns: 1fr;
           gap: 6px;
         }
+      }
+
+      /* ── Resize handles ──────────────────────────────────────────── */
+      .resize-handle {
+        position: absolute;
+        z-index: 12;
+        box-sizing: border-box;
+      }
+      .resize-n  { top: 0;    left: 10px;  right: 10px;  height: 5px; cursor: ns-resize; }
+      .resize-s  { bottom: 0; left: 10px;  right: 10px;  height: 5px; cursor: ns-resize; }
+      .resize-e  { right: 0;  top: 10px;   bottom: 10px; width: 5px;  cursor: ew-resize; }
+      .resize-w  { left: 0;   top: 10px;   bottom: 10px; width: 5px;  cursor: ew-resize; }
+      .resize-nw { top: 0;    left: 0;     width: 12px;  height: 12px; cursor: nwse-resize; }
+      .resize-ne { top: 0;    right: 0;    width: 12px;  height: 12px; cursor: nesw-resize; }
+      .resize-sw { bottom: 0; left: 0;     width: 12px;  height: 12px; cursor: nesw-resize; }
+      .resize-se { bottom: 0; right: 0;    width: 12px;  height: 12px; cursor: nwse-resize; }
+
+      body[data-resizing="n"]  * { cursor: ns-resize   !important; }
+      body[data-resizing="s"]  * { cursor: ns-resize   !important; }
+      body[data-resizing="e"]  * { cursor: ew-resize   !important; }
+      body[data-resizing="w"]  * { cursor: ew-resize   !important; }
+      body[data-resizing="nw"] * { cursor: nwse-resize !important; }
+      body[data-resizing="se"] * { cursor: nwse-resize !important; }
+      body[data-resizing="ne"] * { cursor: nesw-resize !important; }
+      body[data-resizing="sw"] * { cursor: nesw-resize !important; }
+      body[data-resizing]      { user-select: none; }
+
+      /* ── Panel ghost (drag clone) ────────────────────────────────── */
+      .panel-ghost {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100;
+        pointer-events: none;
+        opacity: 0.88;
+        will-change: transform;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.72), 0 4px 16px rgba(0,0,0,0.4), 0 0 0 1px var(--line-strong);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transform-origin: top left;
+        transition: none !important;
+      }
+      .panel-ghost .resize-handle { display: none; }
+      .panel-ghost .panel-inner   { overflow: hidden; }
+
+      /* ── Source panel placeholder ────────────────────────────────── */
+      .panel.is-drag-source {
+        opacity: 0.22;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+      }
+
+      /* ── Drop indicator ──────────────────────────────────────────── */
+      .drop-indicator {
+        flex: 0 0 3px;
+        min-width: 3px;
+        align-self: stretch;
+        border-radius: 3px;
+        background: var(--accent);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 100ms ease;
+      }
+      .drop-indicator.is-visible {
+        opacity: 1;
+      }
+
+      /* ── Drag handle polish ──────────────────────────────────────── */
+      .panel-drag {
+        cursor: grab;
+        touch-action: none;
+        will-change: auto;
+      }
+      .panel-drag:active {
+        cursor: grabbing;
       }
     </style>
   </head>
@@ -861,7 +935,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
         <aside class="panel" data-specord-panel="navigator" aria-label="Endpoints">
           <div class="panel-inner">
             <header class="panel-top">
-              <button class="panel-drag" type="button" draggable="true" data-specord-panel-drag data-panel-id="navigator" title="Drag panel">::</button>
+              <button class="panel-drag" type="button" data-specord-panel-drag data-panel-id="navigator" title="Drag panel">⠿</button>
               <div class="panel-heading">
                 <h2>Endpoints</h2>
                 <p>Search routes, methods, tags, or operation IDs.</p>
@@ -890,7 +964,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
         <section class="panel" data-specord-panel="reference" aria-label="Operation reference">
           <div class="panel-inner">
             <header class="panel-top">
-              <button class="panel-drag" type="button" draggable="true" data-specord-panel-drag data-panel-id="reference" title="Drag panel">::</button>
+              <button class="panel-drag" type="button" data-specord-panel-drag data-panel-id="reference" title="Drag panel">⠿</button>
               <div class="panel-heading">
                 <h2>Reference</h2>
                 <p>Overview, code, schemas, and changelog scaffolds.</p>
@@ -916,7 +990,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
         <aside class="panel" data-specord-panel="try" data-specord-try-panel aria-label="Try it scaffold">
           <div class="panel-inner">
             <header class="panel-top">
-              <button class="panel-drag" type="button" draggable="true" data-specord-panel-drag data-panel-id="try" title="Drag panel">::</button>
+              <button class="panel-drag" type="button" data-specord-panel-drag data-panel-id="try" title="Drag panel">⠿</button>
               <div class="panel-heading">
                 <h2>Try it</h2>
                 <p>Request builder scaffold. Execution contract pending.</p>
@@ -938,7 +1012,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
         <aside class="panel" data-specord-panel="schemas" aria-label="Schemas">
           <div class="panel-inner">
             <header class="panel-top">
-              <button class="panel-drag" type="button" draggable="true" data-specord-panel-drag data-panel-id="schemas" title="Drag panel">::</button>
+              <button class="panel-drag" type="button" data-specord-panel-drag data-panel-id="schemas" title="Drag panel">⠿</button>
               <div class="panel-heading">
                 <h2>Schemas</h2>
                 <p>Component schemas in this document.</p>
@@ -1649,6 +1723,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
           const size = state.layout.sizes[panelInfo.id] || defaultLayout.sizes[panelInfo.id];
           panel.style.width = String(Math.max(260, Math.round(size.width || 320))) + "px";
           panel.style.height = size.height ? String(Math.max(280, Math.round(size.height))) + "px" : "";
+          if (!panel.hidden) createResizeHandles(panel);
         });
 
         els.workspace.classList.toggle("is-empty", visible.length === 0);
@@ -1743,6 +1818,243 @@ export function renderDocsUi(options: DocsUiOptions): string {
         });
       }
 
+      // ================================================================
+      // RESIZE — pointer-events based multi-edge panel resize
+      // ================================================================
+      const RESIZE = {
+        active: false,
+        panel: null,
+        dir: "",
+        startX: 0,
+        startY: 0,
+        currX: 0,
+        currY: 0,
+        startW: 0,
+        startH: 0,
+        rafId: null
+      };
+      const PANEL_MIN_W = 260, PANEL_MIN_H = 280;
+
+      function createResizeHandles(panel) {
+        panel.querySelectorAll(".resize-handle").forEach(function(h) { h.remove(); });
+        ["n","s","e","w","nw","ne","sw","se"].forEach(function(dir) {
+          const h = document.createElement("div");
+          h.className = "resize-handle resize-" + dir;
+          h.addEventListener("pointerdown", function(e) { startResize(e, panel, dir); });
+          panel.appendChild(h);
+        });
+      }
+
+      function startResize(e, panel, dir) {
+        if (!e.isPrimary || RESIZE.active) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = panel.getBoundingClientRect();
+        RESIZE.active = true;
+        RESIZE.panel = panel;
+        RESIZE.dir = dir;
+        RESIZE.startX = e.clientX;
+        RESIZE.startY = e.clientY;
+        RESIZE.currX = e.clientX;
+        RESIZE.currY = e.clientY;
+        RESIZE.startW = rect.width;
+        RESIZE.startH = rect.height;
+        RESIZE.rafId = null;
+        document.body.setAttribute("data-resizing", dir);
+        e.target.setPointerCapture(e.pointerId);
+        e.target.addEventListener("pointermove", onResizeMove);
+        e.target.addEventListener("pointerup", onResizeEnd);
+        e.target.addEventListener("pointercancel", onResizeEnd);
+        e.target.addEventListener("lostpointercapture", onResizeEnd);
+      }
+
+      function onResizeMove(e) {
+        if (!e.isPrimary || !RESIZE.active) return;
+        RESIZE.currX = e.clientX;
+        RESIZE.currY = e.clientY;
+        if (!RESIZE.rafId) RESIZE.rafId = requestAnimationFrame(applyResize);
+      }
+
+      function applyResize() {
+        RESIZE.rafId = null;
+        if (!RESIZE.active) return;
+        const dx = RESIZE.currX - RESIZE.startX;
+        const dy = RESIZE.currY - RESIZE.startY;
+        const dir = RESIZE.dir;
+        const panel = RESIZE.panel;
+        const maxW = Math.min(window.innerWidth * 0.92, 980);
+        const maxH = window.innerHeight - 70;
+        if (dir.indexOf("e") !== -1 || dir.indexOf("w") !== -1) {
+          const raw = dir.indexOf("e") !== -1 ? RESIZE.startW + dx : RESIZE.startW - dx;
+          panel.style.width = Math.round(Math.max(PANEL_MIN_W, Math.min(maxW, raw))) + "px";
+        }
+        if (dir.indexOf("s") !== -1 || dir.indexOf("n") !== -1) {
+          const raw = dir.indexOf("s") !== -1 ? RESIZE.startH + dy : RESIZE.startH - dy;
+          panel.style.height = Math.round(Math.max(PANEL_MIN_H, Math.min(maxH, raw))) + "px";
+        }
+      }
+
+      function onResizeEnd(e) {
+        if (!RESIZE.active) return;
+        RESIZE.active = false;
+        if (RESIZE.rafId) { cancelAnimationFrame(RESIZE.rafId); RESIZE.rafId = null; }
+        document.body.removeAttribute("data-resizing");
+        e.target.removeEventListener("pointermove", onResizeMove);
+        e.target.removeEventListener("pointerup", onResizeEnd);
+        e.target.removeEventListener("pointercancel", onResizeEnd);
+        e.target.removeEventListener("lostpointercapture", onResizeEnd);
+        RESIZE.panel = null;
+        captureLayoutSizes();
+      }
+
+      // ================================================================
+      // DRAG — pointer-events based panel reorder with ghost + indicator
+      // ================================================================
+      const DRAG = {
+        active: false,
+        panelId: null,
+        ghost: null,
+        indicator: null,
+        startX: 0,
+        startY: 0,
+        currX: 0,
+        currY: 0,
+        originLeft: 0,
+        originTop: 0,
+        rafId: null,
+        targetBefore: null
+      };
+
+      function attachDragHandles() {
+        document.querySelectorAll("[data-specord-panel-drag]").forEach(function(handle) {
+          if (handle._dragAttached) return;
+          handle._dragAttached = true;
+          handle.style.touchAction = "none";
+          handle.addEventListener("pointerdown", function(e) {
+            if (!e.isPrimary) return;
+            startPanelDrag(e, handle, handle.getAttribute("data-panel-id"));
+          });
+        });
+      }
+
+      function startPanelDrag(e, handle, panelId) {
+        if (DRAG.active || RESIZE.active) return;
+        e.preventDefault();
+        const panel = document.querySelector('[data-specord-panel="' + panelId + '"]');
+        if (!panel) return;
+        const rect = panel.getBoundingClientRect();
+
+        // Create floating ghost clone
+        const ghost = panel.cloneNode(true);
+        ghost.classList.add("panel-ghost");
+        ghost.style.width = rect.width + "px";
+        ghost.style.height = rect.height + "px";
+        ghost.style.transform =
+          "translate3d(" + rect.left + "px," + rect.top + "px,0) rotate(1.5deg) scale(1.03)";
+        document.body.appendChild(ghost);
+
+        // Create the drop-position indicator line
+        const indicator = document.createElement("div");
+        indicator.className = "drop-indicator";
+
+        // Dim the real panel as a ghost placeholder
+        panel.classList.add("is-drag-source");
+
+        DRAG.active = true;
+        DRAG.panelId = panelId;
+        DRAG.ghost = ghost;
+        DRAG.indicator = indicator;
+        DRAG.startX = e.clientX;
+        DRAG.startY = e.clientY;
+        DRAG.currX = e.clientX;
+        DRAG.currY = e.clientY;
+        DRAG.originLeft = rect.left;
+        DRAG.originTop = rect.top;
+        DRAG.rafId = null;
+        DRAG.targetBefore = null;
+
+        document.body.style.userSelect = "none";
+        document.body.style.cursor = "grabbing";
+
+        handle.setPointerCapture(e.pointerId);
+        handle.addEventListener("pointermove", onDragMove, { passive: true });
+        handle.addEventListener("pointerup", onDragEnd);
+        handle.addEventListener("pointercancel", onDragEnd);
+        handle.addEventListener("lostpointercapture", onDragEnd);
+      }
+
+      function onDragMove(e) {
+        if (!e.isPrimary || !DRAG.active) return;
+        DRAG.currX = e.clientX;
+        DRAG.currY = e.clientY;
+        if (!DRAG.rafId) DRAG.rafId = requestAnimationFrame(paintDrag);
+      }
+
+      function paintDrag() {
+        DRAG.rafId = null;
+        if (!DRAG.active) return;
+        const dx = DRAG.currX - DRAG.startX;
+        const dy = DRAG.currY - DRAG.startY;
+        DRAG.ghost.style.transform =
+          "translate3d(" + (DRAG.originLeft + dx) + "px," + (DRAG.originTop + dy) + "px,0) rotate(1.5deg) scale(1.03)";
+        updateDropIndicator(DRAG.currX);
+      }
+
+      function updateDropIndicator(clientX) {
+        const workspace = els.workspace;
+        const panels = Array.from(
+          workspace.querySelectorAll("[data-specord-panel]:not([hidden]):not(.is-drag-source)")
+        );
+        if (DRAG.indicator.parentNode) DRAG.indicator.remove();
+        if (panels.length === 0) return;
+        let insertBefore = null;
+        for (let i = 0; i < panels.length; i++) {
+          const r = panels[i].getBoundingClientRect();
+          if (clientX < r.left + r.width / 2) { insertBefore = panels[i]; break; }
+        }
+        DRAG.targetBefore = insertBefore
+          ? insertBefore.getAttribute("data-specord-panel")
+          : null;
+        if (insertBefore) {
+          workspace.insertBefore(DRAG.indicator, insertBefore);
+        } else {
+          workspace.appendChild(DRAG.indicator);
+        }
+        DRAG.indicator.classList.add("is-visible");
+      }
+
+      function onDragEnd(e) {
+        if (!DRAG.active) return;
+        DRAG.active = false;
+        if (DRAG.rafId) { cancelAnimationFrame(DRAG.rafId); DRAG.rafId = null; }
+        if (DRAG.ghost)     { DRAG.ghost.remove();     DRAG.ghost = null; }
+        if (DRAG.indicator) { DRAG.indicator.remove(); DRAG.indicator = null; }
+        const srcPanel = document.querySelector('[data-specord-panel="' + DRAG.panelId + '"]');
+        if (srcPanel) srcPanel.classList.remove("is-drag-source");
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
+        e.target.removeEventListener("pointermove", onDragMove);
+        e.target.removeEventListener("pointerup", onDragEnd);
+        e.target.removeEventListener("pointercancel", onDragEnd);
+        e.target.removeEventListener("lostpointercapture", onDragEnd);
+        const sourceId = DRAG.panelId;
+        const targetBeforeId = DRAG.targetBefore;
+        DRAG.panelId = null;
+        DRAG.targetBefore = null;
+        if (sourceId) {
+          mutateLayout(function(layout) {
+            const next = layout.visible.filter(function(id) { return id !== sourceId; });
+            if (targetBeforeId) {
+              const idx = next.indexOf(targetBeforeId);
+              next.splice(idx < 0 ? next.length : idx, 0, sourceId);
+            } else {
+              next.push(sourceId);
+            }
+            layout.visible = next;
+          });
+        }
+      }
+
       function attachLayoutEvents() {
         els.addPanel.addEventListener("change", () => {
           const id = els.addPanel.value;
@@ -1766,39 +2078,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
           });
         });
 
-        document.querySelectorAll("[data-specord-panel-drag]").forEach((handle) => {
-          handle.addEventListener("dragstart", (event) => {
-            state.dragPanelId = handle.getAttribute("data-panel-id");
-            event.dataTransfer.effectAllowed = "move";
-            event.dataTransfer.setData("text/plain", state.dragPanelId || "");
-          });
-          handle.addEventListener("dragend", () => {
-            state.dragPanelId = undefined;
-          });
-        });
-
-        document.querySelectorAll("[data-specord-panel]").forEach((panel) => {
-          panel.addEventListener("dragover", (event) => {
-            if (!state.dragPanelId) return;
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
-          });
-          panel.addEventListener("drop", (event) => {
-            event.preventDefault();
-            const targetId = panel.getAttribute("data-specord-panel");
-            const sourceId = state.dragPanelId || event.dataTransfer.getData("text/plain");
-            if (!sourceId || !targetId || sourceId === targetId) return;
-            mutateLayout((layout) => {
-              const next = layout.visible.filter((id) => id !== sourceId);
-              const targetIndex = next.indexOf(targetId);
-              next.splice(targetIndex < 0 ? next.length : targetIndex, 0, sourceId);
-              layout.visible = next;
-            });
-            state.dragPanelId = undefined;
-          });
-        });
-
-        window.addEventListener("pointerup", captureLayoutSizes);
+        attachDragHandles();
       }
 
       function showToast(message) {
