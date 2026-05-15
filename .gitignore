@@ -155,3 +155,7 @@ packages/**/*.tsbuildinfo
 
 # Turborepo
 .turbo/
+
+# Graphify
+.graphify/
+graphify-out/
