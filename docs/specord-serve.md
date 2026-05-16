@@ -21,7 +21,7 @@ Routes:
 | Route | Purpose |
 | --- | --- |
 | `/` | Redirects to `/api` |
-| `/api` | Docs UI scaffold |
+| `/api` | Local API docs workspace |
 | `/api/openapi.json` | OpenAPI 3.1 JSON |
 | `/health` | Server health JSON |
 
@@ -54,3 +54,9 @@ specord serve apps/api --app-command "pnpm start:dev" --app-url http://localhost
 ```
 
 `--app-command` is a convenience process runner. It does not change how the OpenAPI document is produced.
+
+## Try It
+
+The docs UI includes a browser-local Try it panel. It builds requests from the selected OpenAPI operation, using `servers[0].url`, `--app-url`, or same-origin paths as the target base.
+
+The panel does not persist credentials, proxy requests, or bypass browser CORS rules. Header fields are sent only when the OpenAPI operation exposes header parameters.

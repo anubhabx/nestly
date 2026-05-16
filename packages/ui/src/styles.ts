@@ -640,6 +640,48 @@ pre.code {
   font-size: 11px;
   color: var(--text-2);
 }
+.try-result {
+  min-height: 72px;
+  padding: 8px 10px;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+.try-result.is-error {
+  border-color: rgba(255, 113, 113, 0.32);
+}
+.try-result pre.code {
+  max-height: 260px;
+  margin-top: 8px;
+  background: var(--bg);
+}
+.try-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+.try-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-weight: 700;
+}
+.try-status.is-ok {
+  background: var(--post-bg);
+  color: var(--post);
+}
+.try-status.is-error {
+  background: var(--delete-bg);
+  color: var(--delete);
+}
 
 /* ---------- empty/loading/error ---------- */
 .state {

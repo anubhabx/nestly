@@ -12,7 +12,7 @@ setupSpecordDocs(app);
 
 | Route | Purpose |
 | --- | --- |
-| `/api` | Docs UI scaffold |
+| `/api` | Local API docs workspace |
 | `/api/openapi.json` | OpenAPI 3.1 JSON |
 
 ## Bootstrap Example
@@ -69,4 +69,8 @@ setupSpecordDocs(app, {
 });
 ```
 
-The UI is currently a scaffold: summary cards, operation list, and the JSON link. It is not yet the final API reference experience.
+## Try It
+
+The injected UI includes a browser-local Try it panel. Because the docs route is mounted inside the same Nest app, same-origin requests can call local API routes directly when the generated OpenAPI paths match the app's runtime routes.
+
+Specord does not store credentials or proxy requests in this mode. Browser CORS and application auth still apply.

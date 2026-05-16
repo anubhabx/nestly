@@ -59,7 +59,18 @@ describe("renderDocsUi", () => {
     expect(html).toContain("data-specord-code-snippets");
     expect(html).toContain("data-specord-try-panel");
     expect(html).toContain("data-specord-method-filters");
-    expect(html).toContain("Execution contract pending");
+  });
+
+  it("ships browser-local try-it execution hooks without credential persistence", () => {
+    const html = renderDocsUi({ openApiUrl: "/api/openapi.json" });
+
+    expect(html).toContain("data-specord-try-submit");
+    expect(html).toContain("data-specord-try-result");
+    expect(html).toContain("data-try-param-in");
+    expect(html).toContain("data-try-body");
+    expect(html).toContain("Browser-local request");
+    expect(html).toContain("fetch(request.url");
+    expect(html).not.toContain("Execution contract pending");
   });
 
   it("does not include any of the deprecated dashboard or hero chrome", () => {

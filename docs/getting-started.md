@@ -60,6 +60,8 @@ pnpm.cmd serve -- examples/nestjs-realworld --pretty
 
 Open `http://127.0.0.1:4777/api`.
 
+The UI can send browser-local Try it requests for the selected operation. Requests use the OpenAPI server URL, the standalone `--app-url` value, or same-origin paths; Specord does not persist credentials or proxy around CORS.
+
 ## Add Precision With Config
 
 Create `specord.config.ts` when the source code cannot express enough detail:

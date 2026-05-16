@@ -1336,10 +1336,12 @@ export const CLIENT_SCRIPT = String.raw`
     var params = (Array.isArray(o.pathItem.parameters) ? o.pathItem.parameters : []).concat(o.op.parameters || []);
     var rows = "";
     params.forEach(function (p) {
+      var location = p["in"] || "query";
+      var required = p.required || location === "path";
       rows +=
         '<div class="try-row">' +
-          '<label>' + escapeHtml(p.name) + ' <span class="muted">' + escapeHtml(p["in"] || "") + '</span></label>' +
-          '<input type="text" placeholder="' + escapeAttr(p.description || "") + '">' +
+          '<label>' + escapeHtml(p.name) + ' <span class="muted">' + escapeHtml(location) + (required ? " required" : "") + '</span></label>' +
+          '<input type="text" data-try-param-in="' + escapeAttr(location) + '" data-try-param-name="' + escapeAttr(p.name || "") + '" data-try-param-required="' + (required ? "1" : "0") + '" placeholder="' + escapeAttr(p.description || "") + '">' +
         '</div>';
     });
     var bodyField = "";
@@ -1347,7 +1349,7 @@ export const CLIENT_SCRIPT = String.raw`
       bodyField =
         '<div class="try-row">' +
           '<label>Body</label>' +
-          '<textarea placeholder="{}"></textarea>' +
+          '<textarea data-try-body placeholder="{}"></textarea>' +
         '</div>';
     }
     body.innerHTML =
@@ -1358,9 +1360,166 @@ export const CLIENT_SCRIPT = String.raw`
         '</div>' +
         rows +
         bodyField +
-        '<button class="btn is-primary" type="submit" disabled>Send</button>' +
-        '<p class="try-pending">Execution contract pending — form preserves entered values locally; no request is sent.</p>' +
+        '<button class="btn is-primary" type="submit" data-specord-try-submit>Send</button>' +
+        '<p class="try-pending">Browser-local request. Values stay in this tab; Specord does not store credentials.</p>' +
+        '<div class="try-result" data-specord-try-result role="status" aria-live="polite">' +
+          '<span class="muted">Response will appear here.</span>' +
+        '</div>' +
       '</form>';
+    wireTryForm(body, o);
+  }
+
+  function wireTryForm(body, row) {
+    var form = body.querySelector("[data-specord-try-panel]");
+    if (!form) return;
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      submitTryRequest(form, row);
+    });
+  }
+
+  function submitTryRequest(form, row) {
+    var button = form.querySelector("[data-specord-try-submit]");
+    var result = form.querySelector("[data-specord-try-result]");
+    var request;
+    try {
+      request = buildTryRequest(form, row);
+    } catch (error) {
+      renderTryError(result, error && error.message ? error.message : String(error));
+      return;
+    }
+
+    if (button) button.disabled = true;
+    renderTrySending(result, request.url);
+    var started = nowMs();
+
+    fetch(request.url, request.options)
+      .then(function (response) {
+        return response.text().then(function (text) {
+          renderTryResponse(result, response, text, Math.round(nowMs() - started));
+        });
+      })
+      .catch(function (error) {
+        renderTryError(result, error && error.message ? error.message : String(error));
+      })
+      .then(function () {
+        if (button) button.disabled = false;
+      });
+  }
+
+  function buildTryRequest(form, row) {
+    var url = guessBaseUrl() + row.path;
+    var headers = { accept: "application/json, text/plain;q=0.9, */*;q=0.8" };
+    var query = [];
+    var fields = form.querySelectorAll("[data-try-param-name]");
+
+    fields.forEach(function (field) {
+      var name = field.getAttribute("data-try-param-name") || "";
+      var location = field.getAttribute("data-try-param-in") || "query";
+      var required = field.getAttribute("data-try-param-required") === "1";
+      var value = field.value.trim();
+      if (!name) return;
+      if (required && !value) {
+        throw new Error("Missing required " + location + " parameter: " + name);
+      }
+      if (!value) return;
+      if (location === "path") {
+        url = replacePathParam(url, name, value);
+      } else if (location === "query") {
+        query.push([name, value]);
+      } else if (location === "header") {
+        headers[name] = value;
+      }
+    });
+
+    var bodyText = "";
+    var bodyInput = form.querySelector("[data-try-body]");
+    if (bodyInput) {
+      bodyText = bodyInput.value.trim() || "{}";
+      try {
+        JSON.parse(bodyText);
+      } catch (_error) {
+        throw new Error("Request body must be valid JSON.");
+      }
+      headers["content-type"] = "application/json";
+    }
+
+    return {
+      url: appendQuery(url, query),
+      options: {
+        method: row.method,
+        credentials: "same-origin",
+        headers: headers,
+        body: bodyInput ? bodyText : undefined
+      }
+    };
+  }
+
+  function replacePathParam(url, name, value) {
+    var encoded = encodeURIComponent(value);
+    return url
+      .replace(new RegExp("\\{" + escapeRegExp(name) + "\\}", "g"), encoded)
+      .replace(new RegExp(":" + escapeRegExp(name) + "\\b", "g"), encoded);
+  }
+
+  function appendQuery(url, query) {
+    if (!query.length) return url;
+    var joiner = url.indexOf("?") >= 0 ? "&" : "?";
+    return url + joiner + query.map(function (pair) {
+      return encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1]);
+    }).join("&");
+  }
+
+  function renderTrySending(result, url) {
+    if (!result) return;
+    result.className = "try-result";
+    result.innerHTML =
+      '<div class="try-meta"><span class="try-status">Sending</span><span>' + escapeHtml(url) + '</span></div>' +
+      '<pre class="code">Waiting for response...</pre>';
+  }
+
+  function renderTryResponse(result, response, text, elapsedMs) {
+    if (!result) return;
+    var contentType = response.headers && response.headers.get ? response.headers.get("content-type") || "" : "";
+    var formatted = formatResponseText(text, contentType);
+    var statusClass = response.ok ? " is-ok" : " is-error";
+    result.className = "try-result";
+    result.innerHTML =
+      '<div class="try-meta">' +
+        '<span class="try-status' + statusClass + '">' + response.status + " " + escapeHtml(response.statusText || "") + '</span>' +
+        '<span>' + elapsedMs + ' ms</span>' +
+        (contentType ? '<span>' + escapeHtml(contentType) + '</span>' : '') +
+      '</div>' +
+      '<pre class="code">' + escapeHtml(formatted || "(empty response)") + '</pre>';
+  }
+
+  function renderTryError(result, message) {
+    if (!result) return;
+    result.className = "try-result is-error";
+    result.innerHTML =
+      '<div class="try-meta"><span class="try-status is-error">Request failed</span></div>' +
+      '<pre class="code">' + escapeHtml(message) + '</pre>';
+  }
+
+  function formatResponseText(text, contentType) {
+    if (contentType.indexOf("json") >= 0 && text) {
+      try {
+        return JSON.stringify(JSON.parse(text), null, 2);
+      } catch (_error) {
+        return text;
+      }
+    }
+    return text;
+  }
+
+  function nowMs() {
+    return window.performance && typeof window.performance.now === "function"
+      ? window.performance.now()
+      : Date.now();
+  }
+
+  function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^$()|[\]\\{}]/g, "\\$&");
   }
 
   function renderCode(body) {
