@@ -26,8 +26,9 @@ export const STYLES = `
   --shadow: 0 8px 24px rgba(0,0,0,0.45);
   --mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
   --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-  --t-fast: 100ms cubic-bezier(0.2, 0, 0, 1);
-  --t-base: 160ms cubic-bezier(0.2, 0, 0, 1);
+  --t-fast: 140ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-smooth: 320ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 * { box-sizing: border-box; }
@@ -149,7 +150,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   transform: translateY(-4px) scale(0.97);
   transform-origin: top right;
   pointer-events: none;
-  transition: opacity 140ms cubic-bezier(0.2, 0, 0, 1), transform 140ms cubic-bezier(0.2, 0, 0, 1);
+  transition: opacity var(--t-base), transform var(--t-base);
 }
 .menu.is-open .menu-pop {
   opacity: 1;
@@ -197,9 +198,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   position: relative;
   overflow: hidden;
   transition:
-    flex 260ms cubic-bezier(0.2, 0, 0, 1),
-    opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+    flex var(--t-smooth),
+    opacity var(--t-base);
 }
+.col.is-animating { will-change: flex, opacity; }
 .col.is-entering {
   flex: 0 0 0 !important;
   min-width: 0 !important;
@@ -251,9 +253,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .panel + .panel { border-top: 0; }
 .panel {
   transition:
-    flex 260ms cubic-bezier(0.2, 0, 0, 1),
-    opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+    flex var(--t-smooth),
+    opacity var(--t-base);
 }
+.panel.is-animating { will-change: flex, opacity; }
 .panel.is-entering {
   flex: 0 0 0 !important;
   min-height: 0 !important;
@@ -288,7 +291,8 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   border-radius: 3px;
   margin: 1px;
   overflow: hidden;
-  transition: flex 220ms cubic-bezier(0.2, 0, 0, 1);
+  transition: flex var(--t-smooth), opacity var(--t-base);
+  will-change: flex;
 }
 .panel-placeholder.is-stub { flex: 0 0 0 !important; border: 0; margin: 0; }
 

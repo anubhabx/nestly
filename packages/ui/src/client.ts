@@ -314,7 +314,7 @@ export const CLIENT_SCRIPT = String.raw`
 
     var existingCols = {};
     oldChildren.forEach(function (el) {
-      if (el.classList && el.classList.contains("col") && el.dataset.leaving !== "1") {
+      if (el.classList && el.classList.contains("col")) {
         existingCols[el.getAttribute("data-col-id")] = el;
       }
     });
@@ -332,6 +332,7 @@ export const CLIENT_SCRIPT = String.raw`
       var colEl;
       if (existingCols[col.id]) {
         colEl = existingCols[col.id];
+        if (colEl.dataset.leaving === "1") cancelLeave(colEl);
         delete existingCols[col.id];
       } else {
         colEl = document.createElement("div");
@@ -371,7 +372,7 @@ export const CLIENT_SCRIPT = String.raw`
     var existingPlaceholders = {};
     oldChildren.forEach(function (el) {
       if (!el.classList) return;
-      if (el.classList.contains("panel") && el.dataset.leaving !== "1") {
+      if (el.classList.contains("panel")) {
         existingPanels[el.getAttribute("data-panel-id")] = el;
       } else if (el.classList.contains("panel-placeholder")) {
         existingPlaceholders[el.getAttribute("data-placeholder-for")] = el;
@@ -394,6 +395,7 @@ export const CLIENT_SCRIPT = String.raw`
         delete existingPlaceholders[panel.id];
       } else if (existingPanels[panel.id]) {
         el = existingPanels[panel.id];
+        if (el.dataset.leaving === "1") cancelLeave(el);
         el.setAttribute("data-col-id", col.id);
         delete existingPanels[panel.id];
       } else {
@@ -628,22 +630,44 @@ export const CLIENT_SCRIPT = String.raw`
   }
 
   // ---- enter/leave animation helpers ----
+  var ANIM_HINT_MS = 360;
+
   function scheduleEnter(el) {
     el.classList.add("is-entering");
+    el.classList.add("is-animating");
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         el.classList.remove("is-entering");
       });
     });
+    setTimeout(function () { el.classList.remove("is-animating"); }, ANIM_HINT_MS);
   }
 
   function scheduleLeave(el, ms) {
     if (!el || el.dataset.leaving === "1") return;
     el.dataset.leaving = "1";
     el.classList.add("is-leaving");
-    setTimeout(function () {
+    el.classList.add("is-animating");
+    var id = setTimeout(function () {
       if (el.parentNode) el.parentNode.removeChild(el);
-    }, ms || 280);
+    }, ms || 340);
+    el._leaveTimer = id;
+  }
+
+  // Reverse a pending leave when the same element is wanted again before its
+  // timer fires — keeps fast drag-back-and-forth from causing a destroy/rebuild
+  // cycle that visually flickers.
+  function cancelLeave(el) {
+    if (!el || el.dataset.leaving !== "1") return;
+    if (el._leaveTimer) {
+      clearTimeout(el._leaveTimer);
+      el._leaveTimer = null;
+    }
+    el.dataset.leaving = "";
+    el.classList.remove("is-leaving");
+    // briefly re-enter so it grows back from its current collapsed size
+    el.classList.add("is-animating");
+    setTimeout(function () { el.classList.remove("is-animating"); }, ANIM_HINT_MS);
   }
 
   // Walk desired in order; for each, ensure it sits at the current cursor in
@@ -814,19 +838,31 @@ export const CLIENT_SCRIPT = String.raw`
     // the placeholder takes its visual place, neighbors get nothing extra).
     renderWorkspace();
 
+    var pendingX = e.clientX, pendingY = e.clientY;
+    var moveRaf = 0;
     function move(ev) {
-      panelEl.style.left = (ev.clientX - grabOffsetX) + "px";
-      panelEl.style.top = (ev.clientY - grabOffsetY) + "px";
-
-      var drop = computeDropZone(ev.clientX, ev.clientY, panelId);
-      var key = zoneKey(drop);
-      if (key === dragState.currentZone) return;
-      dragState.currentZone = key;
-      if (!drop || drop.kind === "keep") return;
-      applyDropToLayout(panelId, drop);
-      renderWorkspace();
+      pendingX = ev.clientX;
+      pendingY = ev.clientY;
+      // Lift follows cursor on every event for direct feedback.
+      panelEl.style.left = (pendingX - grabOffsetX) + "px";
+      panelEl.style.top = (pendingY - grabOffsetY) + "px";
+      // Defer the expensive zone re-compute to rAF so we collapse multiple
+      // pointermove events per frame into one layout update.
+      if (moveRaf) return;
+      moveRaf = requestAnimationFrame(function () {
+        moveRaf = 0;
+        if (!dragState) return;
+        var drop = computeDropZone(pendingX, pendingY, panelId);
+        var key = zoneKey(drop);
+        if (key === dragState.currentZone) return;
+        dragState.currentZone = key;
+        if (!drop || drop.kind === "keep") return;
+        applyDropToLayout(panelId, drop);
+        renderWorkspace();
+      });
     }
     function up() {
+      if (moveRaf) { cancelAnimationFrame(moveRaf); moveRaf = 0; }
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       window.removeEventListener("keydown", onKey);
@@ -835,6 +871,7 @@ export const CLIENT_SCRIPT = String.raw`
     function onKey(ev) {
       if (ev.key === "Escape") {
         ev.preventDefault();
+        if (moveRaf) { cancelAnimationFrame(moveRaf); moveRaf = 0; }
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
         window.removeEventListener("keydown", onKey);
