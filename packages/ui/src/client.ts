@@ -35,6 +35,15 @@ export const CLIENT_SCRIPT = String.raw`
   function cid() { return "c" + Math.random().toString(36).slice(2, 9); }
   function pid() { return "p" + Math.random().toString(36).slice(2, 9); }
 
+  // ---- layout constraints ----
+  var COL_MIN_PX = 220;
+  var COL_DEFAULT_NEW_PX = 320;
+  var ROW_MIN_PX = 120;
+  var RESIZER_PX = 4;
+
+  // dragState is set while a panel drag is in flight
+  var dragState = null;
+
   // ============================================================================
   // state
   // ============================================================================
@@ -67,9 +76,6 @@ export const CLIENT_SCRIPT = String.raw`
     statusDot: q("[data-specord-status-dot]"),
     statusText: q("[data-specord-status-text]"),
     statusCount: q("[data-specord-status-count]"),
-    dropH: q("[data-specord-drop-h]"),
-    dropV: q("[data-specord-drop-v]"),
-    ghost: q("[data-specord-ghost]"),
     toast: q("[data-specord-toast]")
   };
 
@@ -77,9 +83,37 @@ export const CLIENT_SCRIPT = String.raw`
 
   attachToolbar();
   attachKeyboard();
+  attachWorkspaceObserver();
+  ensureFlexColumn();
+  clampLayout();
   renderWorkspace();
   setStatus("loading", "Loading " + config.openApiUrl);
   fetchDoc(config.openApiUrl).then(onDocLoaded).catch(onDocError);
+
+  function attachWorkspaceObserver() {
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", onViewportChange);
+      return;
+    }
+    var ro = new ResizeObserver(onViewportChange);
+    ro.observe(dom.workspace);
+  }
+
+  var viewportRaf = 0;
+  function onViewportChange() {
+    if (viewportRaf) return;
+    viewportRaf = requestAnimationFrame(function () {
+      viewportRaf = 0;
+      if (dragState) return; // don't re-clamp mid-drag
+      var before = JSON.stringify(state.layout.columns.map(function (c) { return c.width; }));
+      clampLayout();
+      var after = JSON.stringify(state.layout.columns.map(function (c) { return c.width; }));
+      if (before !== after) {
+        applyColumnWidths();
+        saveLayout();
+      }
+    });
+  }
 
   // ============================================================================
   // doc loading
@@ -214,6 +248,7 @@ export const CLIENT_SCRIPT = String.raw`
       col = state.layout.columns[0];
     }
     col.panels.push({ id: pid(), type: type, weight: 1 });
+    ensureFlexColumn();
     saveLayout();
     renderWorkspace();
     renderAllPanels();
@@ -227,6 +262,7 @@ export const CLIENT_SCRIPT = String.raw`
     if (state.layout.columns.length === 0) {
       state.layout = clone(DEFAULT_LAYOUT);
     }
+    ensureFlexColumn();
     saveLayout();
     renderWorkspace();
     renderAllPanels();
@@ -270,19 +306,113 @@ export const CLIENT_SCRIPT = String.raw`
   // ============================================================================
   // workspace + panel DOM rendering
   // ============================================================================
+  // Incremental reconcile: reuse existing column and panel elements where possible
+  // so CSS flex transitions can fire smoothly on neighbors during drag.
   function renderWorkspace() {
-    dom.workspace.innerHTML = "";
+    var ws = dom.workspace;
+    var oldChildren = Array.prototype.slice.call(ws.children);
+
+    var existingCols = {};
+    oldChildren.forEach(function (el) {
+      if (el.classList && el.classList.contains("col")) {
+        existingCols[el.getAttribute("data-col-id")] = el;
+      }
+    });
+
+    var desired = [];
     state.layout.columns.forEach(function (col, idx) {
       if (idx > 0) {
         var resizer = document.createElement("div");
         resizer.className = "col-resize";
         resizer.setAttribute("data-col-resize", String(idx));
         resizer.addEventListener("pointerdown", function (e) { startColResize(e, idx); });
-        dom.workspace.appendChild(resizer);
+        desired.push(resizer);
       }
-      dom.workspace.appendChild(renderColumn(col));
+      var colEl;
+      if (existingCols[col.id]) {
+        colEl = existingCols[col.id];
+        delete existingCols[col.id];
+      } else {
+        colEl = document.createElement("div");
+        colEl.className = "col";
+        colEl.setAttribute("data-col-id", col.id);
+      }
+      reconcileColumn(colEl, col);
+      desired.push(colEl);
     });
+
+    // Remove orphaned columns
+    for (var cid_ in existingCols) {
+      var orphan = existingCols[cid_];
+      if (orphan.parentNode === ws) ws.removeChild(orphan);
+    }
+    // Remove old resizers
+    oldChildren.forEach(function (el) {
+      if (el.classList && el.classList.contains("col-resize") && el.parentNode === ws) {
+        ws.removeChild(el);
+      }
+    });
+
+    // Append desired in order — appendChild moves existing nodes without
+    // destroying their state.
+    desired.forEach(function (el) { ws.appendChild(el); });
+
     applyColumnWidths();
+  }
+
+  function reconcileColumn(colEl, col) {
+    var oldChildren = Array.prototype.slice.call(colEl.children);
+    var existingPanels = {};
+    var existingPlaceholders = {};
+    oldChildren.forEach(function (el) {
+      if (!el.classList) return;
+      if (el.classList.contains("panel")) {
+        existingPanels[el.getAttribute("data-panel-id")] = el;
+      } else if (el.classList.contains("panel-placeholder")) {
+        existingPlaceholders[el.getAttribute("data-placeholder-for")] = el;
+      }
+    });
+
+    var desired = [];
+    col.panels.forEach(function (panel, idx) {
+      if (idx > 0) {
+        var r = document.createElement("div");
+        r.className = "row-resize";
+        r.setAttribute("data-row-resize", col.id + ":" + idx);
+        r.addEventListener("pointerdown", function (e) { startRowResize(e, col.id, idx); });
+        desired.push(r);
+      }
+      var el;
+      if (dragState && dragState.panelId === panel.id) {
+        el = existingPlaceholders[panel.id] || makePlaceholder(panel);
+        delete existingPlaceholders[panel.id];
+      } else if (existingPanels[panel.id]) {
+        el = existingPanels[panel.id];
+        el.setAttribute("data-col-id", col.id);
+        delete existingPanels[panel.id];
+      } else {
+        el = renderPanelShell(panel, col.id);
+      }
+      desired.push(el);
+    });
+
+    // Remove orphan panels (only when not currently the drag source, which is in body)
+    for (var pId in existingPanels) {
+      var orphP = existingPanels[pId];
+      if (orphP.parentNode === colEl) colEl.removeChild(orphP);
+    }
+    for (var phId in existingPlaceholders) {
+      var orphPh = existingPlaceholders[phId];
+      if (orphPh.parentNode === colEl) colEl.removeChild(orphPh);
+    }
+    oldChildren.forEach(function (el) {
+      if (el.classList && el.classList.contains("row-resize") && el.parentNode === colEl) {
+        colEl.removeChild(el);
+      }
+    });
+
+    desired.forEach(function (el) { colEl.appendChild(el); });
+    applyRowWeights(colEl, col);
   }
 
   function applyColumnWidths() {
@@ -292,30 +422,20 @@ export const CLIENT_SCRIPT = String.raw`
       if (!el) return;
       if (col.width && col.width > 0) {
         el.style.flex = "0 0 " + col.width + "px";
-        el.style.width = col.width + "px";
+        el.style.minWidth = COL_MIN_PX + "px";
       } else {
         el.style.flex = "1 1 0";
-        el.style.width = "auto";
+        el.style.minWidth = COL_MIN_PX + "px";
       }
     });
   }
 
-  function renderColumn(col) {
-    var wrap = document.createElement("div");
-    wrap.className = "col";
-    wrap.setAttribute("data-col-id", col.id);
-    col.panels.forEach(function (panel, idx) {
-      if (idx > 0) {
-        var resizer = document.createElement("div");
-        resizer.className = "row-resize";
-        resizer.setAttribute("data-row-resize", col.id + ":" + idx);
-        resizer.addEventListener("pointerdown", function (e) { startRowResize(e, col.id, idx); });
-        wrap.appendChild(resizer);
-      }
-      wrap.appendChild(renderPanelShell(panel, col.id));
-    });
-    applyRowWeights(wrap, col);
-    return wrap;
+  function makePlaceholder(panel) {
+    var ph = document.createElement("div");
+    ph.className = "panel-placeholder";
+    ph.setAttribute("data-placeholder-for", panel.id);
+    ph.style.flex = (panel.weight || 1) + " " + (panel.weight || 1) + " 0";
+    return ph;
   }
 
   function applyRowWeights(colEl, col) {
@@ -419,33 +539,123 @@ export const CLIENT_SCRIPT = String.raw`
     var target = e.currentTarget;
     target.setPointerCapture(e.pointerId);
     target.classList.add("is-active");
+    document.body.style.cursor = "col-resize";
+
     var cols = dom.workspace.querySelectorAll(".col");
     var leftEl = cols[colIdx - 1];
     var rightEl = cols[colIdx];
     if (!leftEl || !rightEl) return;
+    var leftCol = state.layout.columns[colIdx - 1];
+    var rightCol = state.layout.columns[colIdx];
     var leftStart = leftEl.getBoundingClientRect().width;
     var rightStart = rightEl.getBoundingClientRect().width;
+    var pairTotal = leftStart + rightStart;
     var startX = e.clientX;
+
+    // Compute global slack: how much the resizing PAIR is allowed to occupy
+    // given the workspace width, other columns, and resizer widths.
+    var wsWidth = dom.workspace.getBoundingClientRect().width;
+    var otherFixed = 0;
+    var otherFlexCount = 0;
+    state.layout.columns.forEach(function (c, i) {
+      if (i === colIdx - 1 || i === colIdx) return;
+      if (c.width > 0) otherFixed += c.width;
+      else otherFlexCount++;
+    });
+    var resizers = (state.layout.columns.length - 1) * RESIZER_PX;
+    var otherFlexMin = otherFlexCount * COL_MIN_PX;
+    var pairMax = Math.max(2 * COL_MIN_PX, wsWidth - otherFixed - resizers - otherFlexMin);
+    var rightIsFlex = !(rightCol.width > 0);
+    var leftIsFlex = !(leftCol.width > 0);
 
     function move(ev) {
       var dx = ev.clientX - startX;
-      var nextLeft = Math.max(200, leftStart + dx);
-      var nextRight = Math.max(200, rightStart - dx);
-      state.layout.columns[colIdx - 1].width = nextLeft;
-      // right column: if it had a fixed width, preserve; if flex (0), leave 0
-      if (state.layout.columns[colIdx].width > 0) {
-        state.layout.columns[colIdx].width = nextRight;
+      var targetLeft, targetRight;
+
+      if (!leftIsFlex && !rightIsFlex) {
+        // both fixed: conserve total
+        targetLeft = clamp(leftStart + dx, COL_MIN_PX, pairTotal - COL_MIN_PX);
+        targetRight = pairTotal - targetLeft;
+        // also respect pairMax (in case other columns or window shrank)
+        if (targetLeft + targetRight > pairMax) {
+          var over = (targetLeft + targetRight) - pairMax;
+          targetLeft = Math.max(COL_MIN_PX, targetLeft - over / 2);
+          targetRight = Math.max(COL_MIN_PX, pairMax - targetLeft);
+        }
+        leftCol.width = targetLeft;
+        rightCol.width = targetRight;
+      } else if (!leftIsFlex && rightIsFlex) {
+        // left is fixed, right grows to fill: clamp left so right stays >= COL_MIN_PX
+        var maxLeft = pairMax - COL_MIN_PX;
+        targetLeft = clamp(leftStart + dx, COL_MIN_PX, maxLeft);
+        leftCol.width = targetLeft;
+      } else if (leftIsFlex && !rightIsFlex) {
+        // right is fixed, left grows to fill
+        var maxRight = pairMax - COL_MIN_PX;
+        targetRight = clamp(rightStart - dx, COL_MIN_PX, maxRight);
+        rightCol.width = targetRight;
+      } else {
+        // both flex (no width set): convert left to a fixed width derived from drag
+        targetLeft = clamp(leftStart + dx, COL_MIN_PX, pairMax - COL_MIN_PX);
+        leftCol.width = targetLeft;
       }
       applyColumnWidths();
     }
     function up() {
       target.classList.remove("is-active");
+      document.body.style.cursor = "";
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       saveLayout();
     }
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
+  }
+
+  function clamp(v, lo, hi) {
+    if (hi < lo) hi = lo;
+    return v < lo ? lo : v > hi ? hi : v;
+  }
+
+  // Ensure at least one column is flex (width 0) so the workspace fills
+  // horizontally even after fixed-width columns are added or removed.
+  function ensureFlexColumn() {
+    if (!state.layout.columns.length) return;
+    var hasFlex = false;
+    state.layout.columns.forEach(function (c) {
+      if (!c.width || c.width <= 0) hasFlex = true;
+    });
+    if (!hasFlex) {
+      state.layout.columns[state.layout.columns.length - 1].width = 0;
+    }
+  }
+
+  // Re-clamp column widths against the current workspace size. Called on
+  // viewport changes so panels can never end up wider than the screen.
+  function clampLayout() {
+    var ws = dom.workspace.getBoundingClientRect();
+    if (!ws.width) return;
+    var cols = state.layout.columns;
+    if (!cols.length) return;
+    var resizers = (cols.length - 1) * RESIZER_PX;
+    var flexCount = 0;
+    cols.forEach(function (c) { if (!c.width || c.width <= 0) flexCount++; });
+    var available = ws.width - resizers - flexCount * COL_MIN_PX;
+    if (available < COL_MIN_PX) available = COL_MIN_PX;
+
+    var fixedTotal = 0;
+    cols.forEach(function (c) { if (c.width > 0) fixedTotal += c.width; });
+
+    if (fixedTotal > available) {
+      // proportionally shrink fixed-width columns
+      var scale = available / fixedTotal;
+      cols.forEach(function (c) {
+        if (c.width > 0) c.width = Math.max(COL_MIN_PX, Math.floor(c.width * scale));
+      });
+    }
+    cols.forEach(function (c) {
+      if (c.width > 0 && c.width < COL_MIN_PX) c.width = COL_MIN_PX;
+    });
   }
 
   // ============================================================================
@@ -456,29 +666,35 @@ export const CLIENT_SCRIPT = String.raw`
     var target = e.currentTarget;
     target.setPointerCapture(e.pointerId);
     target.classList.add("is-active");
+    document.body.style.cursor = "row-resize";
+
     var colEl = dom.workspace.querySelector('[data-col-id="' + colId + '"]');
-    var panels = colEl ? colEl.querySelectorAll(".panel") : [];
+    var col = findCol(colId);
+    if (!colEl || !col) return;
+    var panels = colEl.querySelectorAll(".panel, .panel-placeholder");
     var topEl = panels[panelIdx - 1];
     var botEl = panels[panelIdx];
     if (!topEl || !botEl) return;
     var topStart = topEl.getBoundingClientRect().height;
     var botStart = botEl.getBoundingClientRect().height;
+    var pairHeight = topStart + botStart;
     var startY = e.clientY;
-    var col = findCol(colId);
+    var topPanel = col.panels[panelIdx - 1];
+    var botPanel = col.panels[panelIdx];
+    var pairWeight = (topPanel.weight || 1) + (botPanel.weight || 1);
 
     function move(ev) {
       var dy = ev.clientY - startY;
-      var nextTop = Math.max(80, topStart + dy);
-      var nextBot = Math.max(80, botStart - dy);
-      var total = nextTop + nextBot;
-      var topPanel = col.panels[panelIdx - 1];
-      var botPanel = col.panels[panelIdx];
-      topPanel.weight = nextTop / total * 2;
-      botPanel.weight = nextBot / total * 2;
+      var nextTop = clamp(topStart + dy, ROW_MIN_PX, Math.max(ROW_MIN_PX, pairHeight - ROW_MIN_PX));
+      var nextBot = pairHeight - nextTop;
+      if (nextBot < ROW_MIN_PX) { nextBot = ROW_MIN_PX; nextTop = pairHeight - ROW_MIN_PX; }
+      topPanel.weight = (nextTop / pairHeight) * pairWeight;
+      botPanel.weight = (nextBot / pairHeight) * pairWeight;
       applyRowWeights(colEl, col);
     }
     function up() {
       target.classList.remove("is-active");
+      document.body.style.cursor = "";
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
       saveLayout();
@@ -499,172 +715,242 @@ export const CLIENT_SCRIPT = String.raw`
   // ============================================================================
   function startPanelDrag(e, panelId) {
     e.preventDefault();
-    var target = e.currentTarget;
-    target.setPointerCapture(e.pointerId);
+    if (dragState) return;
+    var grab = e.currentTarget;
+    grab.setPointerCapture(e.pointerId);
+
     var panelEl = dom.app.querySelector('[data-panel-id="' + panelId + '"]');
     if (!panelEl) return;
-    panelEl.classList.add("is-dragging");
-    var def = PANELS[panelEl.getAttribute("data-specord-panel")];
-    dom.ghost.hidden = false;
-    dom.ghost.textContent = def ? def.title : "Panel";
-    var dragging = { panelId: panelId, drop: null };
-    moveGhost(e.clientX, e.clientY);
+    var rect = panelEl.getBoundingClientRect();
+    var grabOffsetX = e.clientX - rect.left;
+    var grabOffsetY = e.clientY - rect.top;
+
+    // Locate panel in layout and snapshot original position for cancel.
+    var loc = locatePanel(panelId);
+    if (!loc) return;
+    var originSnapshot = clone(state.layout);
+
+    // Lift the panel: detach from column, fix to viewport, follow cursor.
+    var liftWidth = Math.min(rect.width, 360);
+    var liftHeight = Math.min(rect.height, 220);
+    if (panelEl.parentNode) panelEl.parentNode.removeChild(panelEl);
+    panelEl.classList.add("is-lifted");
+    panelEl.style.width = liftWidth + "px";
+    panelEl.style.height = liftHeight + "px";
+    panelEl.style.left = (e.clientX - grabOffsetX) + "px";
+    panelEl.style.top = (e.clientY - grabOffsetY) + "px";
+    document.body.appendChild(panelEl);
+    document.body.style.cursor = "grabbing";
+
+    dragState = {
+      panelId: panelId,
+      origin: { colIdx: loc.colIdx, panelIdx: loc.panelIdx, snapshot: originSnapshot },
+      currentZone: zoneKey({ kind: "before-panel", panelId: panelId }),
+      panelEl: panelEl,
+      offsetX: grabOffsetX,
+      offsetY: grabOffsetY,
+      liftWidth: liftWidth,
+      liftHeight: liftHeight
+    };
+    dom.workspace.classList.add("is-dragging");
+
+    // Re-render with placeholder in source slot (mutate doesn't move the panel yet —
+    // the placeholder takes its visual place, neighbors get nothing extra).
+    renderWorkspace();
 
     function move(ev) {
-      moveGhost(ev.clientX, ev.clientY);
-      dragging.drop = computeDropZone(ev.clientX, ev.clientY, panelId);
-      paintDropIndicator(dragging.drop);
+      panelEl.style.left = (ev.clientX - grabOffsetX) + "px";
+      panelEl.style.top = (ev.clientY - grabOffsetY) + "px";
+
+      var drop = computeDropZone(ev.clientX, ev.clientY, panelId);
+      var key = zoneKey(drop);
+      if (key === dragState.currentZone) return;
+      dragState.currentZone = key;
+      if (!drop || drop.kind === "keep") return;
+      applyDropToLayout(panelId, drop);
+      renderWorkspace();
     }
-    function up(ev) {
-      panelEl.classList.remove("is-dragging");
-      dom.ghost.hidden = true;
-      dom.dropH.classList.remove("is-visible");
-      dom.dropV.classList.remove("is-visible");
+    function up() {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
-      if (dragging.drop) applyDrop(panelId, dragging.drop);
+      window.removeEventListener("keydown", onKey);
+      finishDrag(false);
+    }
+    function onKey(ev) {
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        window.removeEventListener("keydown", onKey);
+        finishDrag(true);
+      }
     }
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
+    window.addEventListener("keydown", onKey);
   }
 
-  function moveGhost(x, y) {
-    dom.ghost.style.left = (x + 14) + "px";
-    dom.ghost.style.top = (y + 8) + "px";
+  function finishDrag(cancel) {
+    if (!dragState) return;
+    var panelEl = dragState.panelEl;
+    var panelId = dragState.panelId;
+
+    if (cancel) {
+      state.layout = dragState.origin.snapshot;
+      // Re-render with dragState still set so placeholder appears in origin slot.
+      renderWorkspace();
+    }
+
+    // Strip lifted styling.
+    panelEl.classList.remove("is-lifted");
+    panelEl.style.position = "";
+    panelEl.style.left = "";
+    panelEl.style.top = "";
+    panelEl.style.width = "";
+    panelEl.style.height = "";
+    panelEl.style.transition = "";
+    panelEl.style.boxShadow = "";
+    panelEl.style.pointerEvents = "";
+    panelEl.style.zIndex = "";
+    panelEl.style.opacity = "";
+
+    // Swap into placeholder slot (preserves panel body content).
+    var placeholder = dom.workspace.querySelector('[data-placeholder-for="' + panelId + '"]');
+    if (placeholder && placeholder.parentNode) {
+      placeholder.parentNode.replaceChild(panelEl, placeholder);
+    } else if (panelEl.parentNode) {
+      panelEl.parentNode.removeChild(panelEl);
+    }
+
+    // Update data-col-id on the panel to match its new column.
+    var loc = locatePanel(panelId);
+    if (loc) panelEl.setAttribute("data-col-id", loc.col.id);
+
+    dom.workspace.classList.remove("is-dragging");
+    document.body.style.cursor = "";
+    dragState = null;
+
+    state.layout.columns = state.layout.columns.filter(function (c) { return c.panels.length > 0; });
+    if (state.layout.columns.length === 0) state.layout = clone(DEFAULT_LAYOUT);
+    ensureFlexColumn();
+
+    // Reapply sizing without nuking DOM.
+    applyColumnWidths();
+    var cols = dom.workspace.querySelectorAll(".col");
+    state.layout.columns.forEach(function (col, i) {
+      if (cols[i]) applyRowWeights(cols[i], col);
+    });
+    saveLayout();
+  }
+
+  function locatePanel(panelId) {
+    for (var i = 0; i < state.layout.columns.length; i++) {
+      var c = state.layout.columns[i];
+      for (var j = 0; j < c.panels.length; j++) {
+        if (c.panels[j].id === panelId) return { col: c, colIdx: i, panelIdx: j, panel: c.panels[j] };
+      }
+    }
+    return null;
+  }
+
+  function applyDropToLayout(panelId, drop) {
+    // Remove from current location
+    var src = null;
+    for (var i = 0; i < state.layout.columns.length; i++) {
+      var c = state.layout.columns[i];
+      for (var j = 0; j < c.panels.length; j++) {
+        if (c.panels[j].id === panelId) { src = c.panels.splice(j, 1)[0]; break; }
+      }
+      if (src) break;
+    }
+    // Drop empty columns (but keep current indexing in mind for "new-col" target)
+    var purgedBefore = 0;
+    for (var k = state.layout.columns.length - 1; k >= 0; k--) {
+      if (state.layout.columns[k].panels.length === 0) {
+        if (drop.kind === "new-col" && k < drop.index) purgedBefore++;
+        state.layout.columns.splice(k, 1);
+      }
+    }
+    if (drop.kind === "new-col") {
+      var idx = Math.max(0, Math.min(state.layout.columns.length, drop.index - purgedBefore));
+      state.layout.columns.splice(idx, 0, {
+        id: cid(),
+        width: COL_DEFAULT_NEW_PX,
+        panels: [src]
+      });
+    } else if (drop.kind === "append-col") {
+      var col = findCol(drop.colId);
+      if (col) col.panels.push(src);
+      else state.layout.columns.push({ id: cid(), width: 0, panels: [src] });
+    } else if (drop.kind === "before-panel" || drop.kind === "after-panel") {
+      var targetCol = null;
+      var targetIdx = -1;
+      for (var ii = 0; ii < state.layout.columns.length; ii++) {
+        var cc = state.layout.columns[ii];
+        for (var jj = 0; jj < cc.panels.length; jj++) {
+          if (cc.panels[jj].id === drop.panelId) { targetCol = cc; targetIdx = jj; break; }
+        }
+        if (targetCol) break;
+      }
+      if (targetCol) {
+        var at = drop.kind === "before-panel" ? targetIdx : targetIdx + 1;
+        targetCol.panels.splice(at, 0, src);
+      } else {
+        // fallback: append to last column
+        if (!state.layout.columns.length) state.layout.columns.push({ id: cid(), width: 0, panels: [] });
+        state.layout.columns[state.layout.columns.length - 1].panels.push(src);
+      }
+    }
+    ensureFlexColumn();
   }
 
   function computeDropZone(x, y, sourcePanelId) {
     var wsRect = dom.workspace.getBoundingClientRect();
-    if (x < wsRect.left || x > wsRect.right || y < wsRect.top || y > wsRect.bottom) return null;
+    if (x < wsRect.left - 8 || x > wsRect.right + 8 || y < wsRect.top - 8 || y > wsRect.bottom + 8) return null;
+    var clampedX = clamp(x, wsRect.left, wsRect.right - 1);
+    var clampedY = clamp(y, wsRect.top, wsRect.bottom - 1);
 
-    // Edge of workspace -> new column at edge
-    var edge = 24;
-    if (x - wsRect.left < edge) return { kind: "new-col", index: 0 };
-    if (wsRect.right - x < edge) return { kind: "new-col", index: state.layout.columns.length };
+    var edge = 28;
+    if (clampedX - wsRect.left < edge) return { kind: "new-col", index: 0 };
+    if (wsRect.right - clampedX < edge) return { kind: "new-col", index: state.layout.columns.length };
 
-    // Find column under cursor
     var cols = dom.workspace.querySelectorAll(".col");
     for (var ci = 0; ci < cols.length; ci++) {
       var colEl = cols[ci];
       var cr = colEl.getBoundingClientRect();
-      if (x < cr.left || x > cr.right) continue;
+      if (clampedX < cr.left || clampedX > cr.right) continue;
       var colId = colEl.getAttribute("data-col-id");
 
       // Between columns (cursor near left or right gap, but inside col)
-      if (x - cr.left < edge && ci > 0) return { kind: "new-col", index: ci };
-      if (cr.right - x < edge && ci < cols.length - 1) return { kind: "new-col", index: ci + 1 };
+      if (clampedX - cr.left < edge && ci > 0) return { kind: "new-col", index: ci };
+      if (cr.right - clampedX < edge && ci < cols.length - 1) return { kind: "new-col", index: ci + 1 };
 
-      // Inside column: find panel
-      var panels = colEl.querySelectorAll(".panel");
-      for (var pi = 0; pi < panels.length; pi++) {
-        var pEl = panels[pi];
-        var pr = pEl.getBoundingClientRect();
-        if (y < pr.top || y > pr.bottom) continue;
-        var targetPanelId = pEl.getAttribute("data-panel-id");
-        var localY = (y - pr.top) / pr.height;
-        if (localY < 0.5) {
-          return { kind: "before-panel", colId: colId, panelId: targetPanelId, sourceMatch: targetPanelId === sourcePanelId };
+      // Inside column: find slot
+      var slots = colEl.querySelectorAll(".panel, .panel-placeholder");
+      for (var pi = 0; pi < slots.length; pi++) {
+        var sEl = slots[pi];
+        var sr = sEl.getBoundingClientRect();
+        if (clampedY < sr.top || clampedY > sr.bottom) continue;
+        // If slot is the placeholder for source, don't reshuffle
+        if (sEl.classList.contains("panel-placeholder")) {
+          return { kind: "keep" };
         }
-        return { kind: "after-panel", colId: colId, panelId: targetPanelId, sourceMatch: targetPanelId === sourcePanelId };
+        var targetPanelId = sEl.getAttribute("data-panel-id");
+        var localY = (clampedY - sr.top) / sr.height;
+        if (localY < 0.5) return { kind: "before-panel", panelId: targetPanelId };
+        return { kind: "after-panel", panelId: targetPanelId };
       }
-      // Empty area of column -> append
       return { kind: "append-col", colId: colId };
     }
     return null;
   }
 
-  function paintDropIndicator(drop) {
-    dom.dropH.classList.remove("is-visible");
-    dom.dropV.classList.remove("is-visible");
-    if (!drop) return;
-    var wsRect = dom.workspace.getBoundingClientRect();
-    if (drop.kind === "new-col") {
-      var cols = dom.workspace.querySelectorAll(".col");
-      var x;
-      if (drop.index === 0) {
-        x = wsRect.left;
-      } else if (drop.index >= cols.length) {
-        x = wsRect.right - 2;
-      } else {
-        var r = cols[drop.index].getBoundingClientRect();
-        x = r.left - 1;
-      }
-      dom.dropV.style.left = x + "px";
-      dom.dropV.style.top = wsRect.top + "px";
-      dom.dropV.style.height = wsRect.height + "px";
-      dom.dropV.classList.add("is-visible");
-      return;
-    }
-    if (drop.kind === "before-panel" || drop.kind === "after-panel") {
-      var pEl = dom.app.querySelector('[data-panel-id="' + drop.panelId + '"]');
-      if (!pEl) return;
-      var pr = pEl.getBoundingClientRect();
-      var y = drop.kind === "before-panel" ? pr.top : pr.bottom - 2;
-      dom.dropH.style.top = y + "px";
-      dom.dropH.style.left = pr.left + "px";
-      dom.dropH.style.width = pr.width + "px";
-      dom.dropH.classList.add("is-visible");
-      return;
-    }
-    if (drop.kind === "append-col") {
-      var colEl = dom.workspace.querySelector('[data-col-id="' + drop.colId + '"]');
-      if (!colEl) return;
-      var cr = colEl.getBoundingClientRect();
-      dom.dropH.style.top = (cr.bottom - 2) + "px";
-      dom.dropH.style.left = cr.left + "px";
-      dom.dropH.style.width = cr.width + "px";
-      dom.dropH.classList.add("is-visible");
-    }
-  }
-
-  function applyDrop(sourcePanelId, drop) {
-    if (drop.sourceMatch) return; // dropping onto self -> no-op
-    var src = extractPanel(sourcePanelId);
-    if (!src.panel) return;
-
-    if (drop.kind === "new-col") {
-      state.layout.columns.splice(drop.index, 0, { id: cid(), width: 0, panels: [src.panel] });
-    } else if (drop.kind === "append-col") {
-      var col = findCol(drop.colId);
-      if (col) col.panels.push(src.panel);
-    } else if (drop.kind === "before-panel" || drop.kind === "after-panel") {
-      var targetCol = null;
-      var targetIdx = -1;
-      for (var i = 0; i < state.layout.columns.length; i++) {
-        var c = state.layout.columns[i];
-        for (var j = 0; j < c.panels.length; j++) {
-          if (c.panels[j].id === drop.panelId) { targetCol = c; targetIdx = j; break; }
-        }
-        if (targetCol) break;
-      }
-      if (!targetCol) {
-        // restore: put back where it came from
-        if (src.col) src.col.panels.push(src.panel);
-        return;
-      }
-      var insertAt = drop.kind === "before-panel" ? targetIdx : targetIdx + 1;
-      targetCol.panels.splice(insertAt, 0, src.panel);
-    }
-
-    // remove empty columns
-    state.layout.columns = state.layout.columns.filter(function (c) { return c.panels.length > 0; });
-    if (state.layout.columns.length === 0) state.layout = clone(DEFAULT_LAYOUT);
-    saveLayout();
-    renderWorkspace();
-    renderAllPanels();
-  }
-
-  function extractPanel(panelId) {
-    for (var i = 0; i < state.layout.columns.length; i++) {
-      var c = state.layout.columns[i];
-      for (var j = 0; j < c.panels.length; j++) {
-        if (c.panels[j].id === panelId) {
-          var p = c.panels.splice(j, 1)[0];
-          return { panel: p, col: c };
-        }
-      }
-    }
-    return { panel: null, col: null };
+  function zoneKey(drop) {
+    if (!drop) return "null";
+    if (drop.kind === "keep") return "keep";
+    if (drop.kind === "new-col") return "nc:" + drop.index;
+    if (drop.kind === "append-col") return "ac:" + drop.colId;
+    return drop.kind + ":" + drop.panelId;
   }
 
   // ============================================================================

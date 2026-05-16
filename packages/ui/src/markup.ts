@@ -38,9 +38,6 @@ export function renderShell(parts: MarkupParts): string {
     <span data-specord-status-count></span>
   </footer>
 
-  <div class="drop-indicator horizontal" data-specord-drop-h aria-hidden="true"></div>
-  <div class="drop-indicator vertical" data-specord-drop-v aria-hidden="true"></div>
-  <div class="drag-ghost" data-specord-ghost aria-hidden="true" hidden></div>
   <div class="toast" data-specord-toast role="status" aria-live="polite"></div>
 </div>`;
 }

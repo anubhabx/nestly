@@ -181,10 +181,14 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .col {
   display: flex;
   flex-direction: column;
-  min-width: 200px;
+  min-width: 0;
   min-height: 0;
   position: relative;
   overflow: hidden;
+}
+.workspace.is-dragging .col,
+.workspace.is-dragging .col-resize {
+  transition: flex 220ms cubic-bezier(0.2, 0, 0, 1), width 220ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .col-resize {
@@ -218,8 +222,35 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   position: relative;
 }
 .panel + .panel { border-top: 0; }
-.panel.is-dragging { opacity: 0.4; }
-.panel.is-drop-target { box-shadow: inset 0 0 0 1px var(--accent); }
+.workspace.is-dragging .panel {
+  transition: flex 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+.panel.is-lifted {
+  position: fixed;
+  z-index: 9000;
+  pointer-events: none;
+  border-color: var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(126, 163, 255, 0.45);
+  opacity: 0.97;
+  transition: none;
+  cursor: grabbing;
+  will-change: left, top, width, height;
+}
+.panel.is-lifted .panel-head { background: var(--accent-2); }
+.panel.is-lifted .panel-head .panel-title { color: var(--accent); }
+
+.panel-placeholder {
+  display: flex;
+  min-height: 0;
+  background: rgba(126, 163, 255, 0.07);
+  border: 1px dashed rgba(126, 163, 255, 0.55);
+  border-radius: 3px;
+  margin: 1px;
+  overflow: hidden;
+  transition: flex 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+.panel-placeholder.is-stub { flex: 0 0 0 !important; border: 0; margin: 0; }
 
 .panel-head {
   display: flex;
@@ -306,37 +337,6 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 .row-resize:hover,
 .row-resize.is-active { background: var(--accent); }
-
-/* ---------- drop indicators ---------- */
-.drop-indicator {
-  position: absolute;
-  background: var(--accent);
-  z-index: 999;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--t-fast);
-  box-shadow: 0 0 8px rgba(126, 163, 255, 0.6);
-}
-.drop-indicator.is-visible { opacity: 1; }
-.drop-indicator.horizontal { height: 2px; }
-.drop-indicator.vertical { width: 2px; }
-
-.drag-ghost {
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  background: var(--surface-2);
-  border: 1px solid var(--accent);
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  box-shadow: var(--shadow);
-  opacity: 0.95;
-}
 
 /* ---------- search & list ---------- */
 .search {
