@@ -145,9 +145,20 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   border: 1px solid var(--line-2);
   border-radius: 6px;
   box-shadow: var(--shadow);
-  display: none;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity 140ms cubic-bezier(0.2, 0, 0, 1), transform 140ms cubic-bezier(0.2, 0, 0, 1);
 }
-.menu.is-open .menu-pop { display: block; }
+.menu.is-open .menu-pop {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.menu-item {
+  transition: background 120ms cubic-bezier(0.2, 0, 0, 1), color 120ms cubic-bezier(0.2, 0, 0, 1);
+}
 .menu-item {
   display: flex;
   align-items: center;
@@ -185,10 +196,26 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   min-height: 0;
   position: relative;
   overflow: hidden;
+  transition:
+    flex 260ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 200ms cubic-bezier(0.2, 0, 0, 1);
 }
-.workspace.is-dragging .col,
-.workspace.is-dragging .col-resize {
-  transition: flex 220ms cubic-bezier(0.2, 0, 0, 1), width 220ms cubic-bezier(0.2, 0, 0, 1);
+.col.is-entering {
+  flex: 0 0 0 !important;
+  min-width: 0 !important;
+  opacity: 0;
+}
+.col.is-leaving {
+  flex: 0 0 0 !important;
+  min-width: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+.workspace.is-resizing .col,
+.workspace.is-resizing .panel,
+.workspace.is-resizing .col-resize,
+.workspace.is-resizing .row-resize {
+  transition: none !important;
 }
 
 .col-resize {
@@ -222,8 +249,21 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   position: relative;
 }
 .panel + .panel { border-top: 0; }
-.workspace.is-dragging .panel {
-  transition: flex 220ms cubic-bezier(0.2, 0, 0, 1);
+.panel {
+  transition:
+    flex 260ms cubic-bezier(0.2, 0, 0, 1),
+    opacity 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+.panel.is-entering {
+  flex: 0 0 0 !important;
+  min-height: 0 !important;
+  opacity: 0;
+}
+.panel.is-leaving {
+  flex: 0 0 0 !important;
+  min-height: 0 !important;
+  opacity: 0;
+  pointer-events: none;
 }
 .panel.is-lifted {
   position: fixed;

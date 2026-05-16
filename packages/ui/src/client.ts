@@ -314,12 +314,13 @@ export const CLIENT_SCRIPT = String.raw`
 
     var existingCols = {};
     oldChildren.forEach(function (el) {
-      if (el.classList && el.classList.contains("col")) {
+      if (el.classList && el.classList.contains("col") && el.dataset.leaving !== "1") {
         existingCols[el.getAttribute("data-col-id")] = el;
       }
     });
 
     var desired = [];
+    var freshCols = [];
     state.layout.columns.forEach(function (col, idx) {
       if (idx > 0) {
         var resizer = document.createElement("div");
@@ -336,28 +337,32 @@ export const CLIENT_SCRIPT = String.raw`
         colEl = document.createElement("div");
         colEl.className = "col";
         colEl.setAttribute("data-col-id", col.id);
+        freshCols.push(colEl);
       }
       reconcileColumn(colEl, col);
       desired.push(colEl);
     });
 
-    // Remove orphaned columns
+    // Animate orphan columns out (shrink to 0, then remove from DOM).
     for (var cid_ in existingCols) {
-      var orphan = existingCols[cid_];
-      if (orphan.parentNode === ws) ws.removeChild(orphan);
+      scheduleLeave(existingCols[cid_]);
     }
-    // Remove old resizers
+    // Remove old resizers immediately (they have no visual weight).
     oldChildren.forEach(function (el) {
       if (el.classList && el.classList.contains("col-resize") && el.parentNode === ws) {
         ws.removeChild(el);
       }
     });
 
-    // Append desired in order — appendChild moves existing nodes without
-    // destroying their state.
-    desired.forEach(function (el) { ws.appendChild(el); });
+    // Reorder in place: only insert new elements at correct positions; leaving
+    // columns stay put and collapse via .is-leaving, so neighbors slide in
+    // smoothly instead of jumping.
+    reorderChildren(ws, desired);
 
     applyColumnWidths();
+    // After applyColumnWidths sets target flex, mark fresh cols for entry so
+    // they grow from 0 to their target width on the next paint.
+    freshCols.forEach(scheduleEnter);
   }
 
   function reconcileColumn(colEl, col) {
@@ -366,7 +371,7 @@ export const CLIENT_SCRIPT = String.raw`
     var existingPlaceholders = {};
     oldChildren.forEach(function (el) {
       if (!el.classList) return;
-      if (el.classList.contains("panel")) {
+      if (el.classList.contains("panel") && el.dataset.leaving !== "1") {
         existingPanels[el.getAttribute("data-panel-id")] = el;
       } else if (el.classList.contains("panel-placeholder")) {
         existingPlaceholders[el.getAttribute("data-placeholder-for")] = el;
@@ -374,6 +379,7 @@ export const CLIENT_SCRIPT = String.raw`
     });
 
     var desired = [];
+    var freshPanels = [];
     col.panels.forEach(function (panel, idx) {
       if (idx > 0) {
         var r = document.createElement("div");
@@ -392,15 +398,16 @@ export const CLIENT_SCRIPT = String.raw`
         delete existingPanels[panel.id];
       } else {
         el = renderPanelShell(panel, col.id);
+        freshPanels.push(el);
       }
       desired.push(el);
     });
 
-    // Remove orphan panels (only when not currently the drag source, which is in body)
+    // Orphan panels shrink out, then get removed.
     for (var pId in existingPanels) {
-      var orphP = existingPanels[pId];
-      if (orphP.parentNode === colEl) colEl.removeChild(orphP);
+      scheduleLeave(existingPanels[pId]);
     }
+    // Orphan placeholders go away instantly (they're transient drag artifacts).
     for (var phId in existingPlaceholders) {
       var orphPh = existingPlaceholders[phId];
       if (orphPh.parentNode === colEl) colEl.removeChild(orphPh);
@@ -411,8 +418,9 @@ export const CLIENT_SCRIPT = String.raw`
       }
     });
 
-    desired.forEach(function (el) { colEl.appendChild(el); });
+    reorderChildren(colEl, desired);
     applyRowWeights(colEl, col);
+    freshPanels.forEach(scheduleEnter);
   }
 
   function applyColumnWidths() {
@@ -539,6 +547,7 @@ export const CLIENT_SCRIPT = String.raw`
     var target = e.currentTarget;
     target.setPointerCapture(e.pointerId);
     target.classList.add("is-active");
+    dom.workspace.classList.add("is-resizing");
     document.body.style.cursor = "col-resize";
 
     var cols = dom.workspace.querySelectorAll(".col");
@@ -603,6 +612,7 @@ export const CLIENT_SCRIPT = String.raw`
     }
     function up() {
       target.classList.remove("is-active");
+      dom.workspace.classList.remove("is-resizing");
       document.body.style.cursor = "";
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
@@ -615,6 +625,50 @@ export const CLIENT_SCRIPT = String.raw`
   function clamp(v, lo, hi) {
     if (hi < lo) hi = lo;
     return v < lo ? lo : v > hi ? hi : v;
+  }
+
+  // ---- enter/leave animation helpers ----
+  function scheduleEnter(el) {
+    el.classList.add("is-entering");
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        el.classList.remove("is-entering");
+      });
+    });
+  }
+
+  function scheduleLeave(el, ms) {
+    if (!el || el.dataset.leaving === "1") return;
+    el.dataset.leaving = "1";
+    el.classList.add("is-leaving");
+    setTimeout(function () {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, ms || 280);
+  }
+
+  // Walk desired in order; for each, ensure it sits at the current cursor in
+  // parent.children, stepping past any leaving siblings (which stay put so they
+  // can collapse animatedly in their original visual position).
+  function reorderChildren(parent, desired) {
+    var dIdx = 0, cIdx = 0;
+    while (dIdx < desired.length) {
+      var d = desired[dIdx];
+      var c = parent.children[cIdx];
+      if (!c) {
+        parent.appendChild(d);
+        dIdx++;
+        cIdx++;
+      } else if (c === d) {
+        dIdx++;
+        cIdx++;
+      } else if (c.dataset && c.dataset.leaving === "1") {
+        cIdx++;
+      } else {
+        parent.insertBefore(d, c);
+        dIdx++;
+        cIdx++;
+      }
+    }
   }
 
   // Ensure at least one column is flex (width 0) so the workspace fills
@@ -666,6 +720,7 @@ export const CLIENT_SCRIPT = String.raw`
     var target = e.currentTarget;
     target.setPointerCapture(e.pointerId);
     target.classList.add("is-active");
+    dom.workspace.classList.add("is-resizing");
     document.body.style.cursor = "row-resize";
 
     var colEl = dom.workspace.querySelector('[data-col-id="' + colId + '"]');
@@ -694,6 +749,7 @@ export const CLIENT_SCRIPT = String.raw`
     }
     function up() {
       target.classList.remove("is-active");
+      dom.workspace.classList.remove("is-resizing");
       document.body.style.cursor = "";
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
