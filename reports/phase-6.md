@@ -2,29 +2,32 @@
 
 **Phase:** 6 - API history architecture, browser-local Try It, and benchmark fixture hardening
 **Date:** 2026-05-18
-**Status:** Healthy. Try It remains verified; the NestJS benchmark fixture has been reset to a scaffolded, production-shaped Nest CLI app, and the pipeline snapshot now maintains reviewable registry/log artifacts.
+**Status:** Healthy. Try It remains verified; the NestJS benchmark fixture has been reset to a scaffolded, production-shaped Nest CLI app, the pipeline snapshot now maintains reviewable registry/log artifacts, and Phase 6b/6c core history primitives are implemented.
 
 ---
 
 ## Status Summary
 
-Phase 6 now covers three delivered slices:
+Phase 6 now covers four delivered slices:
 
 1. API history planning and browser-local Try It execution for the docs UI.
 2. Replacement of the weak NestJS examples with one canonical `examples/nestjs-api` benchmark fixture scaffolded through the Nest CLI and expanded into a realistic application.
 3. Snapshot-governance artifacts for the canonical pipeline snapshot: machine-readable registry, human changelog, and test log.
+4. Core API-history primitives for local OpenAPI snapshot caching and operation-scoped OpenAPI diff records.
 
 Current health is green:
 
 - Workspace `pnpm.cmd build`: 6 Turborepo package builds successful.
 - Workspace `pnpm.cmd test`: 11 Turborepo tasks successful.
-- `@specord/core`: 7 files, 42 tests passing against the new benchmark fixture.
+- `@specord/core`: 9 files, 50 tests passing against the new benchmark fixture and history primitives.
 - `@specord/cli`: 3 files, 10 tests passing against the new benchmark fixture.
 - `examples/nestjs-api`: build, lint, unit test, and e2e smoke test passing.
 - Docker Compose config for `examples/nestjs-api/compose.yaml` validates.
 - Specord extraction sees 7 controllers, 27 operations, 42 schemas, and 29 diagnostics from the new fixture.
 - OpenAPI generation emits OpenAPI 3.1.0 with 22 paths, 27 operations, 42 schemas, and 2 unresolved warnings.
 - The core pipeline snapshot test now fails if `reports/snapshot-registry.json`, `reports/snapshot-changelog.md`, or `reports/snapshot-log.md` drift from the normalized snapshot baseline.
+- Snapshot cache helpers write/read ignored OpenAPI snapshot artifacts under `.git/specord/cache/snapshots`.
+- OpenAPI diff helpers emit operation-scoped records for added, removed, changed, deprecated, and security-impacting operations.
 
 The unresolved warnings are intentional benchmark pressure points:
 
@@ -52,6 +55,9 @@ The unresolved warnings are intentional benchmark pressure points:
 | Docs | Updated README, docs, examples README, and Phase 2 spec references to use `examples/nestjs-api` as the canonical Nest benchmark |
 | Tests | Updated core and CLI acceptance/snapshot/config tests to target the new benchmark output |
 | Snapshot governance | Added `reports/snapshot-registry.json`, `reports/snapshot-changelog.md`, and `reports/snapshot-log.md`; wired the pipeline snapshot test to enforce them |
+| Snapshot cache | Added `packages/core/src/history/snapshot-cache.ts` with deterministic input hashing, cache keying, and read/write helpers |
+| Diff engine | Added `packages/core/src/history/openapi-diff.ts` and exported `ApiHistoryRecord` types from `@specord/types` |
+| Tests | Added focused Phase 6b/6c coverage in `snapshot-cache.test.ts` and `openapi-history-diff.test.ts` |
 
 ---
 
@@ -73,6 +79,8 @@ The unresolved warnings are intentional benchmark pressure points:
 | OpenAPI generation works | Pass with warnings | 22 paths, 27 operations, 42 schemas, 2 unresolved warnings |
 | Stale `nestjs-realworld` docs/spec/package references removed | Pass | `rg -n "nestjs-realworld|examples/nestjs-api/main\.ts" README.md docs spec packages examples package.json pnpm-workspace.yaml` returned no matches |
 | Snapshot registry and log stay maintained | Pass | `pnpm.cmd --filter @specord/core exec vitest run test/pipeline.snapshot.test.ts` checks the snapshot registry, changelog, and log against the normalized model hash |
+| Phase 6b snapshot cache works | Pass | Targeted cache tests cover `.git/specord/cache/snapshots`, deterministic keying, and cache misses when inputs change |
+| Phase 6c diff engine works | Pass | Targeted diff tests cover no-op diffs, added/removed operations, security/deprecation prioritization, and changed field names |
 
 ---
 
@@ -130,6 +138,8 @@ The system can now:
 - Validate docs serving and generation flows against the same canonical Nest fixture.
 - Continue using browser-local Try It without new proxy or credential-storage architecture.
 - Force intentional snapshot updates to carry a matching registry entry, changelog note, and snapshot-test log row.
+- Cache OpenAPI snapshots by commit, config hash, Specord version, and optional lockfile hash.
+- Produce operation-scoped history records directly from two OpenAPI documents.
 
 The system still cannot:
 
@@ -137,8 +147,10 @@ The system still cannot:
 - Fully map signature-based webhook auth into OpenAPI security without override/config support.
 - Understand every Swagger decorator used by a production Nest app.
 - Boot the benchmark against live Postgres/Redis in tests; current fixture tests are unit/e2e smoke tests that do not require Docker services.
-- Build the API history index planned earlier in Phase 6.
-- Persist or share history snapshots across machines.
+- Build the full API history index planned earlier in Phase 6.
+- Serve cached history records through local docs endpoints.
+- Render changelog records in the docs UI.
+- Persist or share generated history snapshots across machines.
 - Fetch GitHub Release metadata or diff release-indexed OpenAPI snapshots.
 
 ---
@@ -173,6 +185,8 @@ The system still cannot:
 | Do not start Docker services in normal verification | Compose config validation is enough for this slice; extractor tests should stay fast and deterministic |
 | Keep Try It browser-local | Previous Phase 6 security boundary still stands until proxy/auth storage decisions are explicit |
 | Gate snapshot registry/log via the snapshot test | Snapshot changes should fail locally unless the review artifacts are updated with the new hash and metrics |
+| Keep 6b/6c in core first | Server/UI wiring can reuse deterministic cache and diff behavior without coupling tests to a running docs server |
+| Treat source provenance as later indexing work | The OpenAPI diff layer cannot safely infer controller/DTO/service files, so `sourceFiles` stays empty until commit-drilldown indexing provides attribution |
 
 ---
 
@@ -181,8 +195,8 @@ The system still cannot:
 | Phase | Focus | TODO |
 | --- | --- | --- |
 | Phase 6a | History config | Add config types for `release.source`, tag patterns, package version files, and snapshot mode |
-| Phase 6b | Snapshot cache | Implement commit/config/tool keyed OpenAPI snapshot cache under `.git/specord` |
-| Phase 6c | Diff engine | Convert release-to-release OpenAPI diffs into operation-scoped history records |
+| Phase 6b | Snapshot cache | Done: commit/config/tool/lockfile keyed OpenAPI snapshot cache under `.git/specord/cache/snapshots` |
+| Phase 6c | Diff engine | Done: OpenAPI document diffs converted into operation-scoped history records |
 | Phase 6d | History server routes | Add local docs server endpoints for operation history, job status, and commit drilldown |
 | Phase 6e | UI changelog | Render indexed operation changelog with progressive background updates |
 | Phase 6f | Try It hardening | Add generated request examples, auth helper inputs, request history, and optional proxy only after the security contract is explicit |
@@ -203,7 +217,8 @@ The system still cannot:
 | Example-local dependencies increase install time | Low | Dependencies are isolated to `examples/nestjs-api` and do not change root packages |
 | Docker services are validated but not runtime-tested | Medium | Add optional Compose-backed smoke tests only after deciding test cost and CI constraints |
 | Browser-local Try It still hits CORS in split-origin setups | Medium | Existing UI surfaces fetch failures; proxy design remains a later explicit security decision |
-| API history plan is still unimplemented | Medium | Roadmap keeps history config/cache/diff/server/UI as Phase 6 follow-up slices |
+| API history is not yet wired into serve/UI | Medium | Phase 6b/6c now provide core primitives; 6d/6e remain the integration slices |
+| Diff engine source attribution is empty | Low | Later commit-drilldown indexing will attach controller/DTO/service provenance |
 
 ---
 
@@ -225,6 +240,7 @@ pnpm.cmd --silent generate -- examples/nestjs-api --pretty
 pnpm.cmd build
 pnpm.cmd test
 pnpm.cmd --filter @specord/core exec vitest run test/pipeline.snapshot.test.ts
+pnpm.cmd --filter @specord/core exec vitest run test/snapshot-cache.test.ts test/openapi-history-diff.test.ts
 git diff --check
 rg -n "nestjs-realworld|examples/nestjs-api/main\.ts" README.md docs spec packages examples package.json pnpm-workspace.yaml
 ```
@@ -232,7 +248,7 @@ rg -n "nestjs-realworld|examples/nestjs-api/main\.ts" README.md docs spec packag
 Results:
 
 - Snapshot refresh exited 0 and updated 1 snapshot.
-- `@specord/core` exited 0 with 7 test files and 42 tests passing.
+- `@specord/core` exited 0 with 9 test files and 50 tests passing after Phase 6b/6c.
 - `@specord/cli` exited 0 with 3 test files and 10 tests passing.
 - `examples/nestjs-api` build exited 0.
 - `examples/nestjs-api` lint exited 0.
@@ -242,6 +258,7 @@ Results:
 - Workspace build exited 0 with 6 successful Turborepo tasks.
 - Workspace test exited 0 with 11 successful Turborepo tasks.
 - Core pipeline snapshot test exited 0 with 2 tests passing, including registry/changelog/log drift checks.
+- Phase 6b/6c targeted tests exited 0 with 2 files and 7 tests passing.
 - Generate emitted 22 paths, 27 operations, 42 schemas, `bearerAuth`, and 2 unresolved warnings.
 - Stale `nestjs-realworld` and old root `examples/nestjs-api/main.ts` references were not found.
 - `git diff --check` reported only CRLF normalization warnings on Windows, not whitespace errors.

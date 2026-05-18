@@ -1,7 +1,7 @@
 # Phase 6 API History and Try-It Plan
 
-Date: 2026-05-16
-Status: Planned architecture and first execution slice
+Date: 2026-05-18
+Status: Phase 6a planning complete; Phase 6b/6c core cache and diff primitives implemented; server/UI history wiring remains planned.
 
 ## Goal
 
@@ -82,6 +82,14 @@ package lock hash when available
 
 If any input changes, Specord recomputes instead of trusting stale history.
 
+Implemented Phase 6b cache primitives:
+
+- `resolveSnapshotCacheDir(repoRoot)` resolves the local cache directory to `.git/specord/cache/snapshots`.
+- `hashSnapshotInput(value)` creates deterministic SHA-256 input hashes from strings or object values with stable key ordering.
+- `createSnapshotCacheKey({ commit, configHash, specordVersion, lockfileHash })` combines the commit, config hash, Specord version, and optional lockfile hash into a stable snapshot key.
+- `writeOpenApiSnapshot(...)` writes a generated OpenAPI document and metadata to the local ignored cache.
+- `readOpenApiSnapshot(...)` reads only the snapshot whose computed key matches the current inputs; changed config/version/lockfile inputs become cache misses.
+
 ## Background Indexing
 
 The history indexer runs in priority order:
@@ -140,6 +148,16 @@ type ApiHistoryRecord = {
 ```
 
 The changelog panel renders records for the selected operation only. A global changelog view groups records by release, tag, team, and breaking status.
+
+Implemented Phase 6c diff primitive:
+
+- `diffOpenApiSnapshots({ before, after, commit, date, author, releaseTag })` compares two OpenAPI documents and returns operation-scoped `ApiHistoryRecord` objects.
+- Operation identity uses `operationId` when present and falls back to `METHOD /path`.
+- Added and removed operations produce `added` and `removed` records.
+- Security changes produce `security` records before generic `changed` records.
+- New deprecation flags produce `deprecated` records before generic `changed` records.
+- Other top-level operation changes produce `changed` records with stable `affectedFields`.
+- Source provenance is left empty at this layer; controller/DTO/service file attribution remains part of the later indexing and commit-drilldown work.
 
 ## Provenance and Commit Drilldown
 

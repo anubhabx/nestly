@@ -23,6 +23,15 @@ This document defines local workflow for Specord V1 development.
   - `reports/snapshot-log.md`
 - `packages/core/test/pipeline.snapshot.test.ts` enforces that the registry hash, changelog entry, and log row match the normalized inspection baseline.
 
+## API history primitives
+
+- Snapshot cache helpers live in `packages/core/src/history/snapshot-cache.ts`.
+- The local cache path is `.git/specord/cache/snapshots`; cache files are generated and should not be committed.
+- Cache keys must include commit, config hash, Specord version, and the lockfile hash when available.
+- OpenAPI diff helpers live in `packages/core/src/history/openapi-diff.ts`.
+- Diff records are operation-scoped `ApiHistoryRecord` values exported from `@specord/types`.
+- Use `pnpm.cmd --filter @specord/core exec vitest run test/snapshot-cache.test.ts test/openapi-history-diff.test.ts` after changing cache or diff behavior.
+
 ## Recommended verification loop
 
 ```bash

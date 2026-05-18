@@ -30,3 +30,9 @@ export type {
   OperationOverrideConfig,
   SpecordConfigV1,
 } from "./config.js";
+
+export type {
+  ApiHistoryChangeType,
+  ApiHistoryConfidence,
+  ApiHistoryRecord,
+} from "./history.js";
