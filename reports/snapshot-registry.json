@@ -1,0 +1,247 @@
+{
+  "version": 1,
+  "snapshots": [
+    {
+      "id": "core.pipeline.nestjs-api.inspection.v1",
+      "fixture": "examples/nestjs-api",
+      "testFile": "packages/core/test/pipeline.snapshot.test.ts",
+      "snapshotFile": "packages/core/test/__snapshots__/pipeline.snapshot.test.ts.snap",
+      "modelVersion": "v1",
+      "hashAlgorithm": "sha256",
+      "snapshotHash": "b0bfc171a97cf2c5275bace56e70b34b0fefb3bd0543e37526b0353621d0ea79",
+      "normalizedFields": [
+        "source.project",
+        "source.root",
+        "source.inspectedAt",
+        "diagnostic.message.typeStrings",
+        "response.inference.reason.typeStrings"
+      ],
+      "metrics": {
+        "controllers": 7,
+        "paths": 22,
+        "operations": 27,
+        "schemas": 42,
+        "diagnostics": {
+          "total": 29,
+          "bySeverity": {
+            "info": 27,
+            "warning": 2
+          },
+          "byCode": {
+            "EXTRACTOR_UNSUPPORTED_DECORATOR": 27,
+            "EXTRACTOR_UNRESOLVED_RESPONSE": 1,
+            "EXTRACTOR_UNRESOLVED_SECURITY": 1
+          }
+        }
+      },
+      "operations": [
+        {
+          "id": "AccountsController.list",
+          "operationId": "listAccounts",
+          "method": "get",
+          "path": "/accounts"
+        },
+        {
+          "id": "AccountsController.get",
+          "operationId": "getAccount",
+          "method": "get",
+          "path": "/accounts/{accountId}"
+        },
+        {
+          "id": "AccountsController.update",
+          "operationId": "updateAccount",
+          "method": "patch",
+          "path": "/accounts/{accountId}"
+        },
+        {
+          "id": "AccountsController.invite",
+          "operationId": "inviteMember",
+          "method": "post",
+          "path": "/accounts/{accountId}/members"
+        },
+        {
+          "id": "AccountsController.removeMember",
+          "operationId": "removeMember",
+          "method": "delete",
+          "path": "/accounts/{accountId}/members/{memberId}"
+        },
+        {
+          "id": "AuthController.register",
+          "operationId": "registerUser",
+          "method": "post",
+          "path": "/auth/register"
+        },
+        {
+          "id": "AuthController.login",
+          "operationId": "loginUser",
+          "method": "post",
+          "path": "/auth/login"
+        },
+        {
+          "id": "AuthController.refresh",
+          "operationId": "refreshToken",
+          "method": "post",
+          "path": "/auth/refresh"
+        },
+        {
+          "id": "AuthController.me",
+          "operationId": "getCurrentUser",
+          "method": "get",
+          "path": "/auth/me"
+        },
+        {
+          "id": "AuthController.logout",
+          "operationId": "logoutUser",
+          "method": "post",
+          "path": "/auth/logout"
+        },
+        {
+          "id": "BillingController.subscription",
+          "operationId": "getSubscription",
+          "method": "get",
+          "path": "/billing/subscription"
+        },
+        {
+          "id": "BillingController.checkout",
+          "operationId": "createCheckoutSession",
+          "method": "post",
+          "path": "/billing/checkout-sessions"
+        },
+        {
+          "id": "BillingController.invoices",
+          "operationId": "listInvoices",
+          "method": "get",
+          "path": "/billing/invoices"
+        },
+        {
+          "id": "HealthController.health",
+          "operationId": "getHealth",
+          "method": "get",
+          "path": "/health"
+        },
+        {
+          "id": "HealthController.readiness",
+          "operationId": "getReadiness",
+          "method": "get",
+          "path": "/health/readiness"
+        },
+        {
+          "id": "ProjectsController.list",
+          "operationId": "listProjects",
+          "method": "get",
+          "path": "/projects"
+        },
+        {
+          "id": "ProjectsController.create",
+          "operationId": "createProject",
+          "method": "post",
+          "path": "/projects"
+        },
+        {
+          "id": "ProjectsController.get",
+          "operationId": "getProject",
+          "method": "get",
+          "path": "/projects/{projectId}"
+        },
+        {
+          "id": "ProjectsController.update",
+          "operationId": "updateProject",
+          "method": "patch",
+          "path": "/projects/{projectId}"
+        },
+        {
+          "id": "ProjectsController.archive",
+          "operationId": "archiveProject",
+          "method": "post",
+          "path": "/projects/{projectId}/archive"
+        },
+        {
+          "id": "ProjectsController.exportCsv",
+          "operationId": "exportProjectCsv",
+          "method": "get",
+          "path": "/projects/{projectId}/export"
+        },
+        {
+          "id": "TasksController.list",
+          "operationId": "listTasks",
+          "method": "get",
+          "path": "/projects/{projectId}/tasks"
+        },
+        {
+          "id": "TasksController.create",
+          "operationId": "createTask",
+          "method": "post",
+          "path": "/projects/{projectId}/tasks"
+        },
+        {
+          "id": "TasksController.get",
+          "operationId": "getTask",
+          "method": "get",
+          "path": "/projects/{projectId}/tasks/{taskId}"
+        },
+        {
+          "id": "TasksController.update",
+          "operationId": "updateTask",
+          "method": "patch",
+          "path": "/projects/{projectId}/tasks/{taskId}"
+        },
+        {
+          "id": "TasksController.addComment",
+          "operationId": "createTaskComment",
+          "method": "post",
+          "path": "/projects/{projectId}/tasks/{taskId}/comments"
+        },
+        {
+          "id": "WebhooksController.stripe",
+          "operationId": "handleStripeWebhook",
+          "method": "post",
+          "path": "/webhooks/stripe"
+        }
+      ],
+      "schemaNames": [
+        "TaskComment",
+        "Task",
+        "Project",
+        "User",
+        "AccountMember",
+        "Subscription",
+        "Account",
+        "InviteMemberDto",
+        "UpdateAccountDto",
+        "MemberResponseDto",
+        "AccountDetailsDto",
+        "AccountResponseDto",
+        "LoginUserDto",
+        "RefreshTokenDto",
+        "RegisterUserDto",
+        "UserProfileDto",
+        "TokenPairDto",
+        "CheckoutSessionDto",
+        "CheckoutSessionResponseDto",
+        "Invoice",
+        "InvoiceQueryDto",
+        "InvoiceResponseDto",
+        "SubscriptionResponseDto",
+        "HealthResponseDto",
+        "CreateProjectDto",
+        "TaskCommentResponseDto",
+        "TaskResponseDto",
+        "ProjectResponseDto",
+        "ProjectPageMetaDto",
+        "PaginatedProjectResponseDto",
+        "ProjectQueryDto",
+        "UpdateProjectDto",
+        "CreateTaskCommentDto",
+        "CreateTaskDto",
+        "TaskQueryDto",
+        "UpdateTaskDto",
+        "WebhookAckDto",
+        "WebhookEventDto",
+        "AccountUsageDto",
+        "ApiErrorDto",
+        "PaginationDto",
+        "ProjectSummaryDto"
+      ]
+    }
+  ]
+}

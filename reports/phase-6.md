@@ -1,17 +1,18 @@
 # Phase 6 Session Report - API History, Try It, and NestJS Benchmark Reset
 
 **Phase:** 6 - API history architecture, browser-local Try It, and benchmark fixture hardening
-**Date:** 2026-05-16
-**Status:** Healthy. Try It remains verified; the NestJS benchmark fixture has been reset to a scaffolded, production-shaped Nest CLI app.
+**Date:** 2026-05-18
+**Status:** Healthy. Try It remains verified; the NestJS benchmark fixture has been reset to a scaffolded, production-shaped Nest CLI app, and the pipeline snapshot now maintains reviewable registry/log artifacts.
 
 ---
 
 ## Status Summary
 
-Phase 6 now covers two delivered slices:
+Phase 6 now covers three delivered slices:
 
 1. API history planning and browser-local Try It execution for the docs UI.
 2. Replacement of the weak NestJS examples with one canonical `examples/nestjs-api` benchmark fixture scaffolded through the Nest CLI and expanded into a realistic application.
+3. Snapshot-governance artifacts for the canonical pipeline snapshot: machine-readable registry, human changelog, and test log.
 
 Current health is green:
 
@@ -23,6 +24,7 @@ Current health is green:
 - Docker Compose config for `examples/nestjs-api/compose.yaml` validates.
 - Specord extraction sees 7 controllers, 27 operations, 42 schemas, and 29 diagnostics from the new fixture.
 - OpenAPI generation emits OpenAPI 3.1.0 with 22 paths, 27 operations, 42 schemas, and 2 unresolved warnings.
+- The core pipeline snapshot test now fails if `reports/snapshot-registry.json`, `reports/snapshot-changelog.md`, or `reports/snapshot-log.md` drift from the normalized snapshot baseline.
 
 The unresolved warnings are intentional benchmark pressure points:
 
@@ -49,6 +51,7 @@ The unresolved warnings are intentional benchmark pressure points:
 | Signup flow | Registration now creates the user, account, and owner membership in a single transaction |
 | Docs | Updated README, docs, examples README, and Phase 2 spec references to use `examples/nestjs-api` as the canonical Nest benchmark |
 | Tests | Updated core and CLI acceptance/snapshot/config tests to target the new benchmark output |
+| Snapshot governance | Added `reports/snapshot-registry.json`, `reports/snapshot-changelog.md`, and `reports/snapshot-log.md`; wired the pipeline snapshot test to enforce them |
 
 ---
 
@@ -69,6 +72,7 @@ The unresolved warnings are intentional benchmark pressure points:
 | CLI commands target the new fixture | Pass | `@specord/cli` passed 10 tests |
 | OpenAPI generation works | Pass with warnings | 22 paths, 27 operations, 42 schemas, 2 unresolved warnings |
 | Stale `nestjs-realworld` docs/spec/package references removed | Pass | `rg -n "nestjs-realworld|examples/nestjs-api/main\.ts" README.md docs spec packages examples package.json pnpm-workspace.yaml` returned no matches |
+| Snapshot registry and log stay maintained | Pass | `pnpm.cmd --filter @specord/core exec vitest run test/pipeline.snapshot.test.ts` checks the snapshot registry, changelog, and log against the normalized model hash |
 
 ---
 
@@ -125,6 +129,7 @@ The system can now:
 - Generate OpenAPI for a non-trivial app while keeping unresolved extraction gaps visible.
 - Validate docs serving and generation flows against the same canonical Nest fixture.
 - Continue using browser-local Try It without new proxy or credential-storage architecture.
+- Force intentional snapshot updates to carry a matching registry entry, changelog note, and snapshot-test log row.
 
 The system still cannot:
 
@@ -167,6 +172,7 @@ The system still cannot:
 | Keep docs and tests on `examples/nestjs-api` | One target reduces drift and makes future extraction regressions obvious |
 | Do not start Docker services in normal verification | Compose config validation is enough for this slice; extractor tests should stay fast and deterministic |
 | Keep Try It browser-local | Previous Phase 6 security boundary still stands until proxy/auth storage decisions are explicit |
+| Gate snapshot registry/log via the snapshot test | Snapshot changes should fail locally unless the review artifacts are updated with the new hash and metrics |
 
 ---
 
@@ -218,6 +224,7 @@ pnpm.cmd --silent inspect -- examples/nestjs-api | node scripts/summarize-inspec
 pnpm.cmd --silent generate -- examples/nestjs-api --pretty
 pnpm.cmd build
 pnpm.cmd test
+pnpm.cmd --filter @specord/core exec vitest run test/pipeline.snapshot.test.ts
 git diff --check
 rg -n "nestjs-realworld|examples/nestjs-api/main\.ts" README.md docs spec packages examples package.json pnpm-workspace.yaml
 ```
@@ -234,6 +241,7 @@ Results:
 - Compose config validation exited 0.
 - Workspace build exited 0 with 6 successful Turborepo tasks.
 - Workspace test exited 0 with 11 successful Turborepo tasks.
+- Core pipeline snapshot test exited 0 with 2 tests passing, including registry/changelog/log drift checks.
 - Generate emitted 22 paths, 27 operations, 42 schemas, `bearerAuth`, and 2 unresolved warnings.
 - Stale `nestjs-realworld` and old root `examples/nestjs-api/main.ts` references were not found.
 - `git diff --check` reported only CRLF normalization warnings on Windows, not whitespace errors.

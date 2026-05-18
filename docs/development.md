@@ -17,6 +17,11 @@ This document defines local workflow for Specord V1 development.
 - Snapshot output must remain deterministic.
 - Changes to ordering, naming, or diagnostics require explicit spec updates.
 - Fixture regressions should be treated as high-priority breakages.
+- Intentional snapshot refreshes must update:
+  - `reports/snapshot-registry.json`
+  - `reports/snapshot-changelog.md`
+  - `reports/snapshot-log.md`
+- `packages/core/test/pipeline.snapshot.test.ts` enforces that the registry hash, changelog entry, and log row match the normalized inspection baseline.
 
 ## Recommended verification loop
 
