@@ -1,29 +1,72 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import type { RequestUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { AuthService } from './auth.service';
-import { LoginUserDto } from '../users/dto/login-user.dto';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { LoginUserDto } from './dto/login-user.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { TokenPairDto } from './dto/token-pair.dto';
+import { UserProfileDto } from './dto/user-profile.dto';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly auth: AuthService) {}
 
-  @Post('login')
-  @UseGuards(LocalAuthGuard)
-  async login(@Body() loginUserDto: LoginUserDto) {
-    return this.authService.login(loginUserDto);
-  }
-
+  @Public()
   @Post('register')
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+  @ApiOperation({ operationId: 'registerUser', summary: 'Register user' })
+  @ApiCreatedResponse({ description: 'User registered.', type: TokenPairDto })
+  register(@Body() dto: RegisterUserDto): Promise<TokenPairDto> {
+    return this.auth.register(dto);
   }
 
+  @Public()
+  @Post('login')
+  @ApiOperation({ operationId: 'loginUser', summary: 'Login user' })
+  @ApiOkResponse({ description: 'Token pair returned.', type: TokenPairDto })
+  login(@Body() dto: LoginUserDto): Promise<TokenPairDto> {
+    return this.auth.login(dto);
+  }
+
+  @Public()
   @Post('refresh')
-  @UseGuards(JwtRefreshGuard)
-  async refreshToken(@Request() req, @Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(req.user.userId);
+  @ApiOperation({ operationId: 'refreshToken', summary: 'Refresh token' })
+  @ApiOkResponse({
+    description: 'Fresh token pair returned.',
+    type: TokenPairDto,
+  })
+  refresh(@Body() dto: RefreshTokenDto): Promise<TokenPairDto> {
+    return this.auth.refresh(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('me')
+  @ApiOperation({ operationId: 'getCurrentUser', summary: 'Get current user' })
+  @ApiOkResponse({
+    description: 'Current user profile returned.',
+    type: UserProfileDto,
+  })
+  me(@CurrentUser() user: RequestUser): Promise<UserProfileDto> {
+    return this.auth.me(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('logout')
+  @ApiOperation({ operationId: 'logoutUser', summary: 'Logout user' })
+  @ApiOkResponse({ description: 'Token revocation accepted.' })
+  logout() {
+    return this.auth.logout();
   }
 }

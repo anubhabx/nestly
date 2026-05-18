@@ -1,0 +1,35 @@
+name: specord-nestjs-api
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: specord
+      POSTGRES_PASSWORD: specord
+      POSTGRES_DB: specord_benchmark
+    volumes:
+      - specord-nestjs-api-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U specord -d specord_benchmark"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6381:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - specord-nestjs-api-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  specord-nestjs-api-postgres:
+  specord-nestjs-api-redis:

@@ -90,8 +90,8 @@ export default {
     tags: [{ name: "Orders", description: "Order operations" }],
   },
   source: {
-    project: "examples/nestjs-realworld/tsconfig.json",
-    root: "examples/nestjs-realworld/src",
+    project: "examples/nestjs-api/tsconfig.json",
+    root: "examples/nestjs-api/src",
     include: ["orders/**/*.ts"],
     exclude: ["**/internal/**"],
   },

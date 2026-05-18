@@ -42,9 +42,9 @@ export default defineConfig({
 
 ---
 
-## 2. `main.ts` outside `src/` and the `--root` boundary
+## 2. Bootstrap files and the `--root` boundary
 
-> **Concern:** `main.ts` (with `app.setGlobalPrefix('api')`) is at `examples/nestjs-api/main.ts`, outside `src/`, but included in the TS Program.
+> **Current state:** the canonical `examples/nestjs-api` benchmark follows the Nest CLI layout, so `main.ts` lives under `examples/nestjs-api/src`. Specord path prefixes remain config-owned through `routing.globalPrefix`; the fixture bootstrap does not set a global prefix for extraction tests.
 
 **Decision**
 

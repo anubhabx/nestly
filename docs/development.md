@@ -7,7 +7,7 @@ This document defines local workflow for Specord V1 development.
 1. Align on behavior in `spec/specord-v1-extractor-spec.md` and `spec/Phase-2-real-world-nestjs-openapi-spec.md`.
 2. Implement extractor/emitter changes in small increments.
 3. Run fixture extraction against `examples/nestjs-api`.
-4. Run OpenAPI generation against `examples/nestjs-api` and `examples/nestjs-realworld`.
+4. Run OpenAPI generation against `examples/nestjs-api`.
 5. For docs-runtime changes, verify route injection and standalone serving.
 6. Compare output against expected acceptance matrices and snapshots.
 7. Add or update diagnostics when behavior is intentionally unresolved.
@@ -22,8 +22,8 @@ This document defines local workflow for Specord V1 development.
 
 ```bash
 pnpm.cmd inspect -- examples/nestjs-api
-pnpm.cmd generate -- examples/nestjs-realworld --pretty
-pnpm.cmd serve -- examples/nestjs-realworld --pretty
+pnpm.cmd generate -- examples/nestjs-api --pretty
+pnpm.cmd serve -- examples/nestjs-api --pretty
 pnpm.cmd audit --prod --json
 pnpm.cmd audit --json
 ```

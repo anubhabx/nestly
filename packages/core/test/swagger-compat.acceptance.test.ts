@@ -1,5 +1,5 @@
 // ============================================================================
-// Real-world NestJS Swagger compatibility tests
+// Production benchmark NestJS Swagger compatibility tests
 // ============================================================================
 
 import { describe, expect, it } from "vitest";
@@ -11,13 +11,13 @@ import type { InspectionModel, SpecordConfigV1 } from "@specord/types";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "../../..");
-const fixtureRoot = path.join(repoRoot, "examples/nestjs-realworld");
+const fixtureRoot = path.join(repoRoot, "examples/nestjs-api");
 const fixtureCache = new Map<string, InspectionModel>();
 
-function inspectRealworldFixture(): InspectionModel {
-  return inspectRealworldFixtureWithConfig({
+function inspectBenchmarkFixture(): InspectionModel {
+  return inspectBenchmarkFixtureWithConfig({
     document: {
-      title: "Realworld Orders API",
+      title: "Specord Benchmark API",
       version: "1.0.0",
     },
     securitySchemes: {
@@ -31,11 +31,16 @@ function inspectRealworldFixture(): InspectionModel {
         in: "header",
         name: "X-API-Key",
       },
+      stripeSignature: {
+        type: "apiKey",
+        in: "header",
+        name: "Stripe-Signature",
+      },
     },
   });
 }
 
-function inspectRealworldFixtureWithConfig(
+function inspectBenchmarkFixtureWithConfig(
   config: SpecordConfigV1 | undefined,
 ): InspectionModel {
   const cacheKey = JSON.stringify(config ?? null);
@@ -63,15 +68,15 @@ function cloneInspectionModel(model: InspectionModel): InspectionModel {
 
 describe("NestJS Swagger compatibility extraction", () => {
   it("harvests operation metadata, tags, responses, and security decorators", () => {
-    const model = inspectRealworldFixture();
+    const model = inspectBenchmarkFixture();
 
-    const list = model.operations.find((op) => op.id === "OrdersController.list");
+    const list = model.operations.find((op) => op.id === "ProjectsController.list");
 
     expect(list).toMatchObject({
-      operationId: "listOrders",
-      summary: "List orders",
-      description: "Returns visible orders for the current account.",
-      tags: ["Orders"],
+      operationId: "listProjects",
+      summary: "List projects",
+      description: "Returns projects visible to the current account with filter metadata.",
+      tags: ["Projects"],
       security: { status: "overridden" },
       openapi: {
         security: [{ bearerAuth: [] }],
@@ -80,10 +85,10 @@ describe("NestJS Swagger compatibility extraction", () => {
     expect(list?.responses).toEqual([
       expect.objectContaining({
         status: 200,
-        description: "Orders returned.",
+        description: "Projects returned.",
         schema: {
-          kind: "array",
-          items: { kind: "ref", name: "OrderResponseDto" },
+          kind: "ref",
+          name: "PaginatedProjectResponseDto",
         },
         inference: { status: "overridden" },
       }),
@@ -96,8 +101,8 @@ describe("NestJS Swagger compatibility extraction", () => {
     ).toBe(false);
   });
 
-  it("infers bearer security schemes and warns for named schemes that need config", () => {
-    const model = inspectRealworldFixtureWithConfig(undefined);
+  it("infers bearer security and harvests named security when configured", () => {
+    const model = inspectBenchmarkFixture();
 
     expect(model.securitySchemes?.bearerAuth).toEqual({
       type: "http",
@@ -105,76 +110,83 @@ describe("NestJS Swagger compatibility extraction", () => {
       bearerFormat: "JWT",
     });
 
-    const serviceToken = model.operations.find(
-      (op) => op.id === "OrdersController.serviceToken",
+    const webhook = model.operations.find(
+      (op) => op.id === "WebhooksController.stripe",
     );
 
-    expect(serviceToken?.diagnostics).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          code: "EXTRACTOR_UNRESOLVED_SECURITY",
-          suggestedOverridePath: "securitySchemes.apiKeyAuth",
-          origin: "swagger",
-        }),
-      ]),
-    );
+    expect(model.securitySchemes?.bearerAuth).toEqual({
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
+    });
+    expect(webhook).toMatchObject({
+      security: { status: "overridden" },
+      openapi: { security: [{ stripeSignature: [] }] },
+    });
   });
 
   it("harvests ApiProperty metadata and static OpenAPI metadata factory properties", () => {
-    const model = inspectRealworldFixture();
+    const model = inspectBenchmarkFixture();
 
-    expect(model.schemas.CreateOrderDto.properties.customerName).toMatchObject({
-      example: "Acme Ltd",
-      constraints: expect.objectContaining({ minLength: 2, type: "string" }),
+    expect(model.schemas.CreateProjectDto.properties.name).toMatchObject({
+      example: "Mobile Launch",
+      constraints: expect.objectContaining({ minLength: 3, type: "string" }),
     });
-    expect(model.schemas.CreateOrderDto.properties.tags).toMatchObject({
+    expect(model.schemas.CreateProjectDto.properties.tags).toMatchObject({
       type: { kind: "array", items: { kind: "primitive", type: "string" } },
-      example: ["fragile", "gift"],
+      example: ["mobile", "q3"],
     });
-    expect(model.schemas.OrderResponseDto.properties.createdAt).toMatchObject({
+    expect(model.schemas.ProjectResponseDto.properties.createdAt).toMatchObject({
       type: { kind: "primitive", type: "string" },
       format: "date-time",
-      example: "2026-05-12T10:30:00.000Z",
+      example: "2026-05-16T09:30:00.000Z",
       readOnly: true,
     });
-    expect(model.schemas.OrderResponseDto.properties.status).toMatchObject({
-      enum: ["draft", "submitted", "cancelled"],
-      example: "submitted",
+    expect(model.schemas.TaskResponseDto.properties.status).toMatchObject({
+      enum: ["todo", "in_progress", "blocked", "done"],
+      example: "in_progress",
     });
   });
 
   it("resolves common mapped-type compositions", () => {
-    const model = inspectRealworldFixture();
+    const model = inspectBenchmarkFixture();
 
-    expect(model.schemas.UpdateOrderDto.required).toEqual([]);
-    expect(Object.keys(model.schemas.UpdateOrderDto.properties).sort()).toEqual([
-      "customerName",
-      "quantity",
-      "shippingAddress",
-      "tags",
-    ]);
-    expect(Object.keys(model.schemas.OrderSummaryDto.properties).sort()).toEqual([
-      "customerName",
-      "status",
-    ]);
-    expect(Object.keys(model.schemas.UpdateOrderWithSummaryDto.properties).sort()).toEqual([
-      "customerName",
-      "quantity",
-      "shippingAddress",
+    expect(model.schemas.UpdateProjectDto.required).toEqual([]);
+    expect(Object.keys(model.schemas.UpdateProjectDto.properties).sort()).toEqual([
+      "description",
+      "metadata",
+      "name",
+      "slug",
       "status",
       "tags",
+    ]);
+    expect(Object.keys(model.schemas.ProjectSummaryDto.properties).sort()).toEqual([
+      "id",
+      "name",
+      "status",
+    ]);
+    expect(Object.keys(model.schemas.AccountDetailsDto.properties).sort()).toEqual([
+      "createdAt",
+      "id",
+      "members",
+      "name",
+      "plan",
+      "projectCount",
+      "slug",
+      "status",
     ]);
   });
 
   it("applies source include and exclude glob filters", () => {
-    const model = inspectRealworldFixtureWithConfig({
+    const model = inspectBenchmarkFixtureWithConfig({
       source: {
-        include: ["orders/**/*.ts"],
+        include: ["projects/**/*.ts", "tasks/**/*.ts"],
         exclude: ["**/guards/*.ts"],
       },
     });
 
-    expect(model.operations.map((op) => op.controller)).not.toContain("InternalController");
-    expect(model.operations.map((op) => op.controller)).toContain("OrdersController");
+    expect(model.operations.map((op) => op.controller)).not.toContain("AuthController");
+    expect(model.operations.map((op) => op.controller)).toContain("ProjectsController");
+    expect(model.operations.map((op) => op.controller)).toContain("TasksController");
   });
 });

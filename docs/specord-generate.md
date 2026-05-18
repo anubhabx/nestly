@@ -13,7 +13,7 @@ specord generate [project-dir] [--output openapi.json] [--pretty]
 Repo-local form:
 
 ```bash
-pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-api --output openapi.json --pretty
 ```
 
 Inside a Nest project that has `tsconfig.json` and `src/`:
@@ -33,13 +33,13 @@ specord generate --project apps/api/tsconfig.build.json --root apps/api/source
 When `--output` is omitted, JSON is written to stdout:
 
 ```bash
-pnpm.cmd generate -- examples/nestjs-realworld --pretty
+pnpm.cmd generate -- examples/nestjs-api --pretty
 ```
 
 When `--output` is present, Specord creates the parent directory if needed and writes the validated document:
 
 ```bash
-pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-api --output openapi.json --pretty
 ```
 
 ## What Gets Emitted

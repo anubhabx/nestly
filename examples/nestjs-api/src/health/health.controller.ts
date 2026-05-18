@@ -1,18 +1,37 @@
 import { Controller, Get } from '@nestjs/common';
-import { HealthCheck, HealthCheckService, HttpHealthIndicator } from '@nestjs/terminus';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Public } from '../common/decorators/public.decorator';
+import { HealthResponseDto } from './dto/health-response.dto';
 
+@ApiTags('Health')
+@Public()
 @Controller('health')
 export class HealthController {
-  constructor(
-    private health: HealthCheckService,
-    private http: HttpHealthIndicator,
-  ) {}
-
   @Get()
-  @HealthCheck()
-  check() {
-    return this.health.check([
-      () => this.http.pingCheck('API', 'http://localhost:3000/api'),
-    ]);
+  @ApiOperation({ operationId: 'getHealth', summary: 'Get health' })
+  @ApiOkResponse({
+    description: 'Service is healthy.',
+    type: HealthResponseDto,
+  })
+  health(): HealthResponseDto {
+    return {
+      status: 'ok',
+      checkedAt: new Date().toISOString(),
+      dependencies: { database: 'unchecked', redis: 'unchecked' },
+    };
+  }
+
+  @Get('readiness')
+  @ApiOperation({ operationId: 'getReadiness', summary: 'Get readiness' })
+  @ApiOkResponse({
+    description: 'Readiness checks returned.',
+    type: HealthResponseDto,
+  })
+  readiness(): HealthResponseDto {
+    return {
+      status: 'ready',
+      checkedAt: new Date().toISOString(),
+      dependencies: { database: 'up', redis: 'up' },
+    };
   }
 }

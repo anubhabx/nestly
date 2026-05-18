@@ -1,81 +1,126 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import * as bcrypt from 'bcrypt';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { createHash, timingSafeEqual } from 'crypto';
+import { Repository } from 'typeorm';
+import { RegisterUserDto } from '../auth/dto/register-user.dto';
+import { UserProfileDto } from '../auth/dto/user-profile.dto';
+import {
+  Account,
+  AccountPlan,
+  AccountStatus,
+} from '../accounts/entities/account.entity';
+import {
+  AccountMember,
+  MembershipRole,
+} from '../accounts/entities/account-member.entity';
+import { User, UserStatus } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  private users: Map<number, any> = new Map();
-  private counter: number = 1;
+  constructor(
+    @InjectRepository(User)
+    private readonly users: Repository<User>,
+    @InjectRepository(Account)
+    private readonly accounts: Repository<Account>,
+  ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<any> {
-    // Check if user already exists
-    const existingUser = Array.from(this.users.values()).find(
-      (u) => u.email === createUserDto.email,
+  async create(dto: RegisterUserDto): Promise<User> {
+    const existing = await this.users.findOne({ where: { email: dto.email } });
+    if (existing) {
+      throw new ConflictException('Email is already registered');
+    }
+
+    const accountSlug = this.toSlug(dto.accountSlug ?? `${dto.name}-workspace`);
+    const existingAccount = await this.accounts.findOne({
+      where: { slug: accountSlug },
+    });
+    if (existingAccount) {
+      throw new ConflictException('Account slug is already in use');
+    }
+
+    return this.users.manager.transaction(async (manager) => {
+      const user = await manager.save(
+        User,
+        manager.create(User, {
+          email: dto.email.toLowerCase(),
+          name: dto.name,
+          passwordHash: this.hashPassword(dto.password),
+          status: UserStatus.Active,
+          roles: ['owner', 'developer'],
+        }),
+      );
+
+      const account = await manager.save(
+        Account,
+        manager.create(Account, {
+          slug: accountSlug,
+          name: `${dto.name}'s workspace`,
+          plan: AccountPlan.Free,
+          status: AccountStatus.Active,
+          metadata: {
+            source: 'self_signup',
+          },
+        }),
+      );
+
+      await manager.save(
+        AccountMember,
+        manager.create(AccountMember, {
+          accountId: account.id,
+          userId: user.id,
+          role: MembershipRole.Owner,
+          account,
+          user,
+        }),
+      );
+
+      return user;
+    });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.users.findOne({ where: { email: email.toLowerCase() } });
+  }
+
+  async findById(id: string): Promise<User> {
+    const user = await this.users.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  verifyPassword(user: User, password: string): boolean {
+    const expected = Buffer.from(user.passwordHash);
+    const actual = Buffer.from(this.hashPassword(password));
+    return (
+      expected.length === actual.length && timingSafeEqual(expected, actual)
     );
+  }
 
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
-
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-    const newUser = {
-      id: this.counter++,
-      ...createUserDto,
-      password: hashedPassword,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  toProfile(user: User): UserProfileDto {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      status: user.status,
+      roles: user.roles,
     };
-
-    this.users.set(newUser.id, newUser);
-    return { ...newUser, password: undefined };
   }
 
-  async findAll(): Promise<any[]> {
-    const users = Array.from(this.users.values());
-    return users.map(({ password, ...user }) => user);
+  private hashPassword(password: string): string {
+    return createHash('sha256').update(password).digest('hex');
   }
 
-  async findOne(id: number): Promise<any> {
-    const user = this.users.get(id);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-    const { password, ...result } = user;
-    return result;
-  }
-
-  async findByEmail(email: string): Promise<any> {
-    const user = Array.from(this.users.values()).find((u) => u.email === email);
-    return user || null;
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
-    const user = this.users.get(id);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    Object.assign(user, updateUserDto);
-
-    if (updateUserDto.password) {
-      user.password = await bcrypt.hash(updateUserDto.password, 10);
-    }
-
-    user.updatedAt = new Date();
-
-    this.users.set(id, user);
-    const { password, ...result } = user;
-    return result;
-  }
-
-  async remove(id: number): Promise<void> {
-    const user = this.users.get(id);
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-    this.users.delete(id);
+  private toSlug(value: string): string {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

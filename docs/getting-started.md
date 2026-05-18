@@ -29,13 +29,13 @@ Expected result:
 Use `generate` when you want OpenAPI 3.1 JSON:
 
 ```bash
-pnpm.cmd generate -- examples/nestjs-realworld --pretty
+pnpm.cmd generate -- examples/nestjs-api --pretty
 ```
 
 Write to a file:
 
 ```bash
-pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-api --output openapi.json --pretty
 ```
 
 Generation validates the OpenAPI document before writing. Unresolved extraction warnings are allowed by default and printed to stderr.
@@ -55,7 +55,7 @@ This mounts the UI at `/api` and JSON at `/api/openapi.json` by default.
 For a standalone local docs server:
 
 ```bash
-pnpm.cmd serve -- examples/nestjs-realworld --pretty
+pnpm.cmd serve -- examples/nestjs-api --pretty
 ```
 
 Open `http://127.0.0.1:4777/api`.
@@ -69,11 +69,11 @@ Create `specord.config.ts` when the source code cannot express enough detail:
 ```ts
 export default {
   source: {
-    project: "examples/nestjs-realworld/tsconfig.json",
-    root: "examples/nestjs-realworld/src",
+    project: "examples/nestjs-api/tsconfig.json",
+    root: "examples/nestjs-api/src",
   },
   document: {
-    title: "Orders API",
+    title: "Specord Benchmark API",
     version: "1.0.0",
   },
   securitySchemes: {
@@ -81,6 +81,11 @@ export default {
       type: "http",
       scheme: "bearer",
       bearerFormat: "JWT",
+    },
+    stripeSignature: {
+      type: "apiKey",
+      in: "header",
+      name: "Stripe-Signature",
     },
   },
   ci: {

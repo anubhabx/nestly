@@ -38,7 +38,7 @@ describe("specord inspect CLI", () => {
     expect(stdoutSpy).toHaveBeenCalled();
     const model = JSON.parse(stdout);
     expect(model.source.version).toBe("v1");
-    expect(model.operations).toHaveLength(15);
+    expect(model.operations).toHaveLength(27);
   });
 
   it("infers project and root from a positional project directory", async () => {
@@ -56,6 +56,6 @@ describe("specord inspect CLI", () => {
     const model = JSON.parse(stdout);
     expect(model.source.project).toBe(path.join(fixtureRoot, "tsconfig.json"));
     expect(model.source.root).toBe(path.join(fixtureRoot, "src"));
-    expect(model.operations).toHaveLength(15);
+    expect(model.operations).toHaveLength(27);
   });
 });

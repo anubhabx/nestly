@@ -12,7 +12,7 @@ import { main } from "../src/index.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "../../..");
-const fixtureRoot = path.join(repoRoot, "examples/nestjs-realworld");
+const fixtureRoot = path.join(repoRoot, "examples/nestjs-api");
 const originalCwd = process.cwd();
 
 describe("specord generate CLI", () => {
@@ -39,7 +39,7 @@ describe("specord generate CLI", () => {
 
     const document = JSON.parse(stdout);
     expect(document.openapi).toBe("3.1.0");
-    expect(document.paths["/orders"].get.operationId).toBe("listOrders");
+    expect(document.paths["/projects"].get.operationId).toBe("listProjects");
     expect(document.components.securitySchemes.bearerAuth).toMatchObject({
       type: "http",
       scheme: "bearer",
@@ -58,7 +58,7 @@ describe("specord generate CLI", () => {
 
     const document = JSON.parse(stdout);
     expect(document.openapi).toBe("3.1.0");
-    expect(document.paths["/orders"].get.operationId).toBe("listOrders");
+    expect(document.paths["/projects"].get.operationId).toBe("listProjects");
     expect(stdout).toContain("\n  \"openapi\"");
   });
 
@@ -76,7 +76,7 @@ describe("specord generate CLI", () => {
 
     const document = JSON.parse(stdout);
     expect(document.openapi).toBe("3.1.0");
-    expect(document.paths["/orders"].get.operationId).toBe("listOrders");
+    expect(document.paths["/projects"].get.operationId).toBe("listProjects");
   });
 
   it("writes OpenAPI JSON to --output", async () => {
@@ -99,7 +99,7 @@ describe("specord generate CLI", () => {
 
     const document = JSON.parse(fs.readFileSync(output, "utf8"));
     expect(document.openapi).toBe("3.1.0");
-    expect(document.components.schemas.OrderResponseDto).toBeDefined();
+    expect(document.components.schemas.ProjectResponseDto).toBeDefined();
   });
 
   it("fails unresolved extraction warnings when strict CI config requires it", async () => {

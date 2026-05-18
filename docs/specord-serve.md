@@ -13,7 +13,7 @@ specord serve [project-dir] [--host 127.0.0.1] [--port 4777] [--pretty] [--no-ca
 Repo-local form:
 
 ```bash
-pnpm.cmd serve -- examples/nestjs-realworld --pretty
+pnpm.cmd serve -- examples/nestjs-api --pretty
 ```
 
 Routes:

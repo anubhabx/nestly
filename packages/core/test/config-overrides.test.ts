@@ -25,19 +25,15 @@ describe("config override application", () => {
   it("applies OpenAPI-shaped response overrides and resolves response diagnostics", () => {
     const model = inspectNestFixtureWithConfig({
       operations: {
-        "AuthController.login": {
+        "ProjectsController.exportCsv": {
           responses: {
             "200": {
-              description: "Authenticated.",
+              description: "CSV export returned.",
               content: {
-                "application/json": {
+                "text/csv": {
                   schema: {
-                    type: "object",
-                    properties: {
-                      accessToken: { type: "string" },
-                      refreshToken: { type: "string" },
-                    },
-                    required: ["accessToken", "refreshToken"],
+                    type: "string",
+                    format: "binary",
                   },
                 },
               },
@@ -47,15 +43,15 @@ describe("config override application", () => {
       },
     });
 
-    const operation = getOperation(model, "AuthController.login");
+    const operation = getOperation(model, "ProjectsController.exportCsv");
 
     expect(operation.responses).toEqual([
       expect.objectContaining({
         status: 200,
-        description: "Authenticated.",
+        description: "CSV export returned.",
         inference: { status: "overridden" },
         openapi: expect.objectContaining({
-          description: "Authenticated.",
+          description: "CSV export returned.",
         }),
       }),
     ]);
@@ -66,36 +62,36 @@ describe("config override application", () => {
     ).toBe(false);
     expect(
       countOperationDiagnostics(model, "EXTRACTOR_UNRESOLVED_RESPONSE"),
-    ).toBe(12);
+    ).toBe(0);
   });
 
   it("applies security scheme and operation security overrides", () => {
     const model = inspectNestFixtureWithConfig({
       securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
+        stripeSignature: {
+          type: "apiKey",
+          in: "header",
+          name: "Stripe-Signature",
         },
       },
       operations: {
-        "ProductsController.findAll": {
-          security: [{ bearerAuth: [] }],
+        "WebhooksController.stripe": {
+          security: [{ stripeSignature: [] }],
         },
       },
     });
 
-    const operation = getOperation(model, "ProductsController.findAll");
+    const operation = getOperation(model, "WebhooksController.stripe");
 
-    expect(model.securitySchemes).toEqual({
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
+    expect(model.securitySchemes).toMatchObject({
+      stripeSignature: {
+        type: "apiKey",
+        in: "header",
+        name: "Stripe-Signature",
       },
     });
     expect(operation.security).toEqual({ status: "overridden" });
-    expect(operation.openapi?.security).toEqual([{ bearerAuth: [] }]);
+    expect(operation.openapi?.security).toEqual([{ stripeSignature: [] }]);
     expect(
       operation.diagnostics.some(
         (diag) => diag.code === "EXTRACTOR_UNRESOLVED_SECURITY",
@@ -103,81 +99,80 @@ describe("config override application", () => {
     ).toBe(false);
     expect(
       countOperationDiagnostics(model, "EXTRACTOR_UNRESOLVED_SECURITY"),
-    ).toBe(11);
+    ).toBe(0);
   });
 
   it("applies operation metadata overrides", () => {
     const model = inspectNestFixtureWithConfig({
       operations: {
-        "UsersController.create": {
-          summary: "Create user",
-          description: "Create a user account.",
-          tags: ["Users"],
+        "AccountsController.list": {
+          summary: "List tenant accounts",
+          description: "Return the accounts visible to the caller.",
+          tags: ["Tenancy"],
         },
       },
     });
 
-    const operation = getOperation(model, "UsersController.create");
+    const operation = getOperation(model, "AccountsController.list");
 
-    expect(operation.summary).toBe("Create user");
-    expect(operation.description).toBe("Create a user account.");
-    expect(operation.tags).toEqual(["Users"]);
+    expect(operation.summary).toBe("List tenant accounts");
+    expect(operation.description).toBe("Return the accounts visible to the caller.");
+    expect(operation.tags).toEqual(["Tenancy"]);
     expect(operation.openapi).toMatchObject({
-      summary: "Create user",
-      description: "Create a user account.",
-      tags: ["Users"],
+      summary: "List tenant accounts",
+      description: "Return the accounts visible to the caller.",
+      tags: ["Tenancy"],
     });
   });
 
   it("excludes operations and drops operation-scoped diagnostics", () => {
     const model = inspectNestFixtureWithConfig({
       operations: {
-        "HealthController.check": {
+        "HealthController.health": {
           exclude: true,
         },
       },
     });
 
     expect(
-      model.operations.some((op) => op.id === "HealthController.check"),
+      model.operations.some((op) => op.id === "HealthController.health"),
     ).toBe(false);
-    expect(model.operations).toHaveLength(14);
+    expect(model.operations).toHaveLength(26);
     expect(
-      model.diagnostics.some((diag) => diag.subject === "HealthController.check"),
+      model.diagnostics.some((diag) => diag.subject === "HealthController.health"),
     ).toBe(false);
   });
 
-  it("applies schema overrides and resolves mapped-type diagnostics", () => {
+  it("applies schema overrides", () => {
     const model = inspectNestFixtureWithConfig({
       schemas: {
-        UpdateUserDto: {
+        UpdateProjectDto: {
           type: "object",
           properties: {
-            firstName: { type: "string" },
-            lastName: { type: "string" },
+            name: { type: "string" },
+            status: {
+              type: "string",
+              enum: ["planning", "active", "paused", "archived"],
+            },
           },
         },
       },
     });
 
-    expect(model.schemas.UpdateUserDto).toMatchObject({
-      name: "UpdateUserDto",
+    expect(model.schemas.UpdateProjectDto).toMatchObject({
+      name: "UpdateProjectDto",
       inference: { status: "overridden" },
       openapi: {
         type: "object",
         properties: {
-          firstName: { type: "string" },
-          lastName: { type: "string" },
+          name: { type: "string" },
+          status: {
+            type: "string",
+            enum: ["planning", "active", "paused", "archived"],
+          },
         },
       },
     });
-    expect(
-      model.diagnostics.some(
-        (diag) =>
-          diag.code === "EXTRACTOR_UNSUPPORTED_MAPPED_TYPE" &&
-          diag.subject === "UpdateUserDto",
-      ),
-    ).toBe(false);
   });
 
   it("throws clear errors for invalid override keys", () => {

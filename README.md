@@ -32,13 +32,13 @@ pnpm.cmd inspect -- examples/nestjs-api
 Generate OpenAPI for the Swagger-heavy fixture:
 
 ```bash
-pnpm.cmd generate -- examples/nestjs-realworld --pretty
+pnpm.cmd generate -- examples/nestjs-api --pretty
 ```
 
 Write a validated file:
 
 ```bash
-pnpm.cmd generate -- examples/nestjs-realworld --output openapi.json --pretty
+pnpm.cmd generate -- examples/nestjs-api --output openapi.json --pretty
 ```
 
 Inject docs into a Nest app:
@@ -52,7 +52,7 @@ setupSpecordDocs(app); // /api and /api/openapi.json
 Serve docs independently:
 
 ```bash
-pnpm.cmd serve -- examples/nestjs-realworld --pretty
+pnpm.cmd serve -- examples/nestjs-api --pretty
 ```
 
 Specord defaults to `tsconfig.json` and `src/` in the current directory or in the project directory argument. Use `--project` and `--root` only when the defaults do not match your app layout.

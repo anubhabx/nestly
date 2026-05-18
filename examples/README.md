@@ -4,20 +4,13 @@
 
 ### `nestjs-api`
 
-The baseline fixture for V1 inspect behavior.
+The canonical NestJS benchmark fixture for V1 inspect, generate, and serve behavior.
 
-- Conventional NestJS REST application with controllers, DTOs, guards, and entities.
-- Uses `class-validator` for DTO validation.
-- Has `@nestjs/swagger` installed but **no `@Api*` decorators** in controllers or DTOs — this illustrates the "before Specord" state where Swagger produces low-quality docs without annotations.
-
-### `nestjs-realworld`
-
-The Phase 2 production-ish fixture for V1 generate behavior.
-
-- Uses common NestJS Swagger decorators in controllers and DTOs.
-- Covers `@ApiTags`, `@ApiOperation`, response decorators, `@ApiBearerAuth`, `@ApiSecurity`, and property decorators.
-- Covers static `_OPENAPI_METADATA_FACTORY()` metadata and mapped type compositions.
-- Intentionally keeps a few unresolved cases so default warnings and strict CI behavior stay tested.
+- Fresh Nest CLI scaffold expanded into a production-shaped modular REST API.
+- Includes accounts, auth, projects, tasks, billing, webhooks, health, TypeORM entities, DTOs, guards, middleware, filters, and interceptors.
+- Uses common NestJS Swagger decorators for tags, operation IDs, responses, security, params, and DTO properties.
+- Covers `PartialType`, `PickType`, nested response shapes, enums, arrays, query DTOs, nested path params, and deliberately unresolved dynamic export/security cases.
+- Includes `compose.yaml` for local Postgres and Redis services.
 
 ## Future Targets (Out of Scope for V1)
 

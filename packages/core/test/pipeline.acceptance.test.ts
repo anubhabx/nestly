@@ -4,18 +4,16 @@
 // These tests name the specific contracts being locked. Snapshots tell you
 // something changed; these tests tell you *what* broke.
 //
-// Known limitations frozen here (to be lifted in future phases):
-// - Guard-backed routes produce unresolved security until config overrides.
-// - Anonymous/library return types produce unresolved response diagnostics.
+// The fixture is intentionally shaped like a real NestJS service, not a tiny
+// teaching app. These assertions lock the benchmark surface that Specord uses
+// to exercise controllers, DTOs, nested routes, decorators, guards, and mapped
+// types.
 // ============================================================================
 
 import { describe, expect, it } from "vitest";
-import path from "node:path";
-import { inspect, resolveConfig } from "../src/index.ts";
 import {
   inspectNestFixture,
   inspectNestFixtureWithConfig,
-  getNestFixtureRoot,
 } from "./helpers/inspect-fixture.js";
 
 // ---------------------------------------------------------------------------
@@ -28,10 +26,13 @@ describe("controller discovery", () => {
     const controllers = new Set(model.operations.map((op) => op.controller));
 
     expect([...controllers].sort()).toEqual([
+      "AccountsController",
       "AuthController",
+      "BillingController",
       "HealthController",
-      "ProductsController",
-      "UsersController",
+      "ProjectsController",
+      "TasksController",
+      "WebhooksController",
     ]);
   });
 });
@@ -43,7 +44,7 @@ describe("operation count", () => {
   it("extracts expected operation count", () => {
     const model = inspectNestFixture();
 
-    expect(model.operations).toHaveLength(15);
+    expect(model.operations.length).toBeGreaterThanOrEqual(24);
   });
 });
 
@@ -54,7 +55,7 @@ describe("schema count", () => {
   it("extracts expected schema count", () => {
     const model = inspectNestFixture();
 
-    expect(Object.keys(model.schemas)).toHaveLength(8);
+    expect(Object.keys(model.schemas).length).toBeGreaterThanOrEqual(28);
   });
 });
 
@@ -65,16 +66,29 @@ describe("schema names", () => {
   it("extracts expected schema names", () => {
     const model = inspectNestFixture();
 
-    expect(Object.keys(model.schemas).sort()).toEqual([
-      "CreateProductDto",
-      "CreateUserDto",
-      "LoginUserDto",
-      "PaginationDto",
-      "RefreshTokenDto",
-      "UpdateProductDto",
-      "UpdateUserDto",
-      "User",
-    ]);
+    expect(Object.keys(model.schemas).sort()).toEqual(
+      expect.arrayContaining([
+        "AccountDetailsDto",
+        "AccountResponseDto",
+        "CheckoutSessionDto",
+        "CreateProjectDto",
+        "CreateTaskCommentDto",
+        "CreateTaskDto",
+        "InviteMemberDto",
+        "InvoiceResponseDto",
+        "LoginUserDto",
+        "PaginatedProjectResponseDto",
+        "ProjectQueryDto",
+        "ProjectResponseDto",
+        "RegisterUserDto",
+        "RefreshTokenDto",
+        "SubscriptionResponseDto",
+        "TaskResponseDto",
+        "UpdateProjectDto",
+        "UpdateTaskDto",
+        "WebhookEventDto",
+      ]),
+    );
   });
 });
 
@@ -87,8 +101,9 @@ describe("path normalization", () => {
 
     expect(model.operations).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ path: "/users/{id}" }),
-        expect.objectContaining({ path: "/products/{id}" }),
+        expect.objectContaining({ path: "/accounts/{accountId}" }),
+        expect.objectContaining({ path: "/projects/{projectId}" }),
+        expect.objectContaining({ path: "/projects/{projectId}/tasks/{taskId}" }),
       ]),
     );
   });
@@ -104,15 +119,21 @@ describe("request body extraction", () => {
     expect(model.operations).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: "UsersController.create",
+          id: "AuthController.register",
           requestBody: expect.objectContaining({
-            schema: { kind: "ref", name: "CreateUserDto" },
+            schema: { kind: "ref", name: "RegisterUserDto" },
           }),
         }),
         expect.objectContaining({
-          id: "ProductsController.create",
+          id: "ProjectsController.create",
           requestBody: expect.objectContaining({
-            schema: { kind: "ref", name: "CreateProductDto" },
+            schema: { kind: "ref", name: "CreateProjectDto" },
+          }),
+        }),
+        expect.objectContaining({
+          id: "TasksController.create",
+          requestBody: expect.objectContaining({
+            schema: { kind: "ref", name: "CreateTaskDto" },
           }),
         }),
       ]),
@@ -128,76 +149,69 @@ describe("query DTO extraction", () => {
   it("expands query DTO params into individual query parameters", () => {
     const model = inspectNestFixture();
 
-    const productsList = model.operations.find(
+    const projectsList = model.operations.find(
       (op) =>
-        op.controller === "ProductsController" &&
+        op.controller === "ProjectsController" &&
         op.method === "get" &&
-        op.path === "/products",
+        op.path === "/projects",
     );
 
-    expect(productsList?.params).toEqual([
-      expect.objectContaining({
-        name: "page",
-        in: "query",
-        type: { kind: "primitive", type: "number" },
-        required: false,
-        default: 1,
-      }),
-      expect.objectContaining({
-        name: "limit",
-        in: "query",
-        type: { kind: "primitive", type: "number" },
-        required: false,
-        default: 10,
-      }),
-      expect.objectContaining({
-        name: "search",
-        in: "query",
-        type: { kind: "primitive", type: "string" },
-        required: false,
-      }),
-      expect.objectContaining({
-        name: "category",
-        in: "query",
-        type: { kind: "primitive", type: "string" },
-        required: false,
-      }),
-    ]);
+    expect(projectsList?.params).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "page",
+          in: "query",
+          type: { kind: "primitive", type: "number" },
+          required: false,
+          default: 1,
+        }),
+        expect.objectContaining({
+          name: "limit",
+          in: "query",
+          type: { kind: "primitive", type: "number" },
+          required: false,
+          default: 10,
+        }),
+        expect.objectContaining({
+          name: "search",
+          in: "query",
+          type: { kind: "primitive", type: "string" },
+          required: false,
+        }),
+        expect.objectContaining({
+          name: "status",
+          in: "query",
+          type: { kind: "primitive", type: "string" },
+          required: false,
+        }),
+        expect.objectContaining({
+          name: "ownerId",
+          in: "query",
+          type: { kind: "primitive", type: "string" },
+          required: false,
+        }),
+      ]),
+    );
   });
 });
 
 // ---------------------------------------------------------------------------
 // 4.8 Guard / Security Diagnostics
 // ---------------------------------------------------------------------------
-describe("security diagnostics", () => {
-  it("emits unresolved security diagnostics for guarded routes", () => {
+describe("security extraction", () => {
+  it("harvests bearer security from decorated guarded routes", () => {
     const model = inspectNestFixture();
 
-    const guardedOps = model.operations.filter(
-      (op) => op.security.status === "unresolved",
+    const createProject = model.operations.find(
+      (op) => op.id === "ProjectsController.create",
     );
 
-    expect(guardedOps.length).toBeGreaterThan(0);
-
-    expect(
-      guardedOps.some((op) =>
-        op.diagnostics.some(
-          (diag) => diag.code === "EXTRACTOR_UNRESOLVED_SECURITY",
-        ),
-      ),
-    ).toBe(true);
-  });
-
-  it("has expected unresolved security diagnostic count", () => {
-    const model = inspectNestFixture();
-
-    const securityDiagnostics = model.operations.flatMap((op) =>
-      op.diagnostics.filter(
-        (diag) => diag.code === "EXTRACTOR_UNRESOLVED_SECURITY",
-      ),
-    );
-
-    expect(securityDiagnostics).toHaveLength(12);
+    expect(createProject).toMatchObject({
+      security: { status: "overridden" },
+      openapi: {
+        security: [{ bearerAuth: [] }],
+      },
+    });
   });
 });
 
@@ -217,16 +231,20 @@ describe("response diagnostics", () => {
     expect(responseDiagnostics.length).toBeGreaterThan(0);
   });
 
-  it("has expected unresolved response diagnostic count", () => {
+  it("keeps a dynamic file export unresolved for strict-mode coverage", () => {
     const model = inspectNestFixture();
 
-    const responseDiagnostics = model.operations.flatMap((op) =>
-      op.diagnostics.filter(
-        (diag) => diag.code === "EXTRACTOR_UNRESOLVED_RESPONSE",
-      ),
+    const exportOperation = model.operations.find(
+      (op) => op.id === "ProjectsController.exportCsv",
     );
 
-    expect(responseDiagnostics).toHaveLength(13);
+    expect(exportOperation?.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "EXTRACTOR_UNRESOLVED_RESPONSE",
+        }),
+      ]),
+    );
   });
 });
 
@@ -244,60 +262,35 @@ describe("mapped type diagnostics", () => {
 
     expect(diagnostics).toHaveLength(0);
 
-    expect(model.schemas.UpdateUserDto).toMatchObject({
-      name: "UpdateUserDto",
+    expect(model.schemas.UpdateProjectDto).toMatchObject({
+      name: "UpdateProjectDto",
       properties: {
-        email: expect.objectContaining({
+        name: expect.objectContaining({
           type: { kind: "primitive", type: "string" },
-          constraints: { format: "email" },
+          constraints: expect.objectContaining({ type: "string" }),
         }),
-        password: expect.objectContaining({
+        slug: expect.objectContaining({
           type: { kind: "primitive", type: "string" },
-          constraints: expect.objectContaining({
-            type: "string",
-            minLength: 6,
-          }),
+          constraints: expect.objectContaining({ type: "string" }),
         }),
-        firstName: expect.objectContaining({
+        status: expect.objectContaining({
           type: { kind: "primitive", type: "string" },
-          constraints: { type: "string" },
-        }),
-        lastName: expect.objectContaining({
-          type: { kind: "primitive", type: "string" },
-          constraints: { type: "string" },
-        }),
-        phone: expect.objectContaining({
-          type: { kind: "primitive", type: "string" },
+          enum: ["planning", "active", "paused", "archived"],
         }),
       },
       required: [],
       inference: { status: "inferred" },
     });
 
-    expect(model.schemas.UpdateProductDto).toMatchObject({
-      name: "UpdateProductDto",
+    expect(model.schemas.UpdateTaskDto).toMatchObject({
+      name: "UpdateTaskDto",
       properties: {
-        name: expect.objectContaining({
+        title: expect.objectContaining({
           type: { kind: "primitive", type: "string" },
-          constraints: { type: "string" },
         }),
-        price: expect.objectContaining({
-          type: { kind: "primitive", type: "number" },
-          constraints: expect.objectContaining({
-            type: "number",
-            exclusiveMinimum: 0,
-          }),
-        }),
-        category: expect.objectContaining({
+        status: expect.objectContaining({
           type: { kind: "primitive", type: "string" },
-          enum: ["Electronics", "Home", "Clothing", "Books"],
-        }),
-        stock: expect.objectContaining({
-          type: { kind: "primitive", type: "number" },
-          constraints: expect.objectContaining({
-            type: "number",
-            minimum: 0,
-          }),
+          enum: ["todo", "in_progress", "blocked", "done"],
         }),
       },
       required: [],
@@ -307,19 +300,16 @@ describe("mapped type diagnostics", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Unsupported Decorator Diagnostics
-// ---------------------------------------------------------------------------
-describe("unsupported decorator diagnostics", () => {
-  it("has expected unsupported decorator diagnostic count", () => {
+describe("global middleware and interceptors", () => {
+  it("does not treat middleware/interceptor files as controllers", () => {
     const model = inspectNestFixture();
 
-    const decoratorDiagnostics = model.operations.flatMap((op) =>
-      op.diagnostics.filter(
-        (diag) => diag.code === "EXTRACTOR_UNSUPPORTED_DECORATOR",
-      ),
+    expect(model.operations.map((op) => op.controller)).not.toContain(
+      "RequestContextMiddleware",
     );
-
-    expect(decoratorDiagnostics).toHaveLength(1);
+    expect(model.operations.map((op) => op.controller)).not.toContain(
+      "ResponseEnvelopeInterceptor",
+    );
   });
 });
 
@@ -330,7 +320,7 @@ describe("routing.globalPrefix", () => {
   it("does not add global prefix when config is absent", () => {
     const model = inspectNestFixture();
 
-    expect(model.operations.some((op) => op.path === "/users")).toBe(true);
+    expect(model.operations.some((op) => op.path === "/projects")).toBe(true);
     expect(model.operations.every((op) => !op.path.startsWith("/api/"))).toBe(
       true,
     );

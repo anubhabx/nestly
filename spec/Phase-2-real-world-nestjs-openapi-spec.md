@@ -21,9 +21,8 @@ The V1 trust boundary remains source analysis plus explicit config, not runtime 
 - OpenAPI 3.1 JSON emission through `specord generate`.
 - OpenAPI validation before writing output.
 - `specord.config.ts` as the final precision layer.
-- Fixture proof against both:
+- Fixture proof against the canonical benchmark:
   - `examples/nestjs-api`
-  - `examples/nestjs-realworld`
 
 ### Out of scope
 
@@ -132,13 +131,13 @@ If an internal `SchemaRef` points to a schema name that is not present in `Inspe
 
 | Fixture | Required result |
 | --- | --- |
-| `examples/nestjs-api` | Existing deterministic inspect behavior remains green. |
+| `examples/nestjs-api` | Deterministic inspect behavior remains green against the production benchmark fixture. |
 | `examples/nestjs-api` | Generate emits valid OpenAPI 3.1 JSON despite unresolved warnings. |
-| `examples/nestjs-realworld` | Swagger decorators are harvested for tags, operation ids, descriptions, responses, and security requirements. |
-| `examples/nestjs-realworld` | DTO property decorators and `_OPENAPI_METADATA_FACTORY()` enrich component schemas. |
-| `examples/nestjs-realworld` | Nested/common mapped type compositions resolve deterministically. |
-| `examples/nestjs-realworld` | Auth decorators produce operation security requirements without requiring `@nestjs/swagger` as a Specord dependency. |
-| `examples/nestjs-realworld` | Deliberately unresolved response cases warn by default and fail when strict CI config requires it. |
+| `examples/nestjs-api` | Swagger decorators are harvested for tags, operation ids, descriptions, responses, and security requirements. |
+| `examples/nestjs-api` | DTO property decorators enrich component schemas. |
+| `examples/nestjs-api` | Nested routes, query DTOs, and common mapped type compositions resolve deterministically. |
+| `examples/nestjs-api` | Auth decorators produce operation security requirements without requiring `@nestjs/swagger` as a Specord dependency. |
+| `examples/nestjs-api` | Deliberately unresolved response/security cases warn by default and fail when strict CI config requires it. |
 
 ## Diagnostics
 

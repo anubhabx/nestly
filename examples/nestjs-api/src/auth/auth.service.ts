@@ -1,69 +1,66 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { LoginUserDto } from './dto/login-user.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { TokenPairDto } from './dto/token-pair.dto';
 import { UsersService } from '../users/users.service';
-import { LoginUserDto } from '../users/dto/login-user.dto';
-import * as bcrypt from 'bcrypt';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email);
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user;
-      return result;
-    }
-    return null;
+  async register(dto: RegisterUserDto): Promise<TokenPairDto> {
+    const user = await this.usersService.create(dto);
+    return this.issueTokens(user);
   }
 
-  async login(loginUserDto: LoginUserDto) {
-    const user = await this.validateUser(loginUserDto.email, loginUserDto.password);
-    
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+  async login(dto: LoginUserDto): Promise<TokenPairDto> {
+    const user = await this.usersService.findByEmail(dto.email);
+    if (!user || !this.usersService.verifyPassword(user, dto.password)) {
+      throw new UnauthorizedException('Invalid email or password');
     }
+    return this.issueTokens(user);
+  }
 
+  async refresh(dto: RefreshTokenDto): Promise<TokenPairDto> {
+    const payload = await this.jwtService.verifyAsync<{ sub: string }>(
+      dto.refreshToken,
+    );
+    const user = await this.usersService.findById(payload.sub);
+    return this.issueTokens(user);
+  }
+
+  async me(userId: string) {
+    const user = await this.usersService.findById(userId);
+    return this.usersService.toProfile(user);
+  }
+
+  logout() {
+    return { revoked: true };
+  }
+
+  private async issueTokens(user: User): Promise<TokenPairDto> {
     const payload = {
-      email: user.email,
       sub: user.id,
-      userId: user.id,
+      email: user.email,
+      roles: user.roles,
     };
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload, { expiresIn: 900 }),
+      this.jwtService.signAsync(payload, { expiresIn: 60 * 60 * 24 * 7 }),
+    ]);
 
     return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
-    };
-  }
-
-  async register(createUserDto: any) {
-    // Check if user already exists
-    const existingUser = await this.usersService.findByEmail(createUserDto.email);
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
-
-    return this.usersService.create(createUserDto);
-  }
-
-  async refreshToken(userId: number) {
-    const user = await this.usersService.findOne(userId);
-    const payload = {
-      email: user.email,
-      sub: user.id,
-      userId: user.id,
-    };
-
-    return {
-      access_token: this.jwtService.sign(payload),
+      accessToken,
+      refreshToken,
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      user: this.usersService.toProfile(user),
     };
   }
 }

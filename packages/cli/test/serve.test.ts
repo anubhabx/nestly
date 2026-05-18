@@ -16,7 +16,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "../../..");
-const fixtureRoot = path.join(repoRoot, "examples/nestjs-realworld");
+const fixtureRoot = path.join(repoRoot, "examples/nestjs-api");
 
 describe("specord serve", () => {
   afterEach(() => {
@@ -49,13 +49,13 @@ describe("specord serve", () => {
       expect(html).toContain("data-specord-docs-shell");
       expect(html).toContain("/api/openapi.json");
       expect(openApiResponse.status).toBe(200);
-    expect(document.openapi).toBe("3.1.0");
-    expect(document.paths["/orders"].get.operationId).toBe("listOrders");
+      expect(document.openapi).toBe("3.1.0");
+      expect(document.paths["/projects"].get.operationId).toBe("listProjects");
 
-    const repeatedOpenApiResponse = await fetch(`${baseUrl}/api/openapi.json`);
-    expect(repeatedOpenApiResponse.status).toBe(200);
-    expect(process.stderr.write).toHaveBeenCalledTimes(1);
-  } finally {
+      const repeatedOpenApiResponse = await fetch(`${baseUrl}/api/openapi.json`);
+      expect(repeatedOpenApiResponse.status).toBe(200);
+      expect(process.stderr.write).toHaveBeenCalledTimes(1);
+    } finally {
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),
       );
@@ -76,7 +76,7 @@ describe("specord serve", () => {
 
     const result = startAppProcess(
       {
-        target: "examples/nestjs-realworld",
+        target: "examples/nestjs-api",
         appCommand: "pnpm start:dev",
       },
       {

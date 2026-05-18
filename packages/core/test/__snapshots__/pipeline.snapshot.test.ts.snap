@@ -10,16 +10,443 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
   },
   "operations": [
     {
+      "id": "AccountsController.list",
+      "operationId": "listAccounts",
+      "controller": "AccountsController",
+      "handler": "list",
+      "method": "get",
+      "path": "/accounts",
+      "source": {
+        "file": "accounts/accounts.controller.ts",
+        "line": 38
+      },
+      "summary": "List accounts",
+      "tags": [
+        "Accounts"
+      ],
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Accounts returned.",
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "AccountResponseDto"
+            }
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Accounts returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "AccountsController.get",
+      "operationId": "getAccount",
+      "controller": "AccountsController",
+      "handler": "get",
+      "method": "get",
+      "path": "/accounts/{accountId}",
+      "source": {
+        "file": "accounts/accounts.controller.ts",
+        "line": 48
+      },
+      "summary": "Get account details",
+      "tags": [
+        "Accounts"
+      ],
+      "params": [
+        {
+          "name": "accountId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 55
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Account details returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "AccountDetailsDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Account details returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on AccountsController.get is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 48
+          },
+          "subject": "AccountsController.get",
+          "suggestedOverridePath": "operations.AccountsController.get"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "AccountsController.update",
+      "operationId": "updateAccount",
+      "controller": "AccountsController",
+      "handler": "update",
+      "method": "patch",
+      "path": "/accounts/{accountId}",
+      "source": {
+        "file": "accounts/accounts.controller.ts",
+        "line": 59
+      },
+      "summary": "Update account",
+      "tags": [
+        "Accounts"
+      ],
+      "params": [
+        {
+          "name": "accountId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 65
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "UpdateAccountDto"
+        },
+        "required": true,
+        "source": {
+          "file": "accounts/accounts.controller.ts",
+          "line": 66
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Account updated.",
+          "schema": {
+            "kind": "ref",
+            "name": "AccountResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Account updated."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Roles() on AccountsController.update is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 59
+          },
+          "subject": "AccountsController.update",
+          "suggestedOverridePath": "operations.AccountsController.update"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on AccountsController.update is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 59
+          },
+          "subject": "AccountsController.update",
+          "suggestedOverridePath": "operations.AccountsController.update"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "AccountsController.invite",
+      "operationId": "inviteMember",
+      "controller": "AccountsController",
+      "handler": "invite",
+      "method": "post",
+      "path": "/accounts/{accountId}/members",
+      "source": {
+        "file": "accounts/accounts.controller.ts",
+        "line": 71
+      },
+      "summary": "Invite member",
+      "tags": [
+        "Accounts"
+      ],
+      "params": [
+        {
+          "name": "accountId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 77
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "InviteMemberDto"
+        },
+        "required": true,
+        "source": {
+          "file": "accounts/accounts.controller.ts",
+          "line": 78
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Member invited.",
+          "schema": {
+            "kind": "ref",
+            "name": "MemberResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Member invited."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Roles() on AccountsController.invite is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 71
+          },
+          "subject": "AccountsController.invite",
+          "suggestedOverridePath": "operations.AccountsController.invite"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on AccountsController.invite is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 71
+          },
+          "subject": "AccountsController.invite",
+          "suggestedOverridePath": "operations.AccountsController.invite"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "AccountsController.removeMember",
+      "operationId": "removeMember",
+      "controller": "AccountsController",
+      "handler": "removeMember",
+      "method": "delete",
+      "path": "/accounts/{accountId}/members/{memberId}",
+      "source": {
+        "file": "accounts/accounts.controller.ts",
+        "line": 84
+      },
+      "summary": "Remove member",
+      "tags": [
+        "Accounts"
+      ],
+      "params": [
+        {
+          "name": "accountId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 92
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "memberId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 93
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 204,
+          "description": "Member removed.",
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Member removed."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Roles() on AccountsController.removeMember is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 84
+          },
+          "subject": "AccountsController.removeMember",
+          "suggestedOverridePath": "operations.AccountsController.removeMember"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on AccountsController.removeMember is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 84
+          },
+          "subject": "AccountsController.removeMember",
+          "suggestedOverridePath": "operations.AccountsController.removeMember"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on AccountsController.removeMember is not in the supported allowlist",
+          "source": {
+            "file": "accounts/accounts.controller.ts",
+            "line": 84
+          },
+          "subject": "AccountsController.removeMember",
+          "suggestedOverridePath": "operations.AccountsController.removeMember"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
       "id": "AuthController.login",
-      "operationId": "AuthController.login",
+      "operationId": "loginUser",
       "controller": "AuthController",
       "handler": "login",
       "method": "post",
       "path": "/auth/login",
       "source": {
         "file": "auth/auth.controller.ts",
-        "line": 13
+        "line": 33
       },
+      "summary": "Login user",
+      "tags": [
+        "Auth"
+      ],
       "params": [],
       "requestBody": {
         "schema": {
@@ -29,7 +456,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         "required": true,
         "source": {
           "file": "auth/auth.controller.ts",
-          "line": 15
+          "line": 37
         },
         "inference": {
           "status": "inferred"
@@ -37,54 +464,136 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       },
       "responses": [
         {
-          "status": 201,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "status": 200,
+          "description": "Token pair returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "TokenPairDto"
+          },
           "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Token pair returned."
           }
         }
       ],
       "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
+        "status": "inferred"
       },
       "diagnostics": [
         {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Public() on AuthController.login is not in the supported allowlist",
           "source": {
             "file": "auth/auth.controller.ts",
-            "line": 13
+            "line": 33
           },
           "subject": "AuthController.login",
-          "suggestedOverridePath": "operations.AuthController.login.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on AuthController.login but not mapped to a security scheme",
-          "source": {
-            "file": "auth/auth.controller.ts",
-            "line": 13
-          },
-          "subject": "AuthController.login",
-          "suggestedOverridePath": "operations.AuthController.login.security"
+          "suggestedOverridePath": "operations.AuthController.login"
         }
       ]
     },
     {
-      "id": "AuthController.refreshToken",
-      "operationId": "AuthController.refreshToken",
+      "id": "AuthController.logout",
+      "operationId": "logoutUser",
       "controller": "AuthController",
-      "handler": "refreshToken",
+      "handler": "logout",
+      "method": "post",
+      "path": "/auth/logout",
+      "source": {
+        "file": "auth/auth.controller.ts",
+        "line": 64
+      },
+      "summary": "Logout user",
+      "tags": [
+        "Auth"
+      ],
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Token revocation accepted.",
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Token revocation accepted."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "AuthController.me",
+      "operationId": "getCurrentUser",
+      "controller": "AuthController",
+      "handler": "me",
+      "method": "get",
+      "path": "/auth/me",
+      "source": {
+        "file": "auth/auth.controller.ts",
+        "line": 52
+      },
+      "summary": "Get current user",
+      "tags": [
+        "Auth"
+      ],
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Current user profile returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "UserProfileDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Current user profile returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "AuthController.refresh",
+      "operationId": "refreshToken",
+      "controller": "AuthController",
+      "handler": "refresh",
       "method": "post",
       "path": "/auth/refresh",
       "source": {
         "file": "auth/auth.controller.ts",
-        "line": 24
+        "line": 41
       },
+      "summary": "Refresh token",
+      "tags": [
+        "Auth"
+      ],
       "params": [],
       "requestBody": {
         "schema": {
@@ -94,7 +603,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         "required": true,
         "source": {
           "file": "auth/auth.controller.ts",
-          "line": 26
+          "line": 48
         },
         "inference": {
           "status": "inferred"
@@ -102,64 +611,62 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       },
       "responses": [
         {
-          "status": 201,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "status": 200,
+          "description": "Fresh token pair returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "TokenPairDto"
+          },
           "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Fresh token pair returned."
           }
         }
       ],
       "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
+        "status": "inferred"
       },
       "diagnostics": [
         {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Public() on AuthController.refresh is not in the supported allowlist",
           "source": {
             "file": "auth/auth.controller.ts",
-            "line": 24
+            "line": 41
           },
-          "subject": "AuthController.refreshToken",
-          "suggestedOverridePath": "operations.AuthController.refreshToken.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on AuthController.refreshToken but not mapped to a security scheme",
-          "source": {
-            "file": "auth/auth.controller.ts",
-            "line": 24
-          },
-          "subject": "AuthController.refreshToken",
-          "suggestedOverridePath": "operations.AuthController.refreshToken.security"
+          "subject": "AuthController.refresh",
+          "suggestedOverridePath": "operations.AuthController.refresh"
         }
       ]
     },
     {
       "id": "AuthController.register",
-      "operationId": "AuthController.register",
+      "operationId": "registerUser",
       "controller": "AuthController",
       "handler": "register",
       "method": "post",
       "path": "/auth/register",
       "source": {
         "file": "auth/auth.controller.ts",
-        "line": 19
+        "line": 25
       },
+      "summary": "Register user",
+      "tags": [
+        "Auth"
+      ],
       "params": [],
       "requestBody": {
         "schema": {
           "kind": "ref",
-          "name": "CreateUserDto"
+          "name": "RegisterUserDto"
         },
         "required": true,
         "source": {
           "file": "auth/auth.controller.ts",
-          "line": 20
+          "line": 29
         },
         "inference": {
           "status": "inferred"
@@ -168,10 +675,16 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       "responses": [
         {
           "status": 201,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "description": "User registered.",
+          "schema": {
+            "kind": "ref",
+            "name": "TokenPairDto"
+          },
           "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "User registered."
           }
         }
       ],
@@ -180,79 +693,292 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       },
       "diagnostics": [
         {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Public() on AuthController.register is not in the supported allowlist",
           "source": {
             "file": "auth/auth.controller.ts",
-            "line": 19
+            "line": 25
           },
           "subject": "AuthController.register",
-          "suggestedOverridePath": "operations.AuthController.register.responses"
+          "suggestedOverridePath": "operations.AuthController.register"
         }
       ]
     },
     {
-      "id": "HealthController.check",
-      "operationId": "HealthController.check",
-      "controller": "HealthController",
-      "handler": "check",
-      "method": "get",
-      "path": "/health",
+      "id": "BillingController.checkout",
+      "operationId": "createCheckoutSession",
+      "controller": "BillingController",
+      "handler": "checkout",
+      "method": "post",
+      "path": "/billing/checkout-sessions",
       "source": {
-        "file": "health/health.controller.ts",
-        "line": 11
+        "file": "billing/billing.controller.ts",
+        "line": 39
       },
+      "summary": "Create checkout session",
+      "tags": [
+        "Billing"
+      ],
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "CheckoutSessionDto"
+        },
+        "required": true,
+        "source": {
+          "file": "billing/billing.controller.ts",
+          "line": 51
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Checkout session created.",
+          "schema": {
+            "kind": "ref",
+            "name": "CheckoutSessionResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Checkout session created."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Roles() on BillingController.checkout is not in the supported allowlist",
+          "source": {
+            "file": "billing/billing.controller.ts",
+            "line": 39
+          },
+          "subject": "BillingController.checkout",
+          "suggestedOverridePath": "operations.BillingController.checkout"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "BillingController.invoices",
+      "operationId": "listInvoices",
+      "controller": "BillingController",
+      "handler": "invoices",
+      "method": "get",
+      "path": "/billing/invoices",
+      "source": {
+        "file": "billing/billing.controller.ts",
+        "line": 59
+      },
+      "summary": "List invoices",
+      "tags": [
+        "Billing"
+      ],
+      "params": [
+        {
+          "name": "status",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "enum": [
+            "draft",
+            "open",
+            "paid",
+            "void"
+          ],
+          "source": {
+            "file": "billing/billing.controller.ts",
+            "line": 67
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Invoices returned.",
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "InvoiceResponseDto"
+            }
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Invoices returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "BillingController.subscription",
+      "operationId": "getSubscription",
+      "controller": "BillingController",
+      "handler": "subscription",
+      "method": "get",
+      "path": "/billing/subscription",
+      "source": {
+        "file": "billing/billing.controller.ts",
+        "line": 27
+      },
+      "summary": "Get subscription",
+      "tags": [
+        "Billing"
+      ],
       "params": [],
       "responses": [
         {
           "status": 200,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "description": "Subscription returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "SubscriptionResponseDto"
+          },
           "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\"API\\"<type>\\" is not a reducible exported shape"
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Subscription returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "HealthController.health",
+      "operationId": "getHealth",
+      "controller": "HealthController",
+      "handler": "health",
+      "method": "get",
+      "path": "/health",
+      "source": {
+        "file": "health/health.controller.ts",
+        "line": 10
+      },
+      "summary": "Get health",
+      "tags": [
+        "Health"
+      ],
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Service is healthy.",
+          "schema": {
+            "kind": "ref",
+            "name": "HealthResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Service is healthy."
           }
         }
       ],
       "security": {
         "status": "inferred"
       },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\"API\\"<type>\\" is not a reducible exported shape",
-          "source": {
-            "file": "health/health.controller.ts",
-            "line": 11
-          },
-          "subject": "HealthController.check",
-          "suggestedOverridePath": "operations.HealthController.check.responses"
-        },
-        {
-          "severity": "info",
-          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
-          "message": "Decorator @HealthCheck() on HealthController.check is not in the supported allowlist",
-          "source": {
-            "file": "health/health.controller.ts",
-            "line": 11
-          },
-          "subject": "HealthController.check",
-          "suggestedOverridePath": "operations.HealthController.check"
-        }
-      ]
+      "diagnostics": []
     },
     {
-      "id": "ProductsController.findAll",
-      "operationId": "ProductsController.findAll",
-      "controller": "ProductsController",
-      "handler": "findAll",
+      "id": "HealthController.readiness",
+      "operationId": "getReadiness",
+      "controller": "HealthController",
+      "handler": "readiness",
       "method": "get",
-      "path": "/products",
+      "path": "/health/readiness",
       "source": {
-        "file": "products/products.controller.ts",
-        "line": 29
+        "file": "health/health.controller.ts",
+        "line": 24
       },
+      "summary": "Get readiness",
+      "tags": [
+        "Health"
+      ],
+      "params": [],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Readiness checks returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "HealthResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Readiness checks returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "inferred"
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "ProjectsController.list",
+      "operationId": "listProjects",
+      "controller": "ProjectsController",
+      "handler": "list",
+      "method": "get",
+      "path": "/projects",
+      "source": {
+        "file": "projects/projects.controller.ts",
+        "line": 39
+      },
+      "summary": "List projects",
+      "description": "Returns projects visible to the current account with filter metadata.",
+      "tags": [
+        "Projects"
+      ],
       "params": [
         {
           "name": "page",
@@ -268,8 +994,8 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "minimum": 1
           },
           "source": {
-            "file": "products/products.controller.ts",
-            "line": 30
+            "file": "projects/projects.controller.ts",
+            "line": 52
           },
           "inference": {
             "status": "inferred"
@@ -286,11 +1012,12 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           "default": 10,
           "constraints": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "maximum": 100
           },
           "source": {
-            "file": "products/products.controller.ts",
-            "line": 30
+            "file": "projects/projects.controller.ts",
+            "line": 52
           },
           "inference": {
             "status": "inferred"
@@ -308,15 +1035,53 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "type": "string"
           },
           "source": {
-            "file": "products/products.controller.ts",
-            "line": 30
+            "file": "projects/projects.controller.ts",
+            "line": 52
           },
           "inference": {
             "status": "inferred"
           }
         },
         {
-          "name": "category",
+          "name": "status",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "enum": [
+            "planning",
+            "active",
+            "paused",
+            "archived"
+          ],
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 52
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "ownerId",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 52
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "tag",
           "in": "query",
           "type": {
             "kind": "primitive",
@@ -327,455 +1092,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "type": "string"
           },
           "source": {
-            "file": "products/products.controller.ts",
-            "line": 30
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        }
-      ],
-      "responses": [
-        {
-          "status": 200,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
-          "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
-          }
-        }
-      ],
-      "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
-      },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 29
-          },
-          "subject": "ProductsController.findAll",
-          "suggestedOverridePath": "operations.ProductsController.findAll.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on ProductsController.findAll but not mapped to a security scheme",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 29
-          },
-          "subject": "ProductsController.findAll",
-          "suggestedOverridePath": "operations.ProductsController.findAll.security"
-        }
-      ]
-    },
-    {
-      "id": "ProductsController.create",
-      "operationId": "ProductsController.create",
-      "controller": "ProductsController",
-      "handler": "create",
-      "method": "post",
-      "path": "/products",
-      "source": {
-        "file": "products/products.controller.ts",
-        "line": 68
-      },
-      "params": [],
-      "requestBody": {
-        "schema": {
-          "kind": "ref",
-          "name": "CreateProductDto"
-        },
-        "required": true,
-        "source": {
-          "file": "products/products.controller.ts",
-          "line": 69
-        },
-        "inference": {
-          "status": "inferred"
-        }
-      },
-      "responses": [
-        {
-          "status": 201,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
-          "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
-          }
-        }
-      ],
-      "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
-      },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 68
-          },
-          "subject": "ProductsController.create",
-          "suggestedOverridePath": "operations.ProductsController.create.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on ProductsController.create but not mapped to a security scheme",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 68
-          },
-          "subject": "ProductsController.create",
-          "suggestedOverridePath": "operations.ProductsController.create.security"
-        }
-      ]
-    },
-    {
-      "id": "ProductsController.remove",
-      "operationId": "ProductsController.remove",
-      "controller": "ProductsController",
-      "handler": "remove",
-      "method": "delete",
-      "path": "/products/{id}",
-      "source": {
-        "file": "products/products.controller.ts",
-        "line": 91
-      },
-      "params": [
-        {
-          "name": "id",
-          "in": "path",
-          "type": {
-            "kind": "primitive",
-            "type": "integer"
-          },
-          "required": true,
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 92
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        }
-      ],
-      "responses": [
-        {
-          "status": 200,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
-          "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
-          }
-        }
-      ],
-      "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
-      },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 91
-          },
-          "subject": "ProductsController.remove",
-          "suggestedOverridePath": "operations.ProductsController.remove.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on ProductsController.remove but not mapped to a security scheme",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 91
-          },
-          "subject": "ProductsController.remove",
-          "suggestedOverridePath": "operations.ProductsController.remove.security"
-        }
-      ]
-    },
-    {
-      "id": "ProductsController.findOne",
-      "operationId": "ProductsController.findOne",
-      "controller": "ProductsController",
-      "handler": "findOne",
-      "method": "get",
-      "path": "/products/{id}",
-      "source": {
-        "file": "products/products.controller.ts",
-        "line": 59
-      },
-      "params": [
-        {
-          "name": "id",
-          "in": "path",
-          "type": {
-            "kind": "primitive",
-            "type": "integer"
-          },
-          "required": true,
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 60
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        }
-      ],
-      "responses": [
-        {
-          "status": 200,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
-          "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
-          }
-        }
-      ],
-      "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
-      },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 59
-          },
-          "subject": "ProductsController.findOne",
-          "suggestedOverridePath": "operations.ProductsController.findOne.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on ProductsController.findOne but not mapped to a security scheme",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 59
-          },
-          "subject": "ProductsController.findOne",
-          "suggestedOverridePath": "operations.ProductsController.findOne.security"
-        }
-      ]
-    },
-    {
-      "id": "ProductsController.update",
-      "operationId": "ProductsController.update",
-      "controller": "ProductsController",
-      "handler": "update",
-      "method": "patch",
-      "path": "/products/{id}",
-      "source": {
-        "file": "products/products.controller.ts",
-        "line": 78
-      },
-      "params": [
-        {
-          "name": "id",
-          "in": "path",
-          "type": {
-            "kind": "primitive",
-            "type": "integer"
-          },
-          "required": true,
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 80
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        }
-      ],
-      "requestBody": {
-        "schema": {
-          "kind": "ref",
-          "name": "UpdateProductDto"
-        },
-        "required": true,
-        "source": {
-          "file": "products/products.controller.ts",
-          "line": 81
-        },
-        "inference": {
-          "status": "inferred"
-        }
-      },
-      "responses": [
-        {
-          "status": 200,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
-          "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
-          }
-        }
-      ],
-      "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
-      },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 78
-          },
-          "subject": "ProductsController.update",
-          "suggestedOverridePath": "operations.ProductsController.update.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on ProductsController.update but not mapped to a security scheme",
-          "source": {
-            "file": "products/products.controller.ts",
-            "line": 78
-          },
-          "subject": "ProductsController.update",
-          "suggestedOverridePath": "operations.ProductsController.update.security"
-        }
-      ]
-    },
-    {
-      "id": "UsersController.findAll",
-      "operationId": "UsersController.findAll",
-      "controller": "UsersController",
-      "handler": "findAll",
-      "method": "get",
-      "path": "/users",
-      "source": {
-        "file": "users/users.controller.ts",
-        "line": 26
-      },
-      "params": [],
-      "responses": [
-        {
-          "status": 200,
-          "schema": {
-            "kind": "array",
-            "items": {
-              "kind": "unknown"
-            }
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        }
-      ],
-      "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
-      },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on UsersController.findAll but not mapped to a security scheme",
-          "source": {
-            "file": "users/users.controller.ts",
-            "line": 26
-          },
-          "subject": "UsersController.findAll",
-          "suggestedOverridePath": "operations.UsersController.findAll.security"
-        }
-      ]
-    },
-    {
-      "id": "UsersController.create",
-      "operationId": "UsersController.create",
-      "controller": "UsersController",
-      "handler": "create",
-      "method": "post",
-      "path": "/users",
-      "source": {
-        "file": "users/users.controller.ts",
-        "line": 21
-      },
-      "params": [],
-      "requestBody": {
-        "schema": {
-          "kind": "ref",
-          "name": "CreateUserDto"
-        },
-        "required": true,
-        "source": {
-          "file": "users/users.controller.ts",
-          "line": 22
-        },
-        "inference": {
-          "status": "inferred"
-        }
-      },
-      "responses": [
-        {
-          "status": 201,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
-          "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
-          }
-        }
-      ],
-      "security": {
-        "status": "inferred"
-      },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
-          "source": {
-            "file": "users/users.controller.ts",
-            "line": 21
-          },
-          "subject": "UsersController.create",
-          "suggestedOverridePath": "operations.UsersController.create.responses"
-        }
-      ]
-    },
-    {
-      "id": "UsersController.remove",
-      "operationId": "UsersController.remove",
-      "controller": "UsersController",
-      "handler": "remove",
-      "method": "delete",
-      "path": "/users/{id}",
-      "source": {
-        "file": "users/users.controller.ts",
-        "line": 50
-      },
-      "params": [
-        {
-          "name": "id",
-          "in": "path",
-          "type": {
-            "kind": "primitive",
-            "type": "string"
-          },
-          "required": true,
-          "source": {
-            "file": "users/users.controller.ts",
+            "file": "projects/projects.controller.ts",
             "line": 52
           },
           "inference": {
@@ -786,47 +1103,107 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       "responses": [
         {
           "status": 200,
+          "description": "Projects returned.",
           "schema": {
-            "kind": "primitive",
-            "type": "null"
+            "kind": "ref",
+            "name": "PaginatedProjectResponseDto"
           },
           "inference": {
-            "status": "inferred"
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Projects returned."
           }
         }
       ],
       "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
+        "status": "overridden"
       },
-      "diagnostics": [
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on UsersController.remove but not mapped to a security scheme",
-          "source": {
-            "file": "users/users.controller.ts",
-            "line": 50
-          },
-          "subject": "UsersController.remove",
-          "suggestedOverridePath": "operations.UsersController.remove.security"
-        }
-      ]
+      "diagnostics": [],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     },
     {
-      "id": "UsersController.findOne",
-      "operationId": "UsersController.findOne",
-      "controller": "UsersController",
-      "handler": "findOne",
-      "method": "get",
-      "path": "/users/{id}",
+      "id": "ProjectsController.create",
+      "operationId": "createProject",
+      "controller": "ProjectsController",
+      "handler": "create",
+      "method": "post",
+      "path": "/projects",
       "source": {
-        "file": "users/users.controller.ts",
-        "line": 38
+        "file": "projects/projects.controller.ts",
+        "line": 57
       },
+      "summary": "Create project",
+      "tags": [
+        "Projects"
+      ],
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "CreateProjectDto"
+        },
+        "required": true,
+        "source": {
+          "file": "projects/projects.controller.ts",
+          "line": 65
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Project created.",
+          "schema": {
+            "kind": "ref",
+            "name": "ProjectResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Project created."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "ProjectsController.get",
+      "operationId": "getProject",
+      "controller": "ProjectsController",
+      "handler": "get",
+      "method": "get",
+      "path": "/projects/{projectId}",
+      "source": {
+        "file": "projects/projects.controller.ts",
+        "line": 74
+      },
+      "summary": "Get project",
+      "tags": [
+        "Projects"
+      ],
       "params": [
         {
-          "name": "id",
+          "name": "projectId",
           "in": "path",
           "type": {
             "kind": "primitive",
@@ -834,8 +1211,8 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           },
           "required": true,
           "source": {
-            "file": "users/users.controller.ts",
-            "line": 40
+            "file": "projects/projects.controller.ts",
+            "line": 80
           },
           "inference": {
             "status": "inferred"
@@ -845,56 +1222,61 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       "responses": [
         {
           "status": 200,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "description": "Project returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "ProjectResponseDto"
+          },
           "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Project returned."
           }
         }
       ],
       "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
+        "status": "overridden"
       },
       "diagnostics": [
         {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on ProjectsController.get is not in the supported allowlist",
           "source": {
-            "file": "users/users.controller.ts",
-            "line": 38
+            "file": "projects/projects.controller.ts",
+            "line": 74
           },
-          "subject": "UsersController.findOne",
-          "suggestedOverridePath": "operations.UsersController.findOne.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on UsersController.findOne but not mapped to a security scheme",
-          "source": {
-            "file": "users/users.controller.ts",
-            "line": 38
-          },
-          "subject": "UsersController.findOne",
-          "suggestedOverridePath": "operations.UsersController.findOne.security"
+          "subject": "ProjectsController.get",
+          "suggestedOverridePath": "operations.ProjectsController.get"
         }
-      ]
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     },
     {
-      "id": "UsersController.update",
-      "operationId": "UsersController.update",
-      "controller": "UsersController",
+      "id": "ProjectsController.update",
+      "operationId": "updateProject",
+      "controller": "ProjectsController",
       "handler": "update",
       "method": "patch",
-      "path": "/users/{id}",
+      "path": "/projects/{projectId}",
       "source": {
-        "file": "users/users.controller.ts",
-        "line": 44
+        "file": "projects/projects.controller.ts",
+        "line": 88
       },
+      "summary": "Update project",
+      "tags": [
+        "Projects"
+      ],
       "params": [
         {
-          "name": "id",
+          "name": "projectId",
           "in": "path",
           "type": {
             "kind": "primitive",
@@ -902,8 +1284,8 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           },
           "required": true,
           "source": {
-            "file": "users/users.controller.ts",
-            "line": 46
+            "file": "projects/projects.controller.ts",
+            "line": 94
           },
           "inference": {
             "status": "inferred"
@@ -913,12 +1295,12 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       "requestBody": {
         "schema": {
           "kind": "ref",
-          "name": "UpdateUserDto"
+          "name": "UpdateProjectDto"
         },
         "required": true,
         "source": {
-          "file": "users/users.controller.ts",
-          "line": 46
+          "file": "projects/projects.controller.ts",
+          "line": 95
         },
         "inference": {
           "status": "inferred"
@@ -927,145 +1309,1340 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       "responses": [
         {
           "status": 200,
-          "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "description": "Project updated.",
+          "schema": {
+            "kind": "ref",
+            "name": "ProjectResponseDto"
+          },
           "inference": {
-            "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Project updated."
           }
         }
       ],
       "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
+        "status": "overridden"
       },
       "diagnostics": [
         {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on ProjectsController.update is not in the supported allowlist",
           "source": {
-            "file": "users/users.controller.ts",
-            "line": 44
+            "file": "projects/projects.controller.ts",
+            "line": 88
           },
-          "subject": "UsersController.update",
-          "suggestedOverridePath": "operations.UsersController.update.responses"
-        },
-        {
-          "severity": "warning",
-          "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on UsersController.update but not mapped to a security scheme",
-          "source": {
-            "file": "users/users.controller.ts",
-            "line": 44
-          },
-          "subject": "UsersController.update",
-          "suggestedOverridePath": "operations.UsersController.update.security"
+          "subject": "ProjectsController.update",
+          "suggestedOverridePath": "operations.ProjectsController.update"
         }
-      ]
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
     },
     {
-      "id": "UsersController.getProfile",
-      "operationId": "UsersController.getProfile",
-      "controller": "UsersController",
-      "handler": "getProfile",
-      "method": "get",
-      "path": "/users/me",
+      "id": "ProjectsController.archive",
+      "operationId": "archiveProject",
+      "controller": "ProjectsController",
+      "handler": "archive",
+      "method": "post",
+      "path": "/projects/{projectId}/archive",
       "source": {
-        "file": "users/users.controller.ts",
-        "line": 32
+        "file": "projects/projects.controller.ts",
+        "line": 104
       },
-      "params": [],
+      "summary": "Archive project",
+      "tags": [
+        "Projects"
+      ],
+      "params": [
+        {
+          "name": "projectId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 110
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Project archived.",
+          "schema": {
+            "kind": "ref",
+            "name": "ProjectResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Project archived."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on ProjectsController.archive is not in the supported allowlist",
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 104
+          },
+          "subject": "ProjectsController.archive",
+          "suggestedOverridePath": "operations.ProjectsController.archive"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "ProjectsController.exportCsv",
+      "operationId": "exportProjectCsv",
+      "controller": "ProjectsController",
+      "handler": "exportCsv",
+      "method": "get",
+      "path": "/projects/{projectId}/export",
+      "source": {
+        "file": "projects/projects.controller.ts",
+        "line": 118
+      },
+      "summary": "Export project tasks",
+      "tags": [
+        "Projects"
+      ],
+      "params": [
+        {
+          "name": "projectId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 128
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
       "responses": [
         {
           "status": 200,
           "description": "Response schema could not be inferred — provide an override in specord.config.ts",
+          "schema": {
+            "kind": "ref",
+            "name": "StreamableFile"
+          },
           "inference": {
             "status": "unresolved",
-            "reason": "Return type \\"<type>\\" is not a reducible exported shape"
+            "reason": "Return type \\"<type>\\" is not a discovered schema under --root"
           }
         }
       ],
       "security": {
-        "status": "unresolved",
-        "reason": "Guard/auth semantics require config override"
+        "status": "overridden"
       },
       "diagnostics": [
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_RESPONSE",
-          "message": "Return type \\"<type>\\" is not a reducible exported shape",
+          "message": "Return type \\"<type>\\" is not a discovered schema under --root",
           "source": {
-            "file": "users/users.controller.ts",
-            "line": 32
+            "file": "projects/projects.controller.ts",
+            "line": 118
           },
-          "subject": "UsersController.getProfile",
-          "suggestedOverridePath": "operations.UsersController.getProfile.responses"
+          "subject": "ProjectsController.exportCsv",
+          "suggestedOverridePath": "operations.ProjectsController.exportCsv.responses"
         },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Header() on ProjectsController.exportCsv is not in the supported allowlist",
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 118
+          },
+          "subject": "ProjectsController.exportCsv",
+          "suggestedOverridePath": "operations.ProjectsController.exportCsv"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiProduces() on ProjectsController.exportCsv is not in the supported allowlist",
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 118
+          },
+          "subject": "ProjectsController.exportCsv",
+          "suggestedOverridePath": "operations.ProjectsController.exportCsv"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on ProjectsController.exportCsv is not in the supported allowlist",
+          "source": {
+            "file": "projects/projects.controller.ts",
+            "line": 118
+          },
+          "subject": "ProjectsController.exportCsv",
+          "suggestedOverridePath": "operations.ProjectsController.exportCsv"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "TasksController.list",
+      "operationId": "listTasks",
+      "controller": "TasksController",
+      "handler": "list",
+      "method": "get",
+      "path": "/projects/{projectId}/tasks",
+      "source": {
+        "file": "tasks/tasks.controller.ts",
+        "line": 37
+      },
+      "summary": "List project tasks",
+      "tags": [
+        "Tasks"
+      ],
+      "params": [
+        {
+          "name": "projectId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 43
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "enum": [
+            "todo",
+            "in_progress",
+            "blocked",
+            "done"
+          ],
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 44
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "priority",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ],
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 44
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "assigneeId",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 44
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "label",
+          "in": "query",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": false,
+          "constraints": {
+            "type": "string"
+          },
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 44
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Tasks returned.",
+          "schema": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "TaskResponseDto"
+            }
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Tasks returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.list is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 37
+          },
+          "subject": "TasksController.list",
+          "suggestedOverridePath": "operations.TasksController.list"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "TasksController.create",
+      "operationId": "createTask",
+      "controller": "TasksController",
+      "handler": "create",
+      "method": "post",
+      "path": "/projects/{projectId}/tasks",
+      "source": {
+        "file": "tasks/tasks.controller.ts",
+        "line": 53
+      },
+      "summary": "Create task",
+      "tags": [
+        "Tasks"
+      ],
+      "params": [
+        {
+          "name": "projectId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 59
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "CreateTaskDto"
+        },
+        "required": true,
+        "source": {
+          "file": "tasks/tasks.controller.ts",
+          "line": 60
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Task created.",
+          "schema": {
+            "kind": "ref",
+            "name": "TaskResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Task created."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.create is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 53
+          },
+          "subject": "TasksController.create",
+          "suggestedOverridePath": "operations.TasksController.create"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "TasksController.get",
+      "operationId": "getTask",
+      "controller": "TasksController",
+      "handler": "get",
+      "method": "get",
+      "path": "/projects/{projectId}/tasks/{taskId}",
+      "source": {
+        "file": "tasks/tasks.controller.ts",
+        "line": 69
+      },
+      "summary": "Get task",
+      "tags": [
+        "Tasks"
+      ],
+      "params": [
+        {
+          "name": "projectId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 76
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "taskId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 77
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "status": 200,
+          "description": "Task returned.",
+          "schema": {
+            "kind": "ref",
+            "name": "TaskResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Task returned."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.get is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 69
+          },
+          "subject": "TasksController.get",
+          "suggestedOverridePath": "operations.TasksController.get"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.get is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 69
+          },
+          "subject": "TasksController.get",
+          "suggestedOverridePath": "operations.TasksController.get"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "TasksController.update",
+      "operationId": "updateTask",
+      "controller": "TasksController",
+      "handler": "update",
+      "method": "patch",
+      "path": "/projects/{projectId}/tasks/{taskId}",
+      "source": {
+        "file": "tasks/tasks.controller.ts",
+        "line": 86
+      },
+      "summary": "Update task",
+      "tags": [
+        "Tasks"
+      ],
+      "params": [
+        {
+          "name": "projectId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 93
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "taskId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 94
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "UpdateTaskDto"
+        },
+        "required": true,
+        "source": {
+          "file": "tasks/tasks.controller.ts",
+          "line": 95
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "description": "Task updated.",
+          "schema": {
+            "kind": "ref",
+            "name": "TaskResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Task updated."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.update is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 86
+          },
+          "subject": "TasksController.update",
+          "suggestedOverridePath": "operations.TasksController.update"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.update is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 86
+          },
+          "subject": "TasksController.update",
+          "suggestedOverridePath": "operations.TasksController.update"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "TasksController.addComment",
+      "operationId": "createTaskComment",
+      "controller": "TasksController",
+      "handler": "addComment",
+      "method": "post",
+      "path": "/projects/{projectId}/tasks/{taskId}/comments",
+      "source": {
+        "file": "tasks/tasks.controller.ts",
+        "line": 105
+      },
+      "summary": "Create task comment",
+      "tags": [
+        "Tasks"
+      ],
+      "params": [
+        {
+          "name": "projectId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 118
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        {
+          "name": "taskId",
+          "in": "path",
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "required": true,
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 119
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      ],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "CreateTaskCommentDto"
+        },
+        "required": true,
+        "source": {
+          "file": "tasks/tasks.controller.ts",
+          "line": 120
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Comment created.",
+          "schema": {
+            "kind": "ref",
+            "name": "TaskCommentResponseDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Comment created."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.addComment is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 105
+          },
+          "subject": "TasksController.addComment",
+          "suggestedOverridePath": "operations.TasksController.addComment"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @ApiParam() on TasksController.addComment is not in the supported allowlist",
+          "source": {
+            "file": "tasks/tasks.controller.ts",
+            "line": 105
+          },
+          "subject": "TasksController.addComment",
+          "suggestedOverridePath": "operations.TasksController.addComment"
+        }
+      ],
+      "openapi": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "WebhooksController.stripe",
+      "operationId": "handleStripeWebhook",
+      "controller": "WebhooksController",
+      "handler": "stripe",
+      "method": "post",
+      "path": "/webhooks/stripe",
+      "source": {
+        "file": "webhooks/webhooks.controller.ts",
+        "line": 19
+      },
+      "summary": "Handle Stripe webhook",
+      "tags": [
+        "Webhooks"
+      ],
+      "params": [],
+      "requestBody": {
+        "schema": {
+          "kind": "ref",
+          "name": "WebhookEventDto"
+        },
+        "required": true,
+        "source": {
+          "file": "webhooks/webhooks.controller.ts",
+          "line": 28
+        },
+        "inference": {
+          "status": "inferred"
+        }
+      },
+      "responses": [
+        {
+          "status": 201,
+          "description": "Webhook accepted.",
+          "schema": {
+            "kind": "ref",
+            "name": "WebhookAckDto"
+          },
+          "inference": {
+            "status": "overridden"
+          },
+          "openapi": {
+            "description": "Webhook accepted."
+          }
+        }
+      ],
+      "security": {
+        "status": "overridden"
+      },
+      "diagnostics": [
         {
           "severity": "warning",
           "code": "EXTRACTOR_UNRESOLVED_SECURITY",
-          "message": "Guard/auth semantics observed on UsersController.getProfile but not mapped to a security scheme",
+          "message": "Security requirement \\"<type>\\" was harvested but no security scheme was configured or inferable",
           "source": {
-            "file": "users/users.controller.ts",
-            "line": 32
+            "file": "webhooks/webhooks.controller.ts",
+            "line": 19
           },
-          "subject": "UsersController.getProfile",
-          "suggestedOverridePath": "operations.UsersController.getProfile.security"
+          "subject": "WebhooksController.stripe",
+          "suggestedOverridePath": "securitySchemes.stripeSignature",
+          "origin": "swagger"
+        },
+        {
+          "severity": "info",
+          "code": "EXTRACTOR_UNSUPPORTED_DECORATOR",
+          "message": "Decorator @Public() on WebhooksController.stripe is not in the supported allowlist",
+          "source": {
+            "file": "webhooks/webhooks.controller.ts",
+            "line": 19
+          },
+          "subject": "WebhooksController.stripe",
+          "suggestedOverridePath": "operations.WebhooksController.stripe"
         }
-      ]
+      ],
+      "openapi": {
+        "security": [
+          {
+            "stripeSignature": []
+          }
+        ]
+      }
     }
   ],
   "schemas": {
-    "CreateProductDto": {
-      "name": "CreateProductDto",
+    "Account": {
+      "name": "Account",
       "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "slug": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
         "name": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
-          "constraints": {
-            "type": "string"
-          },
           "inference": {
             "status": "inferred"
           }
         },
-        "price": {
-          "type": {
-            "kind": "primitive",
-            "type": "number"
-          },
-          "constraints": {
-            "type": "number",
-            "exclusiveMinimum": 0
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        },
-        "category": {
+        "plan": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
           "enum": [
-            "Electronics",
-            "Home",
-            "Clothing",
-            "Books"
+            "free",
+            "team",
+            "enterprise"
           ],
           "inference": {
             "status": "inferred"
           }
         },
-        "stock": {
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "active",
+            "suspended",
+            "closed"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "members": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "AccountMember"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "projects": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "Project"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "subscriptions": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "Subscription"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "updatedAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "plan",
+        "status",
+        "metadata",
+        "members",
+        "projects",
+        "subscriptions",
+        "createdAt",
+        "updatedAt"
+      ],
+      "source": {
+        "file": "accounts/entities/account.entity.ts",
+        "line": 25
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "AccountDetailsDto": {
+      "name": "AccountDetailsDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "6fbe8f9b-1d51-42a5-bfac-fb9a87113d2b",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "slug": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "acme",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Acme Labs",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "plan": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "team",
+          "enum": [
+            "free",
+            "team",
+            "enterprise"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "active",
+          "enum": [
+            "active",
+            "suspended",
+            "closed"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "projectCount": {
           "type": {
             "kind": "primitive",
             "type": "number"
           },
+          "example": 7,
           "constraints": {
-            "type": "number",
+            "minimum": 0
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "members": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "MemberResponseDto"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-05-16T09:30:00.000Z",
+          "format": "date-time",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "plan",
+        "status",
+        "projectCount",
+        "members",
+        "createdAt"
+      ],
+      "source": {
+        "file": "accounts/dto/account-details.dto.ts",
+        "line": 5
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "AccountMember": {
+      "name": "AccountMember",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "accountId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "userId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "role": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "owner",
+            "admin",
+            "billing",
+            "developer",
+            "viewer"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "invitedByUserId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "account": {
+          "type": {
+            "kind": "ref",
+            "name": "Account"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "user": {
+          "type": {
+            "kind": "ref",
+            "name": "User"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "accountId",
+        "userId",
+        "role",
+        "account",
+        "user",
+        "createdAt"
+      ],
+      "source": {
+        "file": "accounts/entities/account-member.entity.ts",
+        "line": 21
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "AccountResponseDto": {
+      "name": "AccountResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "6fbe8f9b-1d51-42a5-bfac-fb9a87113d2b",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "slug": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "acme",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Acme Labs",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "plan": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "team",
+          "enum": [
+            "free",
+            "team",
+            "enterprise"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "active",
+          "enum": [
+            "active",
+            "suspended",
+            "closed"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-05-16T09:30:00.000Z",
+          "format": "date-time",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "plan",
+        "status",
+        "createdAt"
+      ],
+      "source": {
+        "file": "accounts/dto/account-response.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "AccountUsageDto": {
+      "name": "AccountUsageDto",
+      "properties": {
+        "projectCount": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 7,
+          "constraints": {
             "minimum": 0
           },
           "inference": {
@@ -1074,27 +2651,509 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         }
       },
       "required": [
-        "name",
-        "price",
-        "category",
-        "stock"
+        "projectCount"
       ],
       "source": {
-        "file": "products/dto/create-product.dto.ts",
-        "line": 10
+        "file": "accounts/dto/account-usage.dto.ts",
+        "line": 3
       },
       "inference": {
         "status": "inferred"
       }
     },
-    "CreateUserDto": {
-      "name": "CreateUserDto",
+    "ApiErrorDto": {
+      "name": "ApiErrorDto",
+      "properties": {
+        "statusCode": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 404,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "message": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Project not found",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "error": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Not Found",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "requestId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "01HXK7V3VT4Y9ME8F9HF4DMSAA",
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "statusCode",
+        "message",
+        "error",
+        "requestId"
+      ],
+      "source": {
+        "file": "common/dto/api-error.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "CheckoutSessionDto": {
+      "name": "CheckoutSessionDto",
+      "properties": {
+        "planCode": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "team-pro",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "interval": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "month",
+          "enum": [
+            "month",
+            "year"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "successUrl": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "https://app.example.com/billing/success",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "cancelUrl": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "https://app.example.com/billing/cancel",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "planCode",
+        "interval",
+        "successUrl",
+        "cancelUrl"
+      ],
+      "source": {
+        "file": "billing/dto/checkout-session.dto.ts",
+        "line": 5
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "CheckoutSessionResponseDto": {
+      "name": "CheckoutSessionResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "cs_test_1P9wsKLkdIwHu7ix",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "url": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "https://checkout.stripe.com/c/pay/cs_test_1P9wsKLkdIwHu7ix",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "expiresIn": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 1800,
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "url",
+        "expiresIn"
+      ],
+      "source": {
+        "file": "billing/dto/checkout-session-response.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "CreateProjectDto": {
+      "name": "CreateProjectDto",
+      "properties": {
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Mobile Launch",
+          "constraints": {
+            "type": "string",
+            "minLength": 3
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "slug": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "mobile-launch",
+          "constraints": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Customer-facing launch plan.",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "planning",
+          "enum": [
+            "planning",
+            "active",
+            "paused",
+            "archived"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tags": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "example": [
+            "mobile",
+            "q3"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "example": {
+            "costCenter": "growth"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "slug",
+        "tags"
+      ],
+      "source": {
+        "file": "projects/dto/create-project.dto.ts",
+        "line": 14
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "CreateTaskCommentDto": {
+      "name": "CreateTaskCommentDto",
+      "properties": {
+        "body": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Release notes are approved.",
+          "constraints": {
+            "type": "string",
+            "minLength": 2
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "example": {
+            "visibility": "internal"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "body"
+      ],
+      "source": {
+        "file": "tasks/dto/create-task-comment.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "CreateTaskDto": {
+      "name": "CreateTaskDto",
+      "properties": {
+        "title": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Prepare launch checklist",
+          "constraints": {
+            "type": "string",
+            "minLength": 3
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Coordinate final release readiness.",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "todo",
+          "enum": [
+            "todo",
+            "in_progress",
+            "blocked",
+            "done"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "priority": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "high",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "assigneeId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dfd2bdbc-fc8d-42e4-a56c-3af84341921d",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "dueAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-06-01T12:00:00.000Z",
+          "format": "date-time",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "labels": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "example": [
+            "release",
+            "blocked-by-legal"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "title",
+        "labels"
+      ],
+      "source": {
+        "file": "tasks/dto/create-task.dto.ts",
+        "line": 15
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "HealthResponseDto": {
+      "name": "HealthResponseDto",
+      "properties": {
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "ok",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "checkedAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-05-16T09:30:00.000Z",
+          "format": "date-time",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "dependencies": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "example": {
+            "database": "up",
+            "redis": "up"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "status",
+        "checkedAt",
+        "dependencies"
+      ],
+      "source": {
+        "file": "health/dto/health-response.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "InviteMemberDto": {
+      "name": "InviteMemberDto",
       "properties": {
         "email": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
+          "example": "grace@example.com",
+          "format": "email",
           "constraints": {
             "format": "email"
           },
@@ -1102,45 +3161,132 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "status": "inferred"
           }
         },
-        "password": {
+        "name": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
+          "example": "Grace Hopper",
           "constraints": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d)(?=.*[@$!%*?&])[A-Za-z\\\\d@$!%*?&]"
+            "minLength": 2
           },
           "inference": {
             "status": "inferred"
           }
         },
-        "firstName": {
+        "role": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
-          "constraints": {
-            "type": "string"
-          },
+          "example": "developer",
+          "enum": [
+            "owner",
+            "admin",
+            "billing",
+            "developer",
+            "viewer"
+          ],
           "inference": {
             "status": "inferred"
           }
-        },
-        "lastName": {
+        }
+      },
+      "required": [
+        "email",
+        "role"
+      ],
+      "source": {
+        "file": "accounts/dto/invite-member.dto.ts",
+        "line": 11
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "Invoice": {
+      "name": "Invoice",
+      "properties": {
+        "id": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
-          "constraints": {
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "accountId": {
+          "type": {
+            "kind": "primitive",
             "type": "string"
           },
           "inference": {
             "status": "inferred"
           }
         },
-        "phone": {
+        "number": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "draft",
+            "open",
+            "paid",
+            "void"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "amountCents": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "currency": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "dueAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "account": {
+          "type": {
+            "kind": "ref",
+            "name": "Account"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
           "type": {
             "kind": "primitive",
             "type": "string"
@@ -1151,14 +3297,136 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         }
       },
       "required": [
-        "email",
-        "password",
-        "firstName",
-        "lastName"
+        "id",
+        "accountId",
+        "number",
+        "status",
+        "amountCents",
+        "currency",
+        "dueAt",
+        "account",
+        "createdAt"
       ],
       "source": {
-        "file": "users/dto/create-user.dto.ts",
-        "line": 3
+        "file": "billing/entities/invoice.entity.ts",
+        "line": 18
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "InvoiceQueryDto": {
+      "name": "InvoiceQueryDto",
+      "properties": {
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "open",
+          "enum": [
+            "draft",
+            "open",
+            "paid",
+            "void"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [],
+      "source": {
+        "file": "billing/dto/invoice-query.dto.ts",
+        "line": 5
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "InvoiceResponseDto": {
+      "name": "InvoiceResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "02bce802-e39c-4924-b0d5-e9891d74c898",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "number": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "INV-2026-0001",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "open",
+          "enum": [
+            "draft",
+            "open",
+            "paid",
+            "void"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "amountCents": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 4900,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "currency": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "usd",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "dueAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-06-01T12:00:00.000Z",
+          "format": "date-time",
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "number",
+        "status",
+        "amountCents",
+        "currency",
+        "dueAt"
+      ],
+      "source": {
+        "file": "billing/dto/invoice-response.dto.ts",
+        "line": 4
       },
       "inference": {
         "status": "inferred"
@@ -1172,6 +3440,8 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "kind": "primitive",
             "type": "string"
           },
+          "example": "ada@example.com",
+          "format": "email",
           "constraints": {
             "format": "email"
           },
@@ -1184,8 +3454,10 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "kind": "primitive",
             "type": "string"
           },
+          "example": "correct horse battery staple",
           "constraints": {
-            "type": "string"
+            "type": "string",
+            "minLength": 12
           },
           "inference": {
             "status": "inferred"
@@ -1197,8 +3469,124 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         "password"
       ],
       "source": {
-        "file": "users/dto/login-user.dto.ts",
-        "line": 3
+        "file": "auth/dto/login-user.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "MemberResponseDto": {
+      "name": "MemberResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dc8f0a66-cad3-44f2-b074-d6dd50c5deda",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "email": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "ada@example.com",
+          "format": "email",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Ada Lovelace",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "role": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "admin",
+          "enum": [
+            "owner",
+            "admin",
+            "billing",
+            "developer",
+            "viewer"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-05-16T09:30:00.000Z",
+          "format": "date-time",
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "role",
+        "createdAt"
+      ],
+      "source": {
+        "file": "accounts/dto/member-response.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "PaginatedProjectResponseDto": {
+      "name": "PaginatedProjectResponseDto",
+      "properties": {
+        "items": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "ProjectResponseDto"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "meta": {
+          "type": {
+            "kind": "ref",
+            "name": "ProjectPageMetaDto"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "items",
+        "meta"
+      ],
+      "source": {
+        "file": "projects/dto/paginated-project-response.dto.ts",
+        "line": 15
       },
       "inference": {
         "status": "inferred"
@@ -1213,6 +3601,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "type": "number"
           },
           "default": 1,
+          "example": 1,
           "constraints": {
             "type": "integer",
             "minimum": 1
@@ -1227,9 +3616,267 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "type": "number"
           },
           "default": 10,
+          "example": 20,
+          "constraints": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [],
+      "source": {
+        "file": "common/dto/pagination.dto.ts",
+        "line": 5
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "Project": {
+      "name": "Project",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "accountId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "ownerId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "slug": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "planning",
+            "active",
+            "paused",
+            "archived"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tags": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "account": {
+          "type": {
+            "kind": "ref",
+            "name": "Account"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "owner": {
+          "type": {
+            "kind": "ref",
+            "name": "User"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tasks": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "Task"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "updatedAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "accountId",
+        "ownerId",
+        "name",
+        "slug",
+        "status",
+        "tags",
+        "metadata",
+        "account",
+        "owner",
+        "tasks",
+        "createdAt",
+        "updatedAt"
+      ],
+      "source": {
+        "file": "projects/entities/project.entity.ts",
+        "line": 22
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "ProjectPageMetaDto": {
+      "name": "ProjectPageMetaDto",
+      "properties": {
+        "page": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 1,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "limit": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 20,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "total": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 87,
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "page",
+        "limit",
+        "total"
+      ],
+      "source": {
+        "file": "projects/dto/paginated-project-response.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "ProjectQueryDto": {
+      "name": "ProjectQueryDto",
+      "properties": {
+        "page": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "default": 1,
+          "example": 1,
           "constraints": {
             "type": "integer",
             "minimum": 1
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "limit": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "default": 10,
+          "example": 20,
+          "constraints": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
           },
           "inference": {
             "status": "inferred"
@@ -1240,6 +3887,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "kind": "primitive",
             "type": "string"
           },
+          "example": "launch",
           "constraints": {
             "type": "string"
           },
@@ -1247,11 +3895,38 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "status": "inferred"
           }
         },
-        "category": {
+        "status": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
+          "example": "active",
+          "enum": [
+            "planning",
+            "active",
+            "paused",
+            "archived"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "ownerId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dfd2bdbc-fc8d-42e4-a56c-3af84341921d",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tag": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "mobile",
           "constraints": {
             "type": "string"
           },
@@ -1262,7 +3937,213 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       },
       "required": [],
       "source": {
-        "file": "products/dto/pagination.dto.ts",
+        "file": "projects/dto/project-query.dto.ts",
+        "line": 14
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "ProjectResponseDto": {
+      "name": "ProjectResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "88dd40e4-ff7f-4c85-ae90-13b0519226d2",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "accountId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "6fbe8f9b-1d51-42a5-bfac-fb9a87113d2b",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "ownerId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dfd2bdbc-fc8d-42e4-a56c-3af84341921d",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Mobile Launch",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "slug": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "mobile-launch",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Customer-facing launch plan.",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "active",
+          "enum": [
+            "planning",
+            "active",
+            "paused",
+            "archived"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tags": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "example": [
+            "mobile",
+            "q3"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "example": {
+            "costCenter": "growth"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-05-16T09:30:00.000Z",
+          "format": "date-time",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tasks": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "TaskResponseDto"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "accountId",
+        "ownerId",
+        "name",
+        "slug",
+        "status",
+        "tags",
+        "metadata",
+        "createdAt"
+      ],
+      "source": {
+        "file": "projects/dto/project-response.dto.ts",
+        "line": 9
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "ProjectSummaryDto": {
+      "name": "ProjectSummaryDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "88dd40e4-ff7f-4c85-ae90-13b0519226d2",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Mobile Launch",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "active",
+          "enum": [
+            "planning",
+            "active",
+            "paused",
+            "archived"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "status"
+      ],
+      "source": {
+        "file": "projects/dto/project-summary.dto.ts",
         "line": 4
       },
       "inference": {
@@ -1277,8 +4158,10 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "kind": "primitive",
             "type": "string"
           },
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh",
           "constraints": {
-            "type": "string"
+            "type": "string",
+            "minLength": 32
           },
           "inference": {
             "status": "inferred"
@@ -1290,88 +4173,38 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       ],
       "source": {
         "file": "auth/dto/refresh-token.dto.ts",
-        "line": 3
-      },
-      "inference": {
-        "status": "inferred"
-      }
-    },
-    "UpdateProductDto": {
-      "name": "UpdateProductDto",
-      "properties": {
-        "name": {
-          "type": {
-            "kind": "primitive",
-            "type": "string"
-          },
-          "constraints": {
-            "type": "string"
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        },
-        "price": {
-          "type": {
-            "kind": "primitive",
-            "type": "number"
-          },
-          "constraints": {
-            "type": "number",
-            "exclusiveMinimum": 0
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        },
-        "category": {
-          "type": {
-            "kind": "primitive",
-            "type": "string"
-          },
-          "enum": [
-            "Electronics",
-            "Home",
-            "Clothing",
-            "Books"
-          ],
-          "inference": {
-            "status": "inferred"
-          }
-        },
-        "stock": {
-          "type": {
-            "kind": "primitive",
-            "type": "number"
-          },
-          "constraints": {
-            "type": "number",
-            "minimum": 0
-          },
-          "inference": {
-            "status": "inferred"
-          }
-        }
-      },
-      "required": [],
-      "source": {
-        "file": "products/dto/update-product.dto.ts",
         "line": 4
       },
       "inference": {
         "status": "inferred"
       }
     },
-    "UpdateUserDto": {
-      "name": "UpdateUserDto",
+    "RegisterUserDto": {
+      "name": "RegisterUserDto",
       "properties": {
         "email": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
+          "example": "ada@example.com",
+          "format": "email",
           "constraints": {
             "format": "email"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Ada Lovelace",
+          "constraints": {
+            "type": "string",
+            "minLength": 2
           },
           "inference": {
             "status": "inferred"
@@ -1382,40 +4215,128 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "kind": "primitive",
             "type": "string"
           },
+          "example": "correct horse battery staple",
           "constraints": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d)(?=.*[@$!%*?&])[A-Za-z\\\\d@$!%*?&]"
+            "minLength": 12
           },
           "inference": {
             "status": "inferred"
           }
         },
-        "firstName": {
+        "accountSlug": {
           "type": {
             "kind": "primitive",
             "type": "string"
           },
+          "example": "acme",
           "constraints": {
             "type": "string"
           },
           "inference": {
             "status": "inferred"
           }
-        },
-        "lastName": {
+        }
+      },
+      "required": [
+        "email",
+        "name",
+        "password"
+      ],
+      "source": {
+        "file": "auth/dto/register-user.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "Subscription": {
+      "name": "Subscription",
+      "properties": {
+        "id": {
           "type": {
             "kind": "primitive",
-            "type": "string"
-          },
-          "constraints": {
             "type": "string"
           },
           "inference": {
             "status": "inferred"
           }
         },
-        "phone": {
+        "accountId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "planCode": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "interval": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "month",
+            "year"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "trialing",
+            "active",
+            "past_due",
+            "canceled"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "currentPeriodEnd": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "account": {
+          "type": {
+            "kind": "ref",
+            "name": "Account"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "updatedAt": {
           "type": {
             "kind": "primitive",
             "type": "string"
@@ -1425,9 +4346,1002 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
           }
         }
       },
+      "required": [
+        "id",
+        "accountId",
+        "planCode",
+        "interval",
+        "status",
+        "currentPeriodEnd",
+        "account",
+        "createdAt",
+        "updatedAt"
+      ],
+      "source": {
+        "file": "billing/entities/subscription.entity.ts",
+        "line": 24
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "SubscriptionResponseDto": {
+      "name": "SubscriptionResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "3e3963ab-9e2e-4bde-92cf-1739efe5169f",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "accountId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "6fbe8f9b-1d51-42a5-bfac-fb9a87113d2b",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "planCode": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "team-pro",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "interval": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "month",
+          "enum": [
+            "month",
+            "year"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "active",
+          "enum": [
+            "trialing",
+            "active",
+            "past_due",
+            "canceled"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "currentPeriodEnd": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-06-16T09:30:00.000Z",
+          "format": "date-time",
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "accountId",
+        "planCode",
+        "interval",
+        "status",
+        "currentPeriodEnd"
+      ],
+      "source": {
+        "file": "billing/dto/subscription-response.dto.ts",
+        "line": 7
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "Task": {
+      "name": "Task",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "projectId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "assigneeId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "title": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "todo",
+            "in_progress",
+            "blocked",
+            "done"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "priority": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "dueAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "labels": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "project": {
+          "type": {
+            "kind": "ref",
+            "name": "Project"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "assignee": {
+          "type": {
+            "kind": "ref",
+            "name": "User"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "comments": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "TaskComment"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "updatedAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "title",
+        "status",
+        "priority",
+        "labels",
+        "project",
+        "comments",
+        "createdAt",
+        "updatedAt"
+      ],
+      "source": {
+        "file": "projects/entities/task.entity.ts",
+        "line": 29
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "TaskComment": {
+      "name": "TaskComment",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "taskId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "authorId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "body": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "task": {
+          "type": {
+            "kind": "ref",
+            "name": "Task"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "author": {
+          "type": {
+            "kind": "ref",
+            "name": "User"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "taskId",
+        "authorId",
+        "body",
+        "metadata",
+        "task",
+        "author",
+        "createdAt"
+      ],
+      "source": {
+        "file": "projects/entities/task-comment.entity.ts",
+        "line": 12
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "TaskCommentResponseDto": {
+      "name": "TaskCommentResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "b847ea8e-4205-4845-b8f0-52b5eca94099",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "authorId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dfd2bdbc-fc8d-42e4-a56c-3af84341921d",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "body": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Release notes are approved.",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "example": {
+            "visibility": "internal"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-05-16T09:30:00.000Z",
+          "format": "date-time",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "authorId",
+        "body",
+        "metadata",
+        "createdAt"
+      ],
+      "source": {
+        "file": "tasks/dto/task-comment-response.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "TaskQueryDto": {
+      "name": "TaskQueryDto",
+      "properties": {
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "in_progress",
+          "enum": [
+            "todo",
+            "in_progress",
+            "blocked",
+            "done"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "priority": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "high",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "assigneeId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dfd2bdbc-fc8d-42e4-a56c-3af84341921d",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "label": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "release",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
       "required": [],
       "source": {
-        "file": "users/dto/update-user.dto.ts",
+        "file": "tasks/dto/task-query.dto.ts",
+        "line": 5
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "TaskResponseDto": {
+      "name": "TaskResponseDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "6042a661-917e-4267-b0b1-271384c4aa7f",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "projectId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "88dd40e4-ff7f-4c85-ae90-13b0519226d2",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "assigneeId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dfd2bdbc-fc8d-42e4-a56c-3af84341921d",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "title": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Prepare launch checklist",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Coordinate final release readiness.",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "in_progress",
+          "enum": [
+            "todo",
+            "in_progress",
+            "blocked",
+            "done"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "priority": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "high",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "dueAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-06-01T12:00:00.000Z",
+          "format": "date-time",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "labels": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "example": [
+            "release",
+            "blocked-by-legal"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "comments": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "TaskCommentResponseDto"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "createdAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-05-16T09:30:00.000Z",
+          "format": "date-time",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "title",
+        "status",
+        "priority",
+        "labels",
+        "createdAt"
+      ],
+      "source": {
+        "file": "tasks/dto/task-response.dto.ts",
+        "line": 9
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "TokenPairDto": {
+      "name": "TokenPairDto",
+      "properties": {
+        "accessToken": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "refreshToken": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tokenType": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Bearer",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "expiresIn": {
+          "type": {
+            "kind": "primitive",
+            "type": "number"
+          },
+          "example": 900,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "user": {
+          "type": {
+            "kind": "ref",
+            "name": "UserProfileDto"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "accessToken",
+        "refreshToken",
+        "tokenType",
+        "expiresIn",
+        "user"
+      ],
+      "source": {
+        "file": "auth/dto/token-pair.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "UpdateAccountDto": {
+      "name": "UpdateAccountDto",
+      "properties": {
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Acme Labs",
+          "constraints": {
+            "type": "string",
+            "minLength": 2
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "plan": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "enterprise",
+          "enum": [
+            "free",
+            "team",
+            "enterprise"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "active",
+          "enum": [
+            "active",
+            "suspended",
+            "closed"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [],
+      "source": {
+        "file": "accounts/dto/update-account.dto.ts",
+        "line": 5
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "UpdateProjectDto": {
+      "name": "UpdateProjectDto",
+      "properties": {
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Mobile Launch",
+          "constraints": {
+            "type": "string",
+            "minLength": 3
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "slug": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "mobile-launch",
+          "constraints": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Customer-facing launch plan.",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "planning",
+          "enum": [
+            "planning",
+            "active",
+            "paused",
+            "archived"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "tags": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "example": [
+            "mobile",
+            "q3"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "metadata": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "example": {
+            "costCenter": "growth"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [],
+      "source": {
+        "file": "projects/dto/update-project.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "UpdateTaskDto": {
+      "name": "UpdateTaskDto",
+      "properties": {
+        "title": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Prepare launch checklist",
+          "constraints": {
+            "type": "string",
+            "minLength": 3
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "description": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Coordinate final release readiness.",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "todo",
+          "enum": [
+            "todo",
+            "in_progress",
+            "blocked",
+            "done"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "priority": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "high",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "assigneeId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "dfd2bdbc-fc8d-42e4-a56c-3af84341921d",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "dueAt": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "2026-06-01T12:00:00.000Z",
+          "format": "date-time",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "labels": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "example": [
+            "release",
+            "blocked-by-legal"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [],
+      "source": {
+        "file": "tasks/dto/update-task.dto.ts",
         "line": 4
       },
       "inference": {
@@ -1440,7 +5354,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
         "id": {
           "type": {
             "kind": "primitive",
-            "type": "number"
+            "type": "string"
           },
           "inference": {
             "status": "inferred"
@@ -1455,7 +5369,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "status": "inferred"
           }
         },
-        "password": {
+        "name": {
           "type": {
             "kind": "primitive",
             "type": "string"
@@ -1464,7 +5378,7 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "status": "inferred"
           }
         },
-        "firstName": {
+        "passwordHash": {
           "type": {
             "kind": "primitive",
             "type": "string"
@@ -1473,19 +5387,63 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
             "status": "inferred"
           }
         },
-        "lastName": {
+        "status": {
           "type": {
             "kind": "primitive",
             "type": "string"
+          },
+          "enum": [
+            "invited",
+            "active",
+            "locked"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "roles": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
           },
           "inference": {
             "status": "inferred"
           }
         },
-        "isActive": {
+        "memberships": {
           "type": {
-            "kind": "primitive",
-            "type": "boolean"
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "AccountMember"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "ownedProjects": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "Project"
+            }
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "assignedTasks": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "ref",
+              "name": "Task"
+            }
           },
           "inference": {
             "status": "inferred"
@@ -1513,20 +5471,204 @@ exports[`inspect pipeline snapshot > produces a stable normalized inspection mod
       "required": [
         "id",
         "email",
-        "password",
-        "firstName",
-        "lastName",
-        "isActive",
+        "name",
+        "passwordHash",
+        "status",
+        "roles",
+        "memberships",
+        "ownedProjects",
+        "assignedTasks",
         "createdAt",
         "updatedAt"
       ],
       "source": {
         "file": "users/entities/user.entity.ts",
-        "line": 1
+        "line": 19
       },
       "inference": {
         "status": "inferred"
       }
+    },
+    "UserProfileDto": {
+      "name": "UserProfileDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "63ffdfcf-3635-4b59-95db-6d47ddfb30ee",
+          "readOnly": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "email": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "ada@example.com",
+          "format": "email",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "name": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "Ada Lovelace",
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "status": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "active",
+          "enum": [
+            "invited",
+            "active",
+            "locked"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "roles": {
+          "type": {
+            "kind": "array",
+            "items": {
+              "kind": "primitive",
+              "type": "string"
+            }
+          },
+          "example": [
+            "admin",
+            "developer"
+          ],
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "status",
+        "roles"
+      ],
+      "source": {
+        "file": "auth/dto/user-profile.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "WebhookAckDto": {
+      "name": "WebhookAckDto",
+      "properties": {
+        "received": {
+          "type": {
+            "kind": "primitive",
+            "type": "boolean"
+          },
+          "example": true,
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "eventId": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "evt_1P9wsKLkdIwHu7ix",
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "received",
+        "eventId"
+      ],
+      "source": {
+        "file": "webhooks/dto/webhook-ack.dto.ts",
+        "line": 3
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    },
+    "WebhookEventDto": {
+      "name": "WebhookEventDto",
+      "properties": {
+        "id": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "evt_1P9wsKLkdIwHu7ix",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "type": {
+          "type": {
+            "kind": "primitive",
+            "type": "string"
+          },
+          "example": "invoice.paid",
+          "constraints": {
+            "type": "string"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        },
+        "data": {
+          "type": {
+            "kind": "ref",
+            "name": "Record"
+          },
+          "example": {
+            "invoiceId": "in_123",
+            "accountId": "acct_123"
+          },
+          "inference": {
+            "status": "inferred"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "data"
+      ],
+      "source": {
+        "file": "webhooks/dto/webhook-event.dto.ts",
+        "line": 4
+      },
+      "inference": {
+        "status": "inferred"
+      }
+    }
+  },
+  "securitySchemes": {
+    "bearerAuth": {
+      "type": "http",
+      "scheme": "bearer",
+      "bearerFormat": "JWT"
     }
   },
   "diagnostics": []
