@@ -13,7 +13,11 @@ export const CLIENT_SCRIPT = String.raw`
     activeToolkitTab: "try",
     activeSnippetLang: "curl",
     tryItResponse: null,
-    tryItLatency: 0
+    tryItLatency: 0,
+    historyRecords: [],
+    showGlobalHistory: false,
+    tryItParams: {},
+    tryItBody: {}
   };
 
   // DOM Selectors Helper
@@ -71,10 +75,26 @@ export const CLIENT_SCRIPT = String.raw`
           var responseKeys = Object.keys(state.operations[0].responses || {});
           state.activeResponseCode = responseKeys.indexOf("200") !== -1 ? "200" : (responseKeys[0] || "200");
         }
-        renderApp();
+        fetchApiHistory();
       })
       .catch(function (err) {
         renderError(err.message || String(err));
+      });
+  }
+
+  function fetchApiHistory() {
+    var historyUrl = config.historyUrl || (config.openApiUrl.substring(0, config.openApiUrl.lastIndexOf('/')) + '/history');
+    fetch(historyUrl)
+      .then(function (res) {
+        if (!res.ok) return { records: [] };
+        return res.json();
+      })
+      .then(function (data) {
+        state.historyRecords = data.records || [];
+        renderApp();
+      })
+      .catch(function () {
+        renderApp();
       });
   }
 
@@ -380,6 +400,71 @@ export const CLIENT_SCRIPT = String.raw`
       renderSnippets(contentEl, op);
     } else if (state.activeToolkitTab === "spec") {
       renderRawSpec(contentEl, op);
+    } else if (state.activeToolkitTab === "history") {
+      renderHistoryTab(contentEl, op);
+    }
+  }
+
+  function renderHistoryTab(container, op) {
+    var html = '<div class="history-panel">';
+    
+    // Header with "Show all" toggle
+    html += '  <div class="history-header">';
+    html += '    <div class="section-subtitle" style="margin-bottom: 0;">API Changesets</div>';
+    html += '    <label class="history-global-toggle">';
+    html += '      <input type="checkbox" id="specord-global-history-chk"' + (state.showGlobalHistory ? ' checked' : '') + ' />';
+    html += '      <span>Show all</span>';
+    html += '    </label>';
+    html += '  </div>';
+
+    // Filter records
+    var filtered = state.historyRecords.filter(function (r) {
+      if (state.showGlobalHistory) return true;
+      return r.operationId === op.original.operationId || (r.method === op.method && r.path === op.path);
+    });
+
+    if (filtered.length === 0) {
+      html += '  <div class="empty-state" style="padding: 20px 0;">No changesets found for this operation.</div>';
+    } else {
+      html += '  <div class="history-timeline">';
+      filtered.forEach(function (r) {
+        var badgeClass = r.changeType || "changed";
+        var breakingBadge = r.breaking ? '<span class="badge-tag breaking">Breaking</span>' : '';
+        var formattedDate = r.date ? new Date(r.date).toLocaleDateString() : "recent";
+        var shortSha = r.commit ? r.commit.substring(0, 7) : "local";
+        var authorText = r.author ? ' by ' + r.author : '';
+
+        html += '    <div class="timeline-item ' + badgeClass + '">';
+        html += '      <div class="timeline-dot"></div>';
+        html += '      <div class="timeline-card">';
+        html += '        <div class="timeline-meta">';
+        html += '          <span class="commit-pill" title="' + escapeHtml(r.commit || "") + '">' + escapeHtml(shortSha) + '</span>';
+        html += '          <span>' + escapeHtml(formattedDate) + escapeHtml(authorText) + '</span>';
+        html += '        </div>';
+        html += '        <div class="timeline-summary">' + escapeHtml(r.summary) + '</div>';
+        html += '        <div class="timeline-badges">';
+        html += '          <span class="badge-tag ' + badgeClass + '">' + badgeClass + '</span>';
+        html += '          ' + breakingBadge;
+        if (r.path && state.showGlobalHistory) {
+          html += '          <span style="font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-left: auto;">' + escapeHtml(r.method.toUpperCase() + ' ' + r.path) + '</span>';
+        }
+        html += '        </div>';
+        html += '      </div>';
+        html += '    </div>';
+      });
+      html += '  </div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    // Wiring checkbox toggle
+    var chk = container.querySelector("#specord-global-history-chk");
+    if (chk) {
+      chk.addEventListener("change", function (e) {
+        state.showGlobalHistory = e.target.checked;
+        renderHistoryTab(container, op);
+      });
     }
   }
 
@@ -393,19 +478,35 @@ export const CLIENT_SCRIPT = String.raw`
     var html = "";
     html += '<div style="display: grid; gap: 16px;">';
     
+    // Auth section
+    var sessionToken = sessionStorage.getItem("specord:tryit:auth:headers") || "";
+    html += '  <div class="auth-section">';
+    html += '    <div class="auth-header">';
+    html += '      <span>Authentication</span>';
+    html += '      <span style="font-size: 9px; color: var(--post-from); font-weight: bold;">Session Only</span>';
+    html += '    </div>';
+    html += '    <div class="auth-inputs">';
+    html += '      <div class="auth-field">';
+    html += '        <label class="auth-label">Bearer Token / Authorization Header</label>';
+    html += '        <input type="text" class="auth-input" id="specord-auth-token-input" value="' + escapeHtml(sessionToken) + '" placeholder="Bearer your-token-here..." />';
+    html += '      </div>';
+    html += '    </div>';
+    html += '  </div>';
+
     // Inputs for all parameters (Path, Query, Headers)
     var params = op.parameters || [];
+    var savedParams = state.tryItParams[op.key] || {};
     if (params.length > 0) {
       html += '  <div>';
       html += '    <div class="section-subtitle" style="margin-bottom: 8px;">Parameters</div>';
       params.forEach(function (p) {
         var placeholder = (p.schema && p.schema.default !== undefined) ? String(p.schema.default) : "";
         var example = p.example || (p.schema && p.schema.example) || "";
-        var defaultVal = example || placeholder;
+        var currentVal = savedParams[p.name] !== undefined ? savedParams[p.name] : (example || placeholder);
         
         html += '    <div class="try-field-group">';
         html += '      <label class="try-field-label">' + escapeHtml(p.name) + ' <span style="opacity: 0.5; font-weight: normal;">(' + p.in + ')</span></label>';
-        html += '      <input type="text" class="try-input" data-try-param="' + escapeHtml(p.name) + '" data-param-in="' + p.in + '" value="' + escapeHtml(String(defaultVal)) + '" placeholder="' + escapeHtml(String(placeholder)) + '" />';
+        html += '      <input type="text" class="try-input" data-try-param="' + escapeHtml(p.name) + '" data-param-in="' + p.in + '" value="' + escapeHtml(String(currentVal)) + '" placeholder="' + escapeHtml(String(placeholder)) + '" />';
         html += '    </div>';
       });
       html += '  </div>';
@@ -420,12 +521,13 @@ export const CLIENT_SCRIPT = String.raw`
       if (jsonBody.schema) {
         bodyExample = JSON.stringify(generateSchemaExample(jsonBody.schema), null, 2);
       }
+      var currentBody = state.tryItBody[op.key] !== undefined ? state.tryItBody[op.key] : bodyExample;
       
       html += '  <div>';
       html += '    <div class="section-subtitle" style="margin-bottom: 8px;">Request Body</div>';
       html += '    <div class="try-field-group">';
       html += '      <label class="try-field-label">JSON Payload</label>';
-      html += '      <textarea class="try-textarea" data-try-body placeholder="Enter raw JSON...">' + escapeHtml(bodyExample) + '</textarea>';
+      html += '      <textarea class="try-textarea" data-try-body placeholder="Enter raw JSON...">' + escapeHtml(currentBody) + '</textarea>';
       html += '    </div>';
       html += '  </div>';
     }
@@ -461,12 +563,27 @@ export const CLIENT_SCRIPT = String.raw`
       });
     }
 
+    // Wiring sessionStorage Authentication updates
+    var tokenInput = container.querySelector("#specord-auth-token-input");
+    if (tokenInput) {
+      tokenInput.addEventListener("input", function (e) {
+        sessionStorage.setItem("specord:tryit:auth:headers", e.target.value);
+      });
+    }
+
     // Track parameters change to sync snippets live!
-    container.querySelectorAll("[data-try-param], [data-try-body]").forEach(function (inputEl) {
-      inputEl.addEventListener("input", function () {
-        // If snippet tab is active, it will auto-update when clicked. We sync local updates.
+    container.querySelectorAll("[data-try-param]").forEach(function (inputEl) {
+      inputEl.addEventListener("input", function (e) {
+        if (!state.tryItParams[op.key]) state.tryItParams[op.key] = {};
+        state.tryItParams[op.key][inputEl.getAttribute("data-try-param")] = e.target.value;
       });
     });
+    var bodyArea = container.querySelector("[data-try-body]");
+    if (bodyArea) {
+      bodyArea.addEventListener("input", function (e) {
+        state.tryItBody[op.key] = e.target.value;
+      });
+    }
   }
 
   function executeTryRequest(op) {
@@ -475,22 +592,46 @@ export const CLIENT_SCRIPT = String.raw`
     var headers = {};
     var body = null;
 
-    // Grab Path / Query / Header parameters from DOM input elements
-    var paramInputs = qAll("[data-try-param]");
-    paramInputs.forEach(function (inputEl) {
-      var name = inputEl.getAttribute("data-try-param");
-      var pin = inputEl.getAttribute("data-param-in");
-      var val = inputEl.value;
+    // Load auth token
+    var sessionToken = sessionStorage.getItem("specord:tryit:auth:headers") || "";
+    var headersMap = { "Content-Type": "application/json" };
+    if (sessionToken) {
+      if (sessionToken.indexOf(":") !== -1) {
+        var colonIdx = sessionToken.indexOf(":");
+        var hName = sessionToken.substring(0, colonIdx).trim();
+        var hVal = sessionToken.substring(colonIdx + 1).trim();
+        headersMap[hName] = hVal;
+      } else {
+        var authVal = sessionToken.trim();
+        if (authVal.toLowerCase().indexOf("bearer ") !== 0 && authVal.toLowerCase().indexOf("basic ") !== 0 && authVal.toLowerCase().indexOf("token ") !== 0) {
+          authVal = "Bearer " + authVal;
+        }
+        headersMap["Authorization"] = authVal;
+      }
+    }
+
+    // Grab parameters from state cache or fallback to DOM or schemas
+    var savedParams = state.tryItParams[op.key] || {};
+    var params = op.parameters || [];
+    params.forEach(function (p) {
+      var val = savedParams[p.name] !== undefined ? savedParams[p.name] : "";
+      if (!val) {
+        var inputEl = q('[data-try-param="' + p.name + '"]');
+        val = inputEl ? inputEl.value : ((p.schema && p.schema.default !== undefined) ? String(p.schema.default) : (p.example || ""));
+      }
       
-      if (pin === "path") pathParams[name] = val;
-      if (pin === "query" && val) queryParams[name] = val;
-      if (pin === "header" && val) headers[name] = val;
+      if (p.in === "path") pathParams[p.name] = val;
+      if (p.in === "query" && val) queryParams[p.name] = val;
+      if (p.in === "header" && val) headersMap[p.name] = val;
     });
 
-    // Grab body if exists
-    var bodyTextArea = q("[data-try-body]");
-    if (bodyTextArea) {
-      body = bodyTextArea.value;
+    // Grab body
+    var savedBody = state.tryItBody[op.key];
+    if (savedBody !== undefined) {
+      body = savedBody;
+    } else {
+      var bodyTextArea = q("[data-try-body]");
+      body = bodyTextArea ? bodyTextArea.value : "";
     }
 
     // Substitute parameters into path template
@@ -515,9 +656,6 @@ export const CLIENT_SCRIPT = String.raw`
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner" style="width: 14px; height: 14px; margin-right: 6px;"></span> Sending...';
     }
-
-    var headersMap = { "Content-Type": "application/json" };
-    Object.assign(headersMap, headers);
 
     var start = performance.now();
     fetch(finalUrl, {
@@ -629,31 +767,35 @@ export const CLIENT_SCRIPT = String.raw`
     var headers = {};
     var bodyContent = "";
 
-    // Load active DOM values if inputs are present (Try It mounts them)
-    var inputs = qAll("[data-try-param]");
-    if (inputs.length > 0) {
-      inputs.forEach(function (el) {
-        var name = el.getAttribute("data-try-param");
-        var pin = el.getAttribute("data-param-in");
-        var val = el.value;
-        if (pin === "path") pathParams[name] = val || "{" + name + "}";
-        if (pin === "query" && val) queryParams[name] = val;
-        if (pin === "header" && val) headers[name] = val;
-      });
-    } else {
-      // Fallback to static OpenAPI specification schemas defaults
-      var params = op.parameters || [];
-      params.forEach(function (p) {
-        var val = (p.schema && p.schema.default !== undefined) ? String(p.schema.default) : (p.example || "");
-        if (p.in === "path") pathParams[p.name] = val || "{" + p.name + "}";
-        if (p.in === "query" && val) queryParams[p.name] = val;
-        if (p.in === "header" && val) headers[p.name] = val;
-      });
+    // Load auth token from sessionStorage
+    var sessionToken = sessionStorage.getItem("specord:tryit:auth:headers") || "";
+    if (sessionToken) {
+      if (sessionToken.indexOf(":") !== -1) {
+        var colonIdx = sessionToken.indexOf(":");
+        var hName = sessionToken.substring(0, colonIdx).trim();
+        var hVal = sessionToken.substring(colonIdx + 1).trim();
+        headers[hName] = hVal;
+      } else {
+        var authVal = sessionToken.trim();
+        if (authVal.toLowerCase().indexOf("bearer ") !== 0 && authVal.toLowerCase().indexOf("basic ") !== 0 && authVal.toLowerCase().indexOf("token ") !== 0) {
+          authVal = "Bearer " + authVal;
+        }
+        headers["Authorization"] = authVal;
+      }
     }
 
-    var bodyInput = q("[data-try-body]");
-    if (bodyInput) {
-      bodyContent = bodyInput.value;
+    var savedParams = state.tryItParams[op.key] || {};
+    var params = op.parameters || [];
+    params.forEach(function (p) {
+      var val = savedParams[p.name] !== undefined ? savedParams[p.name] : ((p.schema && p.schema.default !== undefined) ? String(p.schema.default) : (p.example || ""));
+      if (p.in === "path") pathParams[p.name] = val || "{" + p.name + "}";
+      if (p.in === "query" && val) queryParams[p.name] = val;
+      if (p.in === "header" && val) headers[p.name] = val;
+    });
+
+    var savedBody = state.tryItBody[op.key];
+    if (savedBody !== undefined) {
+      bodyContent = savedBody;
     } else if (op.requestBody) {
       var bodyObj = op.requestBody || {};
       var contentObj = bodyObj.content || {};

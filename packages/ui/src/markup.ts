@@ -74,6 +74,7 @@ export function renderShell(parts: MarkupParts): string {
       <div class="toolkit-tab is-active" data-toolkit-tab="try" role="tab" aria-selected="true" tabindex="0">Try It</div>
       <div class="toolkit-tab" data-toolkit-tab="snippets" role="tab" aria-selected="false" tabindex="-1">Snippets</div>
       <div class="toolkit-tab" data-toolkit-tab="spec" role="tab" aria-selected="false" tabindex="-1">Raw Spec</div>
+      <div class="toolkit-tab" data-toolkit-tab="history" role="tab" aria-selected="false" tabindex="-1">History</div>
     </div>
     
     <div class="toolkit-content" data-specord-toolkit-content>

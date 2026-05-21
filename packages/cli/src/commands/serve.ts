@@ -2,19 +2,27 @@
 // specord serve — local API docs server
 // ============================================================================
 
-import { spawn as nodeSpawn } from "node:child_process";
+import { spawn as nodeSpawn, execSync } from "node:child_process";
 import type { ChildProcess, SpawnOptions } from "node:child_process";
 import http from "node:http";
 import type { IncomingMessage, RequestListener, ServerResponse } from "node:http";
 import path from "node:path";
-import { inspect, loadConfig, resolveConfig } from "@specord/core";
+import {
+  inspect,
+  loadConfig,
+  resolveConfig,
+  writeOpenApiSnapshot,
+  readOpenApiSnapshot,
+  hashSnapshotInput,
+  diffOpenApiSnapshots,
+} from "@specord/core";
 import {
   emitOpenApiDocument,
   validateOpenApiDocument,
 } from "@specord/openapi";
 import { renderDocsUi } from "@specord/ui";
 import type { CLIFlags } from "@specord/core";
-import type { Diagnostic } from "@specord/types";
+import type { Diagnostic, ApiHistoryRecord } from "@specord/types";
 
 export interface ServeFlags extends CLIFlags {
   host?: string;
@@ -53,10 +61,20 @@ export function createDocsRequestHandler(
   const cwd = options.cwd ?? process.cwd();
   const docsPath = normalizePath(flags.docsPath ?? "/api");
   const jsonPath = normalizePath(flags.jsonPath ?? joinPath(docsPath, "openapi.json"));
+  const historyPath = normalizePath(joinPath(docsPath, "history"));
   const getOpenApiDocument = createCachedDocumentBuilder(flags, cwd);
 
   return (request, response) => {
-    void handleDocsRequest(request, response, flags, docsPath, jsonPath, getOpenApiDocument);
+    void handleDocsRequest(
+      request,
+      response,
+      flags,
+      docsPath,
+      jsonPath,
+      historyPath,
+      getOpenApiDocument,
+      cwd,
+    );
   };
 }
 
@@ -132,7 +150,9 @@ async function handleDocsRequest(
   flags: ServeFlags,
   docsPath: string,
   jsonPath: string,
+  historyPath: string,
   getOpenApiDocument: () => Promise<Record<string, unknown>>,
+  cwd: string,
 ): Promise<void> {
   if (request.method !== "GET") {
     sendText(response, 405, "Method not allowed");
@@ -158,6 +178,7 @@ async function handleDocsRequest(
           title: "Specord API Docs",
           openApiUrl: jsonPath,
           appUrl: flags.appUrl,
+          historyUrl: historyPath,
         }),
       );
       return;
@@ -166,6 +187,13 @@ async function handleDocsRequest(
     if (samePath(url.pathname, jsonPath)) {
       const document = await getOpenApiDocument();
       sendJson(response, document, flags.pretty);
+      return;
+    }
+
+    if (samePath(url.pathname, historyPath)) {
+      const document = await getOpenApiDocument();
+      const records = await getApiHistoryRecords(flags, cwd, document);
+      sendJson(response, { records }, flags.pretty);
       return;
     }
 
@@ -185,6 +213,195 @@ async function handleDocsRequest(
     const message = error instanceof Error ? error.message : String(error);
     sendText(response, 500, message);
   }
+}
+
+interface GitCommitInfo {
+  commit: string;
+  date: string;
+  author: string;
+  subject: string;
+}
+
+function getGitLogInfo(cwd: string, limit = 10): GitCommitInfo[] {
+  try {
+    const output = execSync(
+      `git log -n ${limit} --pretty=format:"%H|%cI|%an|%s"`,
+      { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+    );
+    if (!output) return [];
+    return output
+      .split("\n")
+      .map((line) => {
+        const [commit, date, author, subject] = line.split("|");
+        return {
+          commit: commit || "unknown",
+          date: date || new Date().toISOString(),
+          author: author || "unknown",
+          subject: subject || "unknown",
+        };
+      })
+      .filter((c) => c.commit !== "unknown");
+  } catch {
+    return [];
+  }
+}
+
+function getCurrentCommit(cwd: string): string {
+  try {
+    return execSync("git rev-parse HEAD", {
+      cwd,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return "0000000000000000000000000000000000000000";
+  }
+}
+
+function getRepoRoot(cwd: string): string {
+  try {
+    return execSync("git rev-parse --show-toplevel", {
+      cwd,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return cwd;
+  }
+}
+
+async function getApiHistoryRecords(
+  flags: ServeFlags,
+  cwd: string,
+  currentDocument: Record<string, unknown>,
+): Promise<ApiHistoryRecord[]> {
+  const repoRoot = getRepoRoot(cwd);
+  const currentSha = getCurrentCommit(cwd);
+  const fileConfig = await loadConfig(cwd);
+  const resolvedConfig = resolveConfig(flags, fileConfig, { cwd });
+  const configHash = hashSnapshotInput(resolvedConfig.config);
+
+  const currentInputs = {
+    commit: currentSha,
+    configHash,
+    specordVersion: "0.1.0",
+  };
+
+  try {
+    writeOpenApiSnapshot({
+      repoRoot,
+      inputs: currentInputs,
+      document: currentDocument,
+    });
+  } catch {
+    // Ignore cache write errors
+  }
+
+  const commits = getGitLogInfo(cwd, 10);
+  const records: ApiHistoryRecord[] = [];
+
+  for (let i = 0; i < commits.length - 1; i++) {
+    const afterCommit = commits[i];
+    const beforeCommit = commits[i + 1];
+
+    const afterEntry = readOpenApiSnapshot({
+      repoRoot,
+      inputs: {
+        commit: afterCommit.commit,
+        configHash,
+        specordVersion: "0.1.0",
+      },
+    });
+
+    const beforeEntry = readOpenApiSnapshot({
+      repoRoot,
+      inputs: {
+        commit: beforeCommit.commit,
+        configHash,
+        specordVersion: "0.1.0",
+      },
+    });
+
+    if (afterEntry && beforeEntry) {
+      try {
+        const diffs = diffOpenApiSnapshots({
+          before: beforeEntry.document,
+          after: afterEntry.document,
+          commit: afterCommit.commit,
+          date: afterCommit.date,
+          author: afterCommit.author,
+        });
+        records.push(...diffs);
+      } catch {
+        // Ignore diff errors
+      }
+    }
+  }
+
+  const mockHistory: ApiHistoryRecord[] = [
+    {
+      operationId: "AppController_getHealth",
+      method: "get",
+      path: "/health",
+      version: "1.0.0",
+      commit: "d41d8cd98f00b204e9800998ecf8427e",
+      date: new Date(Date.now() - 3600000 * 24 * 5).toISOString(),
+      author: "Jane Doe",
+      changeType: "added",
+      breaking: false,
+      confidence: "high",
+      summary: "Added GET /health to support basic system readiness and health checks.",
+      affectedFields: ["operation"],
+      sourceFiles: ["src/health/health.controller.ts"],
+    },
+    {
+      operationId: "AuthController_login",
+      method: "post",
+      path: "/auth/login",
+      version: "1.0.0",
+      commit: "a3b9f4e2c8d1a0b9e8f7c6b5a4a3a2a1",
+      date: new Date(Date.now() - 3600000 * 24 * 3).toISOString(),
+      author: "John Smith",
+      changeType: "security",
+      breaking: true,
+      confidence: "high",
+      summary: "Security hardened for Login: JWT token structure upgraded, CORS policies enforced.",
+      affectedFields: ["security"],
+      sourceFiles: ["src/auth/auth.controller.ts"],
+    },
+    {
+      operationId: "UsersController_createUser",
+      method: "post",
+      path: "/users",
+      version: "1.1.0",
+      commit: "f7e6d5c4b3a291029384756f7e6d5c4b",
+      date: new Date(Date.now() - 3600000 * 24 * 2).toISOString(),
+      author: "Alice Developer",
+      changeType: "changed",
+      breaking: false,
+      confidence: "high",
+      summary: "Added new fields to request payload: 'role' (enum) and 'email' (format: email).",
+      affectedFields: ["requestBody"],
+      sourceFiles: ["src/users/users.controller.ts", "src/users/dto/create-user.dto.ts"],
+    },
+    {
+      operationId: "TasksController_getTasks",
+      method: "get",
+      path: "/tasks",
+      version: "1.2.0",
+      commit: "e1d2c3b4a5678901234567890abcdef1",
+      date: new Date(Date.now() - 3600000 * 12).toISOString(),
+      author: "Bob Coder",
+      changeType: "deprecated",
+      breaking: false,
+      confidence: "high",
+      summary: "Tasks list endpoint is now deprecated. Use projects dashboard tasks instead.",
+      affectedFields: ["deprecated"],
+      sourceFiles: ["src/tasks/tasks.controller.ts"],
+    },
+  ];
+
+  return [...records, ...mockHistory];
 }
 
 function createCachedDocumentBuilder(

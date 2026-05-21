@@ -7,6 +7,7 @@ export interface DocsUiOptions {
   title?: string;
   openApiUrl: string;
   appUrl?: string;
+  historyUrl?: string;
 }
 
 export function renderDocsUi(options: DocsUiOptions): string {
@@ -15,6 +16,7 @@ export function renderDocsUi(options: DocsUiOptions): string {
   const clientConfig = safeJson({
     openApiUrl: options.openApiUrl,
     appUrl: options.appUrl,
+    historyUrl: options.historyUrl,
   });
 
   return `<!doctype html>
