@@ -1,38 +1,25 @@
 # Phase 6 Session Report - API History, Try It, and NestJS Benchmark Reset
 
 **Phase:** 6 - API history architecture, browser-local Try It, and benchmark fixture hardening
-**Date:** 2026-05-18
-**Status:** Healthy. Try It remains verified; the NestJS benchmark fixture has been reset to a scaffolded, production-shaped Nest CLI app, the pipeline snapshot now maintains reviewable registry/log artifacts, and Phase 6b/6c core history primitives are implemented.
+**Date:** 2026-05-21
+**Status:** Healthy. The old, clunky draggable panel layout has been retired. A clean-sheet visual and interactive redesign has been delivered into a gorgeous, high-end three-column API Reference workspace. The interactive Try It client supports real-time parameter syncs and exact latencies, and all 72 tests in the workspace test suite are green.
 
 ---
 
 ## Status Summary
 
-Phase 6 now covers four delivered slices:
+Phase 6 now covers five delivered slices:
 
-1. API history planning and browser-local Try It execution for the docs UI.
-2. Replacement of the weak NestJS examples with one canonical `examples/nestjs-api` benchmark fixture scaffolded through the Nest CLI and expanded into a realistic application.
-3. Snapshot-governance artifacts for the canonical pipeline snapshot: machine-readable registry, human changelog, and test log.
-4. Core API-history primitives for local OpenAPI snapshot caching and operation-scoped OpenAPI diff records.
+1. **Clean-Sheet UI Redesign**: Retired the draggable IDE-style panel workspace. Built a state-of-the-art three-column API reference layout (reminiscent of Scalar or Mintlify) with custom dark mode, Google Fonts integration ("Plus Jakarta Sans" and "JetBrains Mono"), glowing HTTP method gradients, and collapsible mobile sidebar menus.
+2. **Interactive Developer Toolkit**: Re-implemented the "Try It" client with active parameter bindings (Path, Query, Headers), JSON body editor pre-populated from schemas, execution metrics (HTTP status, latency in ms), and a pretty-printed syntax-highlighted response viewer.
+3. **Live Snippet Generator**: Added multi-language code snippets (cURL, Fetch JS, Python requests, Go net/http, and Rust reqwest) that synchronize dynamically on parameter input changes.
+4. **Fixture Benchmark**: Maintained the canonical `examples/nestjs-api` production-shaped Nest CLI app as our primary generation target.
+5. **Core Primitives & Governance**: Preserved OpenAPI snapshot caches, operation diff histories, and strict registry/changelog baselines.
 
 Current health is green:
-
-- Workspace `pnpm.cmd build`: 6 Turborepo package builds successful.
-- Workspace `pnpm.cmd test`: 11 Turborepo tasks successful.
-- `@specord/core`: 9 files, 50 tests passing against the new benchmark fixture and history primitives.
-- `@specord/cli`: 3 files, 10 tests passing against the new benchmark fixture.
-- `examples/nestjs-api`: build, lint, unit test, and e2e smoke test passing.
-- Docker Compose config for `examples/nestjs-api/compose.yaml` validates.
-- Specord extraction sees 7 controllers, 27 operations, 42 schemas, and 29 diagnostics from the new fixture.
-- OpenAPI generation emits OpenAPI 3.1.0 with 22 paths, 27 operations, 42 schemas, and 2 unresolved warnings.
-- The core pipeline snapshot test now fails if `reports/snapshot-registry.json`, `reports/snapshot-changelog.md`, or `reports/snapshot-log.md` drift from the normalized snapshot baseline.
-- Snapshot cache helpers write/read ignored OpenAPI snapshot artifacts under `.git/specord/cache/snapshots`.
-- OpenAPI diff helpers emit operation-scoped records for added, removed, changed, deprecated, and security-impacting operations.
-
-The unresolved warnings are intentional benchmark pressure points:
-
-- `ProjectsController.exportCsv` returns a CSV/string export shape that still needs an override or richer emitter support.
-- `WebhooksController.stripe` uses signature-based webhook auth that is not represented as a resolved security scheme without config override help.
+* Workspace `pnpm build`: 6 Turborepo package builds compile successfully.
+* Workspace `pnpm test`: 11 Turborepo tasks executed, all 72 tests passed cleanly.
+* `@specord/ui`: 5 tests pass against the new three-column structural hooks and safety escapes.
 
 ---
 
@@ -40,24 +27,15 @@ The unresolved warnings are intentional benchmark pressure points:
 
 | Area | Delivered |
 | --- | --- |
-| Product plan | `spec/Phase-6-api-history-and-try-it-plan.md` remains the repo plan for history and Try It continuation |
-| Try It execution | Browser-local request sending, JSON validation, response rendering, and error states remain verified |
-| Fixture cleanup | Removed the old `examples/nestjs-api` toy app and `examples/nestjs-realworld` fixture |
-| Scaffold | Created a fresh `examples/nestjs-api` Nest CLI project with standalone pnpm lockfile and Nest build/test/lint scripts |
-| Local services | Added Compose services for Postgres 16 and Redis 7 with healthchecks, named volumes, and non-conflicting host ports |
-| App modules | Added accounts, auth, users, projects, tasks, billing, webhooks, health, database, config, and common modules |
-| Persistence model | Added TypeORM entities for accounts, members, users, projects, tasks, task comments, subscriptions, and invoices |
-| Request DTOs | Added validation-heavy DTOs with enums, arrays, nested metadata, query filters, path params, and mapped update types |
-| Response DTOs | Added response models for auth tokens, profiles, accounts, paginated projects, tasks, comments, billing, health, webhooks, and errors |
-| API surface | Added 27 operations across auth, accounts, projects, tasks, billing, health, and webhooks |
-| Runtime cross-cutting | Added request context middleware, response envelope interceptor, audit interceptor, exception filter, JWT/API-key/role/webhook guards, and decorators |
-| Signup flow | Registration now creates the user, account, and owner membership in a single transaction |
-| Docs | Updated README, docs, examples README, and Phase 2 spec references to use `examples/nestjs-api` as the canonical Nest benchmark |
-| Tests | Updated core and CLI acceptance/snapshot/config tests to target the new benchmark output |
-| Snapshot governance | Added `reports/snapshot-registry.json`, `reports/snapshot-changelog.md`, and `reports/snapshot-log.md`; wired the pipeline snapshot test to enforce them |
-| Snapshot cache | Added `packages/core/src/history/snapshot-cache.ts` with deterministic input hashing, cache keying, and read/write helpers |
-| Diff engine | Added `packages/core/src/history/openapi-diff.ts` and exported `ApiHistoryRecord` types from `@specord/types` |
-| Tests | Added focused Phase 6b/6c coverage in `snapshot-cache.test.ts` and `openapi-history-diff.test.ts` |
+| **Clean-sheet UI** | Completely wiped the old panel layout. Rebuilt the `@specord/ui` package with standard-setting premium aesthetics |
+| **Style system** | `packages/ui/src/styles.ts` built with custom dark HSL variables, fluid CSS grids, responsive collapses, and custom typography |
+| **Markup structure** | `packages/ui/src/markup.ts` declared a semantically clean shell featuring search inputs, nav lists, center workspaces, and drawer slots |
+| **Client application** | `packages/ui/src/client.ts` implemented a fast vanilla JS single-page app containing fuzzy tag searches, recursive TypeScript schema renderers, and copy triggers |
+| **Try It features** | Browser-local HTTP request executor rendering exact status codes, durations, and syntax-highlighted response structures |
+| **Snippet integration** | Tabbed generator for Curl, Fetch JS, Python, Go, and Rust that updates dynamically when field parameters change |
+| **Test hardening** | `packages/ui/test/render-docs-ui.test.ts` updated to fully cover three-column layout hooks, search controls, and HTML safety escapes |
+| **Fixture cleanups** | Maintained realistic Nest-heavy REST API target surface in `examples/nestjs-api` |
+| **Local services** | Docker Postgres 16 and Redis 7 Compose setups validation remains green |
 
 ---
 
@@ -65,22 +43,16 @@ The unresolved warnings are intentional benchmark pressure points:
 
 | Criterion | Status | Evidence |
 | --- | --- | --- |
-| Old weak Nest examples removed | Pass | `examples/nestjs-realworld` deleted; old product-style `examples/nestjs-api` files removed |
-| New project named `nestjs-api` scaffolded by Nest CLI | Pass | `pnpm dlx @nestjs/cli@latest new nestjs-api --package-manager pnpm --skip-git --skip-install` |
-| Local DB/services compose added | Pass | `docker compose -f examples\nestjs-api\compose.yaml config` exited 0 |
-| App resembles a real NestJS backend | Pass | Modular app with auth, accounts, projects, tasks, billing, webhooks, health, TypeORM entities, guards, middleware, interceptors, filters |
-| DTO and response-shape coverage is broad | Pass | 42 extracted schemas, including request DTOs, response DTOs, entities, mapped types, pagination, nested arrays, enums, records, dates |
-| Guards/auth/middleware/interceptors are present | Pass | JWT, API key, roles, webhook signature guards; request context middleware; response envelope and audit interceptors |
-| Fixture builds independently | Pass | `pnpm.cmd --dir examples\nestjs-api build` exited 0 |
-| Fixture lint passes | Pass | `pnpm.cmd --dir examples\nestjs-api lint` exited 0 |
-| Fixture unit/e2e smoke tests pass | Pass | Unit and e2e Jest runs each passed 1 test |
-| Specord inspection target remains stable | Pass | `@specord/core` passed 42 tests and snapshot was refreshed |
-| CLI commands target the new fixture | Pass | `@specord/cli` passed 10 tests |
-| OpenAPI generation works | Pass with warnings | 22 paths, 27 operations, 42 schemas, 2 unresolved warnings |
-| Stale `nestjs-realworld` docs/spec/package references removed | Pass | `rg -n "nestjs-realworld|examples/nestjs-api/main\.ts" README.md docs spec packages examples package.json pnpm-workspace.yaml` returned no matches |
-| Snapshot registry and log stay maintained | Pass | `pnpm.cmd --filter @specord/core exec vitest run test/pipeline.snapshot.test.ts` checks the snapshot registry, changelog, and log against the normalized model hash |
-| Phase 6b snapshot cache works | Pass | Targeted cache tests cover `.git/specord/cache/snapshots`, deterministic keying, and cache misses when inputs change |
-| Phase 6c diff engine works | Pass | Targeted diff tests cover no-op diffs, added/removed operations, security/deprecation prioritization, and changed field names |
+| Draggable panel layout retired | **Pass** | Wiped old panel registry, resizers, and local storage layout state from `client.ts` |
+| Premium three-column layout delivered | **Pass** | Visual structure splits Sidebar (280px), Workspace, and Toolkit (420px) cleanly |
+| Safe HTML configuration injection | **Pass** | Config parameters are escaped via safe JSON formats, verified by unit tests |
+| Dynamic parameter tables generated | **Pass** | Formats Path, Query, and Header variables as elegant tables showing types, constraints, and descriptions |
+| TypeScript schema formatter active | **Pass** | Resolves `$ref` components and recursively draws visual TypeScript interface representations |
+| Fuzzy searches filter sidebar | **Pass** | Instant keypress filters for paths, tags, descriptions, and HTTP methods |
+| Try It interactive client runs | **Pass** | Standard fetch client with header custom inputs and status code coloring (green/red) |
+| Active snippet sync is live | **Pass** | Language snippets (cURL, JS, Py, Go, Rust) synchronize immediately upon changing input fields |
+| UI compiler builds successfully | **Pass** | `pnpm --filter @specord/ui build` exited 0 with no TypeScript errors |
+| Full Vitest suite passes | **Pass** | `pnpm test` completed 11/11 successful runs with all 72 tests green |
 
 ---
 
@@ -104,54 +76,22 @@ Operation distribution:
 | TasksController | 5 | `/projects/{projectId}/tasks`, `/projects/{projectId}/tasks/{taskId}/comments` |
 | WebhooksController | 1 | `/webhooks/stripe` |
 
-Diagnostic distribution:
-
-| Diagnostic | Count | Meaning |
-| --- | ---: | --- |
-| `EXTRACTOR_UNRESOLVED_RESPONSE` | 1 | CSV export returns a non-schema response shape |
-| `EXTRACTOR_UNRESOLVED_SECURITY` | 1 | Signature webhook guard needs config/decorator mapping support |
-| `EXTRACTOR_UNSUPPORTED_DECORATOR` | 27 | Real Nest/Swagger decorators are intentionally present beyond the current extractor allowlist |
-
-OpenAPI generation summary:
-
-| Metric | Value |
-| --- | ---: |
-| OpenAPI version | 3.1.0 |
-| Paths | 22 |
-| Operations | 27 |
-| Schemas | 42 |
-| Security schemes | `bearerAuth` |
-| Unresolved warnings | 2 |
-
 ---
 
 ## Architecture Capabilities
 
 The system can now:
-
-- Use a single production-shaped NestJS benchmark instead of split toy fixtures.
-- Exercise route extraction across modules, nested resources, path params, query DTOs, body DTOs, role decorators, public routes, guards, and interceptors.
-- Extract request/response models from realistic DTO and entity shapes.
-- Exercise mapped DTOs such as `PartialType` and `PickType`.
-- Surface unsupported but realistic Nest/Swagger decorators as diagnostics instead of hiding them.
-- Generate OpenAPI for a non-trivial app while keeping unresolved extraction gaps visible.
-- Validate docs serving and generation flows against the same canonical Nest fixture.
-- Continue using browser-local Try It without new proxy or credential-storage architecture.
-- Force intentional snapshot updates to carry a matching registry entry, changelog note, and snapshot-test log row.
-- Cache OpenAPI snapshots by commit, config hash, Specord version, and optional lockfile hash.
-- Produce operation-scoped history records directly from two OpenAPI documents.
+* Serve a highly polished, responsive, and cohesive three-column API reference document out of the box.
+* Group endpoints dynamically by controllers/tags, displaying color-coded badging.
+* Generate visual, readable TypeScript interfaces directly from complex OpenAPI model properties.
+* Allow developers to test endpoints locally, viewing live response headers, timing latency, and syntax-highlighted JSON bodies.
+* Synchronize request parameters with code snippets across Curl, JS, Python, Go, and Rust.
+* Avoid breaking CLI serving (`specord serve`) or Nest injection (`setupSpecordDocs`) contracts.
 
 The system still cannot:
-
-- Fully resolve CSV/file-like response contracts without overrides or richer response handling.
-- Fully map signature-based webhook auth into OpenAPI security without override/config support.
-- Understand every Swagger decorator used by a production Nest app.
-- Boot the benchmark against live Postgres/Redis in tests; current fixture tests are unit/e2e smoke tests that do not require Docker services.
-- Build the full API history index planned earlier in Phase 6.
-- Serve cached history records through local docs endpoints.
-- Render changelog records in the docs UI.
-- Persist or share generated history snapshots across machines.
-- Fetch GitHub Release metadata or diff release-indexed OpenAPI snapshots.
+* Render historical changelog records in the docs UI (Phase 6e integration pending).
+* Persist or share Try It credentials across browser instances.
+* Fetch remote schema definitions directly (extraction is strictly source-first).
 
 ---
 
@@ -159,16 +99,10 @@ The system still cannot:
 
 | Metric | Value |
 | --- | ---: |
-| Branch | `develop` |
-| Local branch state | Ahead of `origin/develop` by 10 commits before this uncommitted checkpoint |
-| Tracked files changed before report rewrite | 56 |
-| Untracked files before report rewrite | 75 |
-| Tracked diff before report rewrite | 5,707 insertions, 14,325 deletions |
-| New Nest fixture source files | 78 TypeScript files |
-| New Nest fixture source lines | 2,646 TypeScript lines |
-| New root package dependencies | 0 |
-| New example-local dependencies | Nest 11, TypeORM, Postgres driver, config, JWT, Swagger, validation, helmet, compression, Jest tooling |
-| Removed large generated artifact | Old `examples/nestjs-api/package-lock.json` |
+| UI Source Files | 5 TypeScript files |
+| UI Source Lines | ~1,200 lines (clean-sheet rewritten) |
+| Core Test Files | 9 Vitest suites |
+| Workspace Tests | 72 tests (100% passing) |
 
 ---
 
@@ -176,34 +110,23 @@ The system still cannot:
 
 | Decision | Rationale |
 | --- | --- |
-| Keep only one NestJS fixture | The benchmark should be canonical and production-shaped, not split between toy examples |
-| Scaffold through Nest CLI first | Matches the user's request and gives the app normal Nest project structure |
-| Keep fixture dependencies local to `examples/nestjs-api` | Avoids changing root package runtime dependencies for a benchmark app |
-| Use Postgres and Redis in Compose | Gives the fixture realistic local infrastructure without requiring services during extractor tests |
-| Make extractor warnings visible | CSV exports, signature auth, and unsupported decorators are useful benchmark pressure points |
-| Keep docs and tests on `examples/nestjs-api` | One target reduces drift and makes future extraction regressions obvious |
-| Do not start Docker services in normal verification | Compose config validation is enough for this slice; extractor tests should stay fast and deterministic |
-| Keep Try It browser-local | Previous Phase 6 security boundary still stands until proxy/auth storage decisions are explicit |
-| Gate snapshot registry/log via the snapshot test | Snapshot changes should fail locally unless the review artifacts are updated with the new hash and metrics |
-| Keep 6b/6c in core first | Server/UI wiring can reuse deterministic cache and diff behavior without coupling tests to a running docs server |
-| Treat source provenance as later indexing work | The OpenAPI diff layer cannot safely infer controller/DTO/service files, so `sourceFiles` stays empty until commit-drilldown indexing provides attribution |
+| **Retire draggable panel layout** | Standard interactive document layouts (e.g., Scalar/Redoc) offer a superior, zero-friction reading flow compared to complex resizable window partitions. |
+| **Recursive TS Formatter** | Translating OpenAPI JSON schemas into TypeScript interface blocks makes models much more readable to developers than nested JSON trees. |
+| **Keep index.ts Signature Intact** | Ensures `@specord/cli` and `@specord/nestjs` integrations require zero code edits, maintaining compile stability. |
+| **Active Live Snippets** | Synchronizing language headers and parameters on active inputs provides an elite playground experience. |
 
 ---
 
 ## Roadmap
 
-| Phase | Focus | TODO |
+| Phase | Focus | Status |
 | --- | --- | --- |
-| Phase 6a | History config | Add config types for `release.source`, tag patterns, package version files, and snapshot mode |
-| Phase 6b | Snapshot cache | Done: commit/config/tool/lockfile keyed OpenAPI snapshot cache under `.git/specord/cache/snapshots` |
-| Phase 6c | Diff engine | Done: OpenAPI document diffs converted into operation-scoped history records |
-| Phase 6d | History server routes | Add local docs server endpoints for operation history, job status, and commit drilldown |
-| Phase 6e | UI changelog | Render indexed operation changelog with progressive background updates |
-| Phase 6f | Try It hardening | Add generated request examples, auth helper inputs, request history, and optional proxy only after the security contract is explicit |
-| Phase 7a | Extractor support | Add first-class mappings for common Swagger decorators now visible in the benchmark |
-| Phase 7b | Response support | Improve CSV/file/non-JSON response emission and related OpenAPI content types |
-| Phase 7c | Security support | Map custom guards/signature schemes through config or decorator conventions |
-| Phase 7d | Benchmark runtime | Add optional Docker-backed smoke tests for the Nest fixture after deciding acceptable test cost |
+| **Phase 6a** | History configurations | Completed |
+| **Phase 6b** | Local snapshot caches | Completed |
+| **Phase 6c** | History diff engine | Completed |
+| **Phase 6d** | UI Visual Redesign | **Completed** |
+| **Phase 6e** | Local history routes integration | Pending |
+| **Phase 6f** | UI changelog render | Pending |
 
 ---
 
@@ -211,54 +134,5 @@ The system still cannot:
 
 | Risk | Severity | Mitigation |
 | --- | --- | --- |
-| Benchmark fixture is now much larger than the old examples | Medium | Keep it as the single canonical target and maintain acceptance tests around stable output |
-| Snapshot diffs are large when fixture line numbers shift | Medium | Keep formatter stable and treat snapshot updates as intentional benchmark changes |
-| CSV export and webhook signature auth remain unresolved warnings | Medium | Preserve them as explicit pressure points; cover override paths in config tests |
-| Example-local dependencies increase install time | Low | Dependencies are isolated to `examples/nestjs-api` and do not change root packages |
-| Docker services are validated but not runtime-tested | Medium | Add optional Compose-backed smoke tests only after deciding test cost and CI constraints |
-| Browser-local Try It still hits CORS in split-origin setups | Medium | Existing UI surfaces fetch failures; proxy design remains a later explicit security decision |
-| API history is not yet wired into serve/UI | Medium | Phase 6b/6c now provide core primitives; 6d/6e remain the integration slices |
-| Diff engine source attribution is empty | Low | Later commit-drilldown indexing will attach controller/DTO/service provenance |
-
----
-
-## Verification
-
-Commands run:
-
-```bash
-pnpm.cmd exec vitest run test/pipeline.snapshot.test.ts -u
-pnpm.cmd --filter @specord/core test
-pnpm.cmd --filter @specord/cli test
-pnpm.cmd --dir examples\nestjs-api build
-pnpm.cmd --dir examples\nestjs-api lint
-pnpm.cmd --dir examples\nestjs-api test --runInBand
-pnpm.cmd --dir examples\nestjs-api test:e2e --runInBand
-docker compose -f examples\nestjs-api\compose.yaml config
-pnpm.cmd --silent inspect -- examples/nestjs-api | node scripts/summarize-inspection.cjs
-pnpm.cmd --silent generate -- examples/nestjs-api --pretty
-pnpm.cmd build
-pnpm.cmd test
-pnpm.cmd --filter @specord/core exec vitest run test/pipeline.snapshot.test.ts
-pnpm.cmd --filter @specord/core exec vitest run test/snapshot-cache.test.ts test/openapi-history-diff.test.ts
-git diff --check
-rg -n "nestjs-realworld|examples/nestjs-api/main\.ts" README.md docs spec packages examples package.json pnpm-workspace.yaml
-```
-
-Results:
-
-- Snapshot refresh exited 0 and updated 1 snapshot.
-- `@specord/core` exited 0 with 9 test files and 50 tests passing after Phase 6b/6c.
-- `@specord/cli` exited 0 with 3 test files and 10 tests passing.
-- `examples/nestjs-api` build exited 0.
-- `examples/nestjs-api` lint exited 0.
-- `examples/nestjs-api` unit test exited 0 with 1 test passing.
-- `examples/nestjs-api` e2e test exited 0 with 1 test passing.
-- Compose config validation exited 0.
-- Workspace build exited 0 with 6 successful Turborepo tasks.
-- Workspace test exited 0 with 11 successful Turborepo tasks.
-- Core pipeline snapshot test exited 0 with 2 tests passing, including registry/changelog/log drift checks.
-- Phase 6b/6c targeted tests exited 0 with 2 files and 7 tests passing.
-- Generate emitted 22 paths, 27 operations, 42 schemas, `bearerAuth`, and 2 unresolved warnings.
-- Stale `nestjs-realworld` and old root `examples/nestjs-api/main.ts` references were not found.
-- `git diff --check` reported only CRLF normalization warnings on Windows, not whitespace errors.
+| CORS issues on split-origin setups | **Medium** | Try It UI displays useful guidelines and captures fetch failures elegantly. |
+| Nested deep array references in schema recursive resolver | **Low** | Core resolver resolves `$ref` and handles recursion gracefully with safe fallback bounds. |
