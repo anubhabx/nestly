@@ -2,7 +2,7 @@
 
 **Phase:** 6 - API history architecture, browser-local Try It, and benchmark fixture hardening
 **Date:** 2026-05-21
-**Status:** Healthy. The old, clunky draggable panel layout has been retired. A clean-sheet visual and interactive redesign has been delivered into a gorgeous, high-end three-column API Reference workspace. Phase 6e (Local History Routes) and Phase 6f (Visual History Changelogs) are fully delivered, integrating seamless git log analysis, cold snapshot caches, and robust pre-warmed fallback logs. Try It Authentication Hardening dynamically persists Bearer/custom credentials to sessionStorage and synchronizes with fetches and multi-language snippets in real-time. All 72 tests across the monorepo packages are green.
+**Status:** Healthy. The old, clunky draggable panel layout has been retired. A clean-sheet visual and interactive redesign has been delivered into a gorgeous, high-end three-column API Reference workspace. Phase 6e (Local History Routes) and Phase 6f (Visual History Changelogs) are fully delivered, integrating seamless git log analysis, cold snapshot caches, and robust pre-warmed fallback logs. Try It Authentication Hardening dynamically persists Bearer/custom credentials to sessionStorage and synchronizes with fetches and multi-language snippets in real-time. All styling has been refined to a humanized minimal style system using Inter, flat slates, clean thin borders, flat badges, and sharp 4px controls (zero gradients, zero neons/glows). All 72 tests across the monorepo packages are green.
 
 ---
 
@@ -10,11 +10,11 @@
 
 Phase 6 now covers all six delivered slices:
 
-1. **Clean-Sheet UI Redesign**: Retired the draggable IDE-style panel workspace. Built a state-of-the-art three-column API reference layout (reminiscent of Scalar or Mintlify) with custom dark mode, Google Fonts integration ("Plus Jakarta Sans" and "JetBrains Mono"), glowing HTTP method gradients, and collapsible mobile sidebar menus.
+1. **Clean-Sheet UI Redesign**: Retired the draggable IDE-style panel workspace. Built a state-of-the-art three-column API reference layout with custom dark mode, Google Fonts integration ("Inter" and "JetBrains Mono"), flat method badges, sharp calm shapes (rigid 4px radii), and collapsible mobile sidebar menus.
 2. **Interactive Developer Toolkit**: Re-implemented the "Try It" client with active parameter bindings (Path, Query, Headers), JSON body editor pre-populated from schemas, execution metrics (HTTP status, latency in ms), and a pretty-printed syntax-highlighted response viewer.
 3. **Live Snippet Generator**: Added multi-language code snippets (cURL, Fetch JS, Python requests, Go net/http, and Rust reqwest) that synchronize dynamically on parameter input changes and authentication token additions.
 4. **Local History Routes (Phase 6e)**: Modified `specord serve` to accept `historyPath` and `cwd`, serving computed OpenAPI history records from `.git/specord/cache/snapshots` via `/api/history` with graceful degradation try/catches.
-5. **Visual History Changelogs (Phase 6f)**: Added a premium visual vertical timeline rendering added, changed, removed, deprecated, and security events inside a dedicated "History" tab in the toolkit column with global show-all toggle check.
+5. **Visual History Changelogs (Phase 6f)**: Added a premium visual vertical timeline rendering added, changed, removed, deprecated, and security events inside a dedicated "History" tab in the toolkit column with flat, non-glowing circles and a global show-all toggle check.
 6. **Try It Authentication Hardening**: Integrated custom header/bearer token inputs that safely persist to browser `sessionStorage` and dynamically synchronize client fetches and code snippets.
 7. **Fixture Benchmark**: Maintained the canonical `examples/nestjs-api` production-shaped Nest CLI app as our primary generation target.
 
@@ -30,7 +30,7 @@ Current health is green:
 | Area | Delivered |
 | --- | --- |
 | **Clean-sheet UI** | Completely wiped the old panel layout. Rebuilt the `@specord/ui` package with standard-setting premium aesthetics |
-| **Style system** | `packages/ui/src/styles.ts` built with custom dark HSL variables, fluid CSS grids, responsive collapses, and custom typography |
+| **Style system** | `packages/ui/src/styles.ts` built with flat zinc tokens, fluid CSS grids, responsive collapses, and custom geometric typography (Inter) |
 | **Markup structure** | `packages/ui/src/markup.ts` declared a semantically clean shell featuring search inputs, nav lists, center workspaces, and drawer slots |
 | **Client application** | `packages/ui/src/client.ts` implemented a fast vanilla JS single-page app containing fuzzy tag searches, recursive TypeScript schema renderers, and copy triggers |
 | **Try It features** | Browser-local HTTP request executor rendering exact status codes, durations, and syntax-highlighted response structures |
@@ -48,7 +48,7 @@ Current health is green:
 | Criterion | Status | Evidence |
 | --- | --- | --- |
 | Draggable panel layout retired | **Pass** | Wiped old panel registry, resizers, and local storage layout state from `client.ts` |
-| Premium three-column layout delivered | **Pass** | Visual structure splits Sidebar (280px), Workspace, and Toolkit (420px) cleanly |
+| Premium three-column layout delivered | **Pass** | Visual structure splits Sidebar (280px), Workspace, and Toolkit (420px) cleanly using flat slates, clean borders, and geometric fonts |
 | Safe HTML configuration injection | **Pass** | Config parameters are escaped via safe JSON formats, verified by unit tests |
 | Dynamic parameter tables generated | **Pass** | Formats Path, Query, and Header variables as elegant tables showing types, constraints, and descriptions |
 | TypeScript schema formatter active | **Pass** | Resolves `$ref` components and recursively draws visual TypeScript interface representations |
@@ -56,7 +56,7 @@ Current health is green:
 | Try It interactive client runs | **Pass** | Standard fetch client with header custom inputs and status code coloring (green/red) |
 | Active snippet sync is live | **Pass** | Language snippets (cURL, JS, Py, Go, Rust) synchronize immediately upon changing input fields |
 | Local history routes active | **Pass** | `/api/history` serves commit schema changes computed using `diffOpenApiSnapshots` |
-| History visual timeline loaded | **Pass** | Dedicated tab draws rich vertical timelines with Emerald/Rose/Amber/Orange glowing badging |
+| History visual timeline loaded | **Pass** | Dedicated tab draws rich vertical timelines with flat, non-glowing changeset badging |
 | Authentication details hardened | **Pass** | Session-only token preservation avoids server leakage and accurately feeds fetch headers/snippets |
 | UI compiler builds successfully | **Pass** | `pnpm --filter @specord/ui build` exited 0 with no TypeScript errors |
 | Full Vitest suite passes | **Pass** | `pnpm test` completed 11/11 successful runs with all 72 tests green |
